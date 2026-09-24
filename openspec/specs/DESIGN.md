@@ -1,0 +1,229 @@
+# DESIGN
+
+Design specification for the "Visualization" page. The "Theory" page is out of scope of this document.
+
+## 1. Visual Language
+
+- Minimalist, modern, flat vector style.
+- Thin outlines (1px), moderate corner radius, no heavy shadows.
+- No raster images. Graphics are SVG or Canvas only.
+- Gradients are not used. Fills are solid.
+- Pastel palette with blue as the base hue, no dominant accent.
+- References: 2026.hackjunction.com, Google Developer Community, Ollama, Claude.
+
+## 2. Design Tokens
+
+All colors, radii, and spacing are defined as CSS variables and switched between light and dark themes. Components never use raw values.
+
+### 2.1. Colors
+
+| Token | Light | Dark |
+|---|---|---|
+| `--bg` | `#F6F8FC` | `#0F1420` |
+| `--surface` | `#FFFFFF` | `#151B2B` |
+| `--line` | `#D6DDEA` | `#2A3349` |
+| `--grid` | `rgba(80, 110, 170, 0.08)` | `rgba(140, 170, 230, 0.07)` |
+| `--text` | `#1F2937` | `#E6EAF2` |
+| `--text-muted` | `#6B7280` | `#8B94A7` |
+| `--primary` | `#6C9BF5` | `#8DB3FF` |
+| `--primary-soft` | `rgba(108, 155, 245, 0.14)` | `rgba(141, 179, 255, 0.16)` |
+| `--noise` | `#3B4252` | `#4E566A` |
+
+### 2.2. Cluster Palette
+
+Used for cluster coloring on the Canvas. Colors are assigned in this order, in the order clusters are created, and repeat cyclically when there are more clusters than colors.
+
+| # | Name | Light | Dark |
+|---|---|---|---|
+| 1 | Red | `#EF7C7C` | `#F28B8B` |
+| 2 | Blue | `#6C9BF5` | `#8DB3FF` |
+| 3 | Green | `#6FCB9F` | `#7FD8AE` |
+| 4 | Gold | `#E8B84A` | `#F0C560` |
+| 5 | Violet | `#A88BEB` | `#B8A0F2` |
+| 6 | Gray | `#9AA3B2` | `#A9B1BF` |
+
+Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use `--noise` (black-gray).
+
+### 2.3. Shape and Spacing
+
+- Border width: 1px, color `--line`.
+- Corner radius: 12px for blocks and cards, 8px for buttons and inputs.
+- Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64 px.
+- Content max width: 1200px, centered. Horizontal padding: 24px on desktop, 16px on mobile.
+- Gap between blocks: 24px on desktop, 16px on mobile.
+
+## 3. Typography
+
+- UI and text font: Nunito (rounded terminals, no sharp parts, Cyrillic and Latin support).
+- Code font: Roboto Mono.
+- Fonts are self-hosted via `@fontsource` packages; no external font requests.
+- Sizes: page-level labels 20-24px, block titles 18-20px, body 15-16px, code 13-14px.
+- Weights: 400 body, 600 titles and buttons.
+- Line height: 1.5 for text, 1.6 for code.
+
+## 4. Background
+
+- The page background is `--bg` with a faint square grid drawn with `--grid`, cell size 32px, line width 1px.
+- Blocks use `--surface` with a 1px `--line` border, so they separate from the grid background.
+- The page background grid is decorative and static; it does not animate.
+
+## 5. Page Layout (Desktop)
+
+Vertical order of the page:
+
+1. Header
+2. Page switcher
+3. Visualization block (Canvas panel + Steps panel)
+4. Code block
+5. Plots block
+6. Footer
+
+### 5.1. Header
+
+- Not fixed: it scrolls away with the page.
+- Left: text logo `# DB SCAN`, Nunito 600, 24-28px.
+- Right: language switch (`Ru` / `En`) and theme toggle (sun icon in light theme, moon icon in dark theme).
+- Language switch is a compact text button; the theme toggle is an icon button. Both use a 1px outline and 8px radius.
+- Icons are thin-line SVG.
+
+### 5.2. Page Switcher
+
+- A vertical switcher with two sections: "Visual" and "Theory" (RU: "Визуализация" and "Теория").
+- Each section has a title row: the title on the left and a thin line extending to the right edge.
+- Only one section is expanded at a time. Expanding a section collapses the other with a height and opacity transition; the collapsed section leaves only its title row.
+- The "Visual" section is expanded by default.
+
+### 5.3. Visualization Block
+
+Two columns in a single row:
+
+- Left (about 2/3 width): Canvas panel.
+- Right (about 1/3 width): Steps panel.
+
+Both are blocks with the standard border and radius, equal height.
+
+#### Canvas Panel
+
+- The panel contains the Canvas with a control row on top. No panel title is displayed.
+- Control row: two sliders, `R` and `minPts`, aligned to the right. Each slider has a label, the current value displayed next to it, and a "?" icon button.
+- The "?" icon opens a small popover with a short explanation. Text (EN): "R is the radius within which points are considered neighbors. minPts is the minimum number of points nearby that counts as a cluster." Text (RU): "R — радиус, в пределах которого точки считаются соседями. minPts — минимальное количество точек рядом, которое считается кластером."
+- The popover is a bordered `--surface` block with 8px radius, appears with a fade and slide animation, and closes on outside click or on a second click of the icon.
+- The Canvas fills the panel. Aspect ratio: 4:3 on desktop.
+- Canvas background is `--surface` with a grid whose cell size equals 1 unit of R, drawn with `--grid`. The grid scales together with the Canvas zoom.
+- Points are filled circles; their color is taken from the cluster palette, `--text-muted` for unassigned points, or `--noise` for noise points.
+- The R radius around the currently processed point is drawn as a thin circle outline in `--primary` with a `--primary-soft` fill.
+- The cursor is a grab cursor in pan mode and a crosshair in drawing mode.
+
+#### Drawing Tools
+
+- Visible only when the "Create" scenario is selected.
+- Two icon buttons ("Draw" and "Erase") in the bottom right corner of the Canvas, over the Canvas.
+- They appear with a fade and slide-up animation and disappear the same way when another scenario is selected.
+- The active tool is marked with `--primary-soft` fill and `--primary` outline.
+- When a tool is active, pointer input draws or erases. When no tool is active, pointer input pans the Canvas.
+
+#### Error Notification
+
+- A toast notification is shown over the top of the Canvas, for example when the point limit is reached.
+- It is a bordered `--surface` block with 8px radius and a red (`Red` cluster palette color) outline, with the message text.
+- It appears with a fade and slide-down animation and disappears automatically after about 3 seconds.
+
+#### Steps Panel
+
+- Top: a primary button. Label "Start" (RU: "Начать") before the first step; after the first press its label becomes "Next" (RU: "Далее").
+- Primary button: `--primary` fill, white text on light theme and `--bg` text on dark theme, 8px radius, 600 weight.
+- Below the button: a vertical timeline of steps. Each step has a dot on a thin vertical line, a title (`Step 0`, `Step 1`, ...), and a description.
+- The active step is the last one in the list; passed steps are located above it. Future steps are not shown.
+- Active step: `--primary` dot, `--text` title, description expanded and visible.
+- Passed steps: dot filled with `--line` color, `--text-muted` title, description collapsed.
+- Clicking a passed step rolls the algorithm back to that step.
+- When a new step is added, the list scrolls down automatically and smoothly.
+- New steps appear with a fade and slide-in animation; the description expands with a height transition.
+- If the list exceeds the panel height, it scrolls inside the panel; the scrollbar is thin and styled with `--line`.
+
+### 5.4. Code Block
+
+- Block title: "Code" (RU: "Код").
+- Tabs: Python, JavaScript, C++. Tabs are bordered buttons with 8px radius; the active tab has `--primary-soft` fill and `--primary` outline.
+- Below the tabs: a code area with line numbers, Roboto Mono, in a bordered block with `--surface` background.
+- Line numbers are `--text-muted` and are not selectable. Code text is selectable and copyable.
+- Syntax highlighting uses colors derived from the cluster palette and `--text-muted`, defined per theme.
+- Switching tabs fades the code content out and in.
+- Horizontal overflow scrolls inside the code area.
+
+### 5.5. Plots Block
+
+- Block title: "Plots" (RU: "Сценарии").
+- Four cards in one row: Circles, Blobs, Half-moons, Create (RU: Круги, Шарики, Полумесяцы, Создать).
+- Each card: bordered block with `--surface` background, a static flat SVG preview on top (thin outlines, cluster palette colors), and a label below.
+- Previews are static; they depict the dataset shape: concentric circles, groups of blobs, two half-moons, and a pencil for "Create".
+- The selected card is not highlighted.
+- The row is one line on desktop and wraps to 2x2 on tablet and mobile.
+
+### 5.6. Footer
+
+- Three zones in one row:
+  - Left: "Created by Nikita Shvedov" (RU: "Создатель: Nikita Shvedov"), a link to the Telegram channel, and a link to GitHub. Links are plain text without underline and with `--text-muted` color.
+  - Center: a slot for an SVG cat mark, to be supplied later. The slot is a fixed-size container of 48px height; it is empty until the asset is added.
+  - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), right-aligned, `--text-muted`.
+- Below the three zones: a centered note in `--text-muted`, 13-14px.
+  - EN: "This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points."
+  - RU: "Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки."
+- Link URLs are supplied later; the links exist as placeholders until then.
+- A thin `--line` separator sits above the footer.
+
+## 6. Responsive Layout
+
+Breakpoints: mobile below 768px, tablet 768-1023px, desktop 1024px and above.
+
+Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
+
+- Mobile: single column. Canvas aspect ratio 1:1. The R and minPts sliders stack vertically in the control row. Plots in 2x2 grid. Footer zones stack vertically and are centered.
+- Tablet: single column for the visualization block (Steps panel above Canvas panel), Plots in 2x2 grid.
+- Desktop: layout as described in section 5.
+- Steps panel height on mobile and tablet is limited to about 40% of the viewport height, with inner scrolling.
+- Touch targets are at least 44x44px.
+
+## 7. Themes
+
+- Light and dark themes share the same layout and differ only by token values.
+- The theme toggle switches all tokens at once with a 300ms color transition. The Canvas repaints with the new tokens.
+
+## 8. Animation
+
+Character: smooth, crisp, confident, without sagging or lag.
+
+### 8.1. Timing
+
+- Default easing: `cubic-bezier(0.22, 1, 0.36, 1)`.
+- Durations: small elements 200-300ms, blocks and panels 400-600ms, Canvas step transitions 500-700ms.
+- No spring bounce or overshoot.
+
+### 8.2. Scroll Reveal
+
+- Blocks (Visualization, Code, Plots, Footer) appear when they enter the viewport: opacity 0 to 1 and translateY 24px to 0, 600ms.
+- Runs once per block. Children within a block (for example, Plots cards) appear with a 60ms stagger.
+
+### 8.3. Step Transitions
+
+- Canvas changes between algorithm steps are animated: point color changes, the R circle moving between points, and cluster color fill.
+- New step entries in the Steps panel slide and fade in; the description expands by height.
+- Rolling back to a previous step animates the Canvas to that step's state.
+
+### 8.4. Scenario Change
+
+- When another scenario is selected, points fly from their current positions to the new positions and their colors reset to gray with a smooth transition.
+
+### 8.5. Other Transitions
+
+- Page switcher: height and opacity transition of sections.
+- Drawing tools: fade and slide-up appearance.
+- Popover and toast: fade and slide.
+- Code tabs: content fade.
+- Theme switch: color transition.
+
+### 8.6. Restrictions
+
+- No hover animations or micro-interactions (no scale, pulse, or movement on hover).
+- Interactive elements show a pointer cursor, a visible focus outline in `--primary`, and no scale or motion on press.
+- With `prefers-reduced-motion`, durations are shortened to about 100ms, movement is removed, and only opacity transitions remain.
