@@ -87,6 +87,7 @@ openspec/
 ## 9. Workflow
 
 - Work in small steps; each step ends with the project in a working state.
+- For multi-step tasks, create a todo list before implementation, update item statuses as work progresses, and complete all items before finishing. Single-step tasks do not require a todo list.
 - Before major changes, briefly describe the plan and wait for confirmation.
 - Do not add functionality that is not described in the specs.
 - Do not refactor code outside the scope of the current task.
