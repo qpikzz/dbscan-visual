@@ -1,33 +1,79 @@
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { scaffoldText } from '../i18n'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+
+type Theme = 'light' | 'dark'
+
+function getInitialTheme(): Theme {
+  if (window.localStorage.getItem('dbscan-theme') !== null) {
+    return 'light'
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 type AppShellProps = {
   children: ReactNode
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <span className="app-logo">{scaffoldText.logo}</span>
-        <nav className="app-nav" aria-label="Основная навигация">
-          <NavLink
-            className={({ isActive }) => (isActive ? 'app-nav-link active' : 'app-nav-link')}
-            to="/visualization"
+        <div className="app-controls">
+          <span className="language-switcher" aria-label={scaffoldText.languageLabel}>
+            Ru / En
+          </span>
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={scaffoldText.themeToggleLabel}
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           >
-            {scaffoldText.visualizationLabel}
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              {theme === 'light' ? (
+                <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+              ) : (
+                <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" />
+              )}
+            </svg>
+          </button>
+        </div>
+      </header>
+      <main className="page-container">
+        <nav className="page-switcher" aria-label={scaffoldText.pageSwitcherLabel}>
+          <NavLink className="page-switcher-link" to="/visualization">
+            <span>{scaffoldText.visualizationLabel}</span>
+            <span className="page-switcher-line" aria-hidden="true" />
           </NavLink>
-          <NavLink
-            className={({ isActive }) => (isActive ? 'app-nav-link active' : 'app-nav-link')}
-            to="/theory"
-          >
-            {scaffoldText.theoryTitle}
+          <NavLink className="page-switcher-link" to="/theory">
+            <span>{scaffoldText.theoryTitle}</span>
+            <span className="page-switcher-line" aria-hidden="true" />
           </NavLink>
         </nav>
-        <span className="app-status">{scaffoldText.status}</span>
-      </header>
-      <main className="page-container">{children}</main>
+        {children}
+      </main>
+      <footer className="app-footer">
+        <div className="footer-zones">
+          <div className="footer-author">
+            <span>{scaffoldText.footerAuthor}</span>
+            <a href="#">{scaffoldText.footerTelegram}</a>
+            <a href="#">{scaffoldText.footerGithub}</a>
+          </div>
+          <div className="footer-mark" aria-hidden="true" />
+          <p className="footer-love">{scaffoldText.footerLove}</p>
+        </div>
+        <p className="footer-note">{scaffoldText.footerNote}</p>
+      </footer>
     </div>
   )
 }
