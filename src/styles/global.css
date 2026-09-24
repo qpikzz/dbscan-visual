@@ -39,6 +39,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   padding: 24px 0;
   border-bottom: 1px solid #d6ddea;
 }
@@ -51,6 +52,25 @@ a {
 .app-status,
 .eyebrow {
   color: #6b7280;
+}
+
+.app-nav {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.app-nav-link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.app-nav-link:hover,
+.app-nav-link.active {
+  color: #1f2937;
+  background: #e7edf8;
 }
 
 .page-container {
@@ -84,6 +104,10 @@ a {
 
   .app-status {
     display: none;
+  }
+
+  .app-nav {
+    margin-left: 0;
   }
 
   .page-container {
