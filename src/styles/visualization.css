@@ -396,15 +396,9 @@
 
 .plots-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
   padding: 0 var(--space-6) var(--space-6);
-}
-
-@media (min-width: 768px) {
-  .plots-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (min-width: 1024px) {
@@ -444,9 +438,17 @@
     gap: var(--space-4);
   }
 
+  .viz-block {
+    gap: var(--space-4);
+  }
+
   .canvas-controls {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .canvas-wrap {
+    aspect-ratio: 1 / 1;
   }
 
   .param-control {

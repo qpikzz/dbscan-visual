@@ -118,7 +118,7 @@ a:focus-visible {
 .app-header,
 .page-container,
 .app-footer {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
 }
 
@@ -205,6 +205,7 @@ a:focus-visible {
 .page-switcher-link {
   display: flex;
   align-items: center;
+  min-height: 44px;
   gap: var(--space-3);
   color: var(--text-muted);
   text-decoration: none;
@@ -265,6 +266,12 @@ a:focus-visible {
 @media (max-width: 767px) {
   .app-header {
     padding: var(--space-4) 0;
+  }
+
+  .app-header,
+  .page-container,
+  .app-footer {
+    width: calc(100% - 32px);
   }
 
   .page-container {
