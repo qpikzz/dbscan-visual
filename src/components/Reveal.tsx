@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 
 type RevealProps = {
   children: ReactNode
@@ -8,18 +9,17 @@ type RevealProps = {
 }
 
 export function Reveal({ children, className, delay = 0 }: RevealProps) {
-  const reduce = useReducedMotion()
+  const { fadeSlide, transition } = useMotionSettings()
+  const reveal = fadeSlide(24)
 
   return (
     <motion.div
       className={className}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
-      whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      initial={reveal.initial}
+      whileInView={reveal.animate}
       viewport={{ once: true, amount: 0.15 }}
       transition={{
-        duration: reduce ? 0.1 : 0.6,
-        ease: [0.22, 1, 0.36, 1],
-        delay,
+        ...transition(0.6, delay),
       }}
     >
       {children}

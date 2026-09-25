@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 import { useLanguage } from '../i18n'
 import { scenarioIds } from '../data'
 import type { ScenarioId } from '../data'
@@ -24,7 +25,7 @@ type ScenarioCardsProps = {
 
 export function ScenarioCards({ value, onChange }: ScenarioCardsProps) {
   const { t } = useLanguage()
-  const reduce = useReducedMotion()
+  const { reduced, transition } = useMotionSettings()
 
   return (
     <section className="viz-card" aria-labelledby="plots-title">
@@ -41,13 +42,11 @@ export function ScenarioCards({ value, onChange }: ScenarioCardsProps) {
             className="scenario-card"
             aria-pressed={value === id}
             onClick={() => onChange(id)}
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
-            whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            initial={{ opacity: 0, ...(reduced ? {} : { y: 24 }) }}
+            whileInView={{ opacity: 1, ...(reduced ? {} : { y: 0 }) }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{
-              duration: reduce ? 0.1 : 0.6,
-              ease: [0.22, 1, 0.36, 1],
-              delay: i * 0.06,
+              ...transition(0.6, i * 0.06),
             }}
           >
             <ScenarioPreview scenario={id} />

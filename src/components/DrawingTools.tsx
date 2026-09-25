@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 import { useLanguage } from '../i18n'
 import type { ActiveTool } from './CanvasPanel'
 
@@ -9,15 +10,14 @@ type DrawingToolsProps = {
 
 export function DrawingTools({ activeTool, onChange }: DrawingToolsProps) {
   const { t } = useLanguage()
-  const reduce = useReducedMotion()
+  const { fadeSlide, transition } = useMotionSettings()
+  const toolsAnimation = fadeSlide(24)
 
   return (
     <motion.div
       className="drawing-tools"
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
-      animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      exit={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
-      transition={{ duration: reduce ? 0.1 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+      {...toolsAnimation}
+      transition={transition(0.25)}
     >
         <button
           type="button"

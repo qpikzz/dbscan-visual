@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 
 type ParameterSliderProps = {
   label: string
@@ -8,6 +9,7 @@ type ParameterSliderProps = {
   max: number
   step: number
   help: string
+  helpLabel: string
   format: (value: number) => string
   onChange: (value: number) => void
 }
@@ -19,12 +21,14 @@ export function ParameterSlider({
   max,
   step,
   help,
+  helpLabel,
   format,
   onChange,
 }: ParameterSliderProps) {
   const [open, setOpen] = useState(false)
   const controlRef = useRef<HTMLDivElement>(null)
-  const reduce = useReducedMotion()
+  const { fadeSlide, transition } = useMotionSettings()
+  const popoverId = `param-help-${label.replace(/\s+/g, '-').toLowerCase()}`
 
   useEffect(() => {
     if (!open) return
@@ -57,6 +61,8 @@ export function ParameterSlider({
         type="button"
         className="help-btn"
         aria-expanded={open}
+        aria-controls={popoverId}
+        aria-label={helpLabel}
         onClick={() => setOpen((isOpen) => !isOpen)}
       >
         ?
@@ -64,12 +70,11 @@ export function ParameterSlider({
       <AnimatePresence>
         {open && (
           <motion.div
+            id={popoverId}
             className="popover"
             role="tooltip"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            transition={{ duration: reduce ? 0.1 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+            {...fadeSlide(-8)}
+            transition={transition(0.25)}
           >
             {help}
           </motion.div>

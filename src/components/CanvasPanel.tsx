@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import type { ScenarioId } from '../data'
 import { CanvasView } from '../features/canvas/CanvasView'
+import { MIN_PTS_RANGE, R_RANGE } from '../features/dbscan/constants'
 import { useLanguage } from '../i18n'
 import { DrawingTools } from './DrawingTools'
 import { ParameterSlider } from './ParameterSlider'
@@ -32,21 +33,23 @@ export function CanvasPanel({
         <ParameterSlider
           label={t.paramR}
           value={r}
-          min={0.1}
-          max={20}
-          step={0.1}
+          min={R_RANGE.min}
+          max={R_RANGE.max}
+          step={R_RANGE.step}
           format={(value) => value.toFixed(1)}
           help={t.paramRHelp}
+          helpLabel={t.paramHelpLabel(t.paramR)}
           onChange={onRChange}
         />
         <ParameterSlider
           label={t.paramMinPts}
           value={minPts}
-          min={0}
-          max={100}
-          step={1}
+          min={MIN_PTS_RANGE.min}
+          max={MIN_PTS_RANGE.max}
+          step={MIN_PTS_RANGE.step}
           format={(value) => String(Math.round(value))}
           help={t.paramMinPtsHelp}
+          helpLabel={t.paramHelpLabel(t.paramMinPts)}
           onChange={onMinPtsChange}
         />
       </div>

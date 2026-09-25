@@ -7,8 +7,9 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 type Theme = 'light' | 'dark'
 
 function getInitialTheme(): Theme {
-  if (window.localStorage.getItem('dbscan-theme') !== null) {
-    return 'light'
+  const storedTheme = window.localStorage.getItem('dbscan-theme')
+  if (storedTheme === 'light' || storedTheme === 'dark') {
+    return storedTheme
   }
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -38,7 +39,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-pressed={language === 'ru'}
               onClick={() => setLanguage('ru')}
             >
-              Ru
+              {t.languageRu}
             </button>
             <button
               type="button"
@@ -46,7 +47,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-pressed={language === 'en'}
               onClick={() => setLanguage('en')}
             >
-              En
+              {t.languageEn}
             </button>
           </div>
           <button

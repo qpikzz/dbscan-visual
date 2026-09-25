@@ -7,6 +7,8 @@ export const defaultLanguage: Language = 'ru'
 export const ru = {
   logo: '# DB SCAN',
   languageLabel: 'Переключить язык',
+  languageRu: 'Ru',
+  languageEn: 'En',
   themeToggleLabel: 'Переключить тему',
   pageSwitcherLabel: 'Переключение страниц',
   visualLabel: 'Визуализация',
@@ -21,6 +23,7 @@ export const ru = {
   scenarioCreate: 'Создать',
   paramR: 'R',
   paramMinPts: 'minPts',
+  paramHelpLabel: (label: string) => `Показать справку: ${label}`,
   paramRHelp: 'R — радиус, в пределах которого точки считаются соседями.',
   paramMinPtsHelp:
     'minPts — минимальное количество точек рядом, которое считается кластером.',
@@ -54,6 +57,8 @@ export type Dictionary = typeof ru
 export const en: Dictionary = {
   logo: '# DB SCAN',
   languageLabel: 'Switch language',
+  languageRu: 'Ru',
+  languageEn: 'En',
   themeToggleLabel: 'Toggle theme',
   pageSwitcherLabel: 'Page switcher',
   visualLabel: 'Visualization',
@@ -68,6 +73,7 @@ export const en: Dictionary = {
   scenarioCreate: 'Create',
   paramR: 'R',
   paramMinPts: 'minPts',
+  paramHelpLabel: (label: string) => `Show help: ${label}`,
   paramRHelp:
     'R is the radius within which points are considered neighbors.',
   paramMinPtsHelp:

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
 import { useLanguage } from '../i18n'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 
 type StepItemProps = {
   index: number
@@ -11,7 +12,7 @@ type StepItemProps = {
 
 function StepItem({ index, isActive, isLast, onClick }: StepItemProps) {
   const { t } = useLanguage()
-  const reduce = useReducedMotion()
+  const { reduced, transition } = useMotionSettings()
   const passed = !isActive
 
   const description =
@@ -39,9 +40,9 @@ function StepItem({ index, isActive, isLast, onClick }: StepItemProps) {
         {isActive && (
           <motion.div
             className="step-desc"
-            initial={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            animate={reduce ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
-            transition={{ duration: reduce ? 0.1 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+            initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+            animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
+            transition={transition(0.3)}
           >
             {description}
           </motion.div>
@@ -67,15 +68,15 @@ export function StepsPanel({
   onSeekStep,
 }: StepsPanelProps) {
   const { t } = useLanguage()
-  const reduce = useReducedMotion()
+  const { reduced } = useMotionSettings()
   const listRef = useRef<HTMLOListElement>(null)
   const isFirstRun = steps.length === 1
 
   useEffect(() => {
     const list = listRef.current
     if (!list) return
-    list.scrollTo({ top: list.scrollHeight, behavior: reduce ? 'auto' : 'smooth' })
-  }, [steps.length, reduce])
+    list.scrollTo({ top: list.scrollHeight, behavior: reduced ? 'auto' : 'smooth' })
+  }, [steps.length, reduced])
 
   return (
     <aside className="viz-card steps-panel">

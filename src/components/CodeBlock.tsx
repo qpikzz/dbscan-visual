@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { Highlight } from 'prism-react-renderer'
 import type { PrismTheme } from 'prism-react-renderer'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 import type { CodeLanguage } from '../data/code'
 import { codeLanguages, codeSamples } from '../data/code'
 import { useLanguage } from '../i18n'
@@ -43,7 +44,7 @@ const codeTheme: PrismTheme = {
 export function CodeBlock() {
   const { t } = useLanguage()
   const [language, setLanguage] = useState<CodeLanguage>('python')
-  const reduce = useReducedMotion()
+  const { transition } = useMotionSettings()
 
   return (
     <section className="viz-card" aria-labelledby="code-title">
@@ -73,7 +74,7 @@ export function CodeBlock() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reduce ? 0.1 : 0.2, ease: 'easeOut' }}
+            transition={transition(0.2)}
           >
             <Highlight
               code={codeSamples[language]}

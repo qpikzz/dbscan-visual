@@ -4,12 +4,13 @@ import { VisualizationBlock } from '../components/VisualizationBlock'
 import { CodeBlock } from '../components/CodeBlock'
 import { ScenarioCards } from '../components/ScenarioCards'
 import { Reveal } from '../components/Reveal'
+import { DEFAULT_PARAMETERS } from '../features/dbscan/constants'
 import '../styles/visualization.css'
 
 export function VisualizationPage() {
   const [scenario, setScenario] = useState<ScenarioId>('circles')
-  const [r, setR] = useState(5)
-  const [minPts, setMinPts] = useState(3)
+  const [r, setR] = useState<number>(DEFAULT_PARAMETERS.r)
+  const [minPts, setMinPts] = useState<number>(DEFAULT_PARAMETERS.minPts)
 
   return (
     <div className="viz-sections">

@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import type { ScenarioId } from '../data'
 
 type Dot = { x: number; y: number }
@@ -44,8 +43,7 @@ const dot = (
   y: number,
   fill: string,
   r = 2,
-  style?: CSSProperties,
-) => <circle key={key} cx={x} cy={y} r={r} fill={fill} style={style} />
+) => <circle key={key} cx={x} cy={y} r={r} fill={fill} />
 
 function CirclesPreview() {
   const rings = [
