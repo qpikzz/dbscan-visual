@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { scaffoldText } from '../i18n'
+import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
 type Theme = 'light' | 'dark'
@@ -20,6 +20,7 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
+  const { language, setLanguage, t } = useLanguage()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -28,15 +29,30 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <span className="app-logo">{scaffoldText.logo}</span>
+        <span className="app-logo">{t.logo}</span>
         <div className="app-controls">
-          <span className="language-switcher" aria-label={scaffoldText.languageLabel}>
-            Ru / En
-          </span>
+          <div className="language-switcher" role="group" aria-label={t.languageLabel}>
+            <button
+              type="button"
+              className={language === 'ru' ? 'active' : undefined}
+              aria-pressed={language === 'ru'}
+              onClick={() => setLanguage('ru')}
+            >
+              Ru
+            </button>
+            <button
+              type="button"
+              className={language === 'en' ? 'active' : undefined}
+              aria-pressed={language === 'en'}
+              onClick={() => setLanguage('en')}
+            >
+              En
+            </button>
+          </div>
           <button
             className="theme-toggle"
             type="button"
-            aria-label={scaffoldText.themeToggleLabel}
+            aria-label={t.themeToggleLabel}
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           >
             <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -50,13 +66,13 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
       <main className="page-container">
-        <nav className="page-switcher" aria-label={scaffoldText.pageSwitcherLabel}>
+        <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
           <NavLink className="page-switcher-link" to="/visualization">
-            <span>{scaffoldText.visualizationLabel}</span>
+            <span>{t.visualLabel}</span>
             <span className="page-switcher-line" aria-hidden="true" />
           </NavLink>
           <NavLink className="page-switcher-link" to="/theory">
-            <span>{scaffoldText.theoryTitle}</span>
+            <span>{t.theoryLabel}</span>
             <span className="page-switcher-line" aria-hidden="true" />
           </NavLink>
         </nav>
@@ -65,14 +81,14 @@ export function AppShell({ children }: AppShellProps) {
       <footer className="app-footer">
         <div className="footer-zones">
           <div className="footer-author">
-            <span>{scaffoldText.footerAuthor}</span>
-            <a href="#">{scaffoldText.footerTelegram}</a>
-            <a href="#">{scaffoldText.footerGithub}</a>
+            <span>{t.footerAuthor}</span>
+            <a href="#">{t.footerTelegram}</a>
+            <a href="#">{t.footerGithub}</a>
           </div>
           <div className="footer-mark" aria-hidden="true" />
-          <p className="footer-love">{scaffoldText.footerLove}</p>
+          <p className="footer-love">{t.footerLove}</p>
         </div>
-        <p className="footer-note">{scaffoldText.footerNote}</p>
+        <p className="footer-note">{t.footerNote}</p>
       </footer>
     </div>
   )

@@ -1,0 +1,467 @@
+.viz-sections {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.viz-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-block);
+  background: var(--surface);
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Visualization block ---------- */
+
+.viz-block {
+  display: grid;
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+@media (max-width: 1023px) {
+  .viz-block {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvas-panel {
+    order: 2;
+  }
+
+  .steps-panel {
+    order: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .viz-block {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+}
+
+/* ---------- Canvas panel ---------- */
+
+.canvas-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.canvas-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--space-6);
+}
+
+.canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 220px;
+  overflow: hidden;
+  background-color: var(--surface);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.canvas-view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.param-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1 1 280px;
+  max-width: 440px;
+}
+
+.param-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.param-value {
+  min-width: 48px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.param-input {
+  flex: 1 1 120px;
+  max-width: 160px;
+  accent-color: var(--primary);
+}
+
+.help-btn {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 264px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Drawing tools ---------- */
+
+.drawing-tools {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tool-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tool-btn.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.tool-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+/* ---------- Steps panel ---------- */
+
+.steps-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-4);
+  overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+  .steps-panel {
+    max-height: 40vh;
+  }
+}
+
+.steps-start {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.steps-list {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.steps-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.steps-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.step-item {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.step-track {
+  display: flex;
+  flex: 0 0 12px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.step-dot.active {
+  background: var(--primary);
+}
+
+.step-line {
+  width: 1px;
+  min-height: 12px;
+  flex: 1 1 0;
+  background: var(--line);
+}
+
+.step-body {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-bottom: var(--space-4);
+}
+
+.step-title-btn {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.step-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.step-title.passed {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.step-desc {
+  padding-right: var(--space-2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+/* ---------- Code block ---------- */
+
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+}
+
+.code-title,
+.plots-title {
+  margin: 0;
+  font-size: clamp(18px, 1.5vw, 20px);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.code-tabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.code-tab {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.code-tab.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+.code-surface {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 var(--radius-block) var(--radius-block);
+  background: var(--surface);
+}
+
+.code-pre {
+  display: flex;
+  min-width: max-content;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.code-gutter {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 44px;
+  margin: 0;
+  padding: var(--space-4) var(--space-3);
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-muted);
+  text-align: right;
+  list-style: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.code-lines {
+  padding: var(--space-4);
+  white-space: pre;
+}
+
+/* ---------- Plots block ---------- */
+
+.plots-head {
+  padding: var(--space-4) var(--space-6);
+}
+
+.plots-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .plots-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .plots-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.scenario-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-block);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.scenario-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 3;
+}
+
+.scenario-label {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .viz-sections {
+    gap: var(--space-4);
+  }
+
+  .canvas-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .param-control {
+    flex: none;
+    max-width: none;
+    width: 100%;
+  }
+
+  .param-input {
+    width: auto;
+  }
+
+  .help-btn {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+}
