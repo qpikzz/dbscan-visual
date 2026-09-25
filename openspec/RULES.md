@@ -91,4 +91,5 @@ openspec/
 - Before major changes, briefly describe the plan and wait for confirmation.
 - Do not add functionality that is not described in the specs.
 - Do not refactor code outside the scope of the current task.
+- Verification is done with `npm run build` (tsc + vite build). Do not start a background dev server and poll it with curl/Invoke-WebRequest to smoke-test pages: spawning servers in the background hangs the session. Check the code statically and rely on the production build.
 - Keep responses brief and to the point.

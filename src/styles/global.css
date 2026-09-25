@@ -1,4 +1,30 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-grid: var(--grid);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-noise: var(--noise);
+  --color-cluster-1: var(--cluster-1);
+  --color-cluster-2: var(--cluster-2);
+  --color-cluster-3: var(--cluster-3);
+  --color-cluster-4: var(--cluster-4);
+  --color-cluster-5: var(--cluster-5);
+  --color-cluster-6: var(--cluster-6);
+  --radius-block: 12px;
+  --radius-ctl: 8px;
+}
+
 :root {
+  --font-sans: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
   --bg: #f6f8fc;
   --surface: #ffffff;
   --line: #d6ddea;
@@ -8,6 +34,20 @@
   --primary: #6c9bf5;
   --primary-soft: rgba(108, 155, 245, 0.14);
   --noise: #3b4252;
+  --on-primary: #ffffff;
+  --cluster-1: #ef7c7c;
+  --cluster-2: #6c9bf5;
+  --cluster-3: #6fcb9f;
+  --cluster-4: #e8b84a;
+  --cluster-5: #a88beb;
+  --cluster-6: #9aa3b2;
+  --code-comment: var(--text-muted);
+  --code-keyword: var(--cluster-5);
+  --code-string: var(--cluster-3);
+  --code-number: var(--cluster-4);
+  --code-function: var(--cluster-2);
+  --code-class: var(--cluster-1);
+  --code-operator: var(--text-muted);
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
@@ -17,7 +57,7 @@
   --radius-button: 8px;
   --radius-block: 12px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  font-family: Nunito, system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -34,6 +74,13 @@
   --primary: #8db3ff;
   --primary-soft: rgba(141, 179, 255, 0.16);
   --noise: #4e566a;
+  --on-primary: #0f1420;
+  --cluster-1: #f28b8b;
+  --cluster-2: #8db3ff;
+  --cluster-3: #7fd8ae;
+  --cluster-4: #f0c560;
+  --cluster-5: #b8a0f2;
+  --cluster-6: #a9b1bf;
 }
 
 * {
@@ -41,24 +88,20 @@
 }
 
 body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
   color: var(--text);
   background-color: var(--bg);
   background-image: linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 32px 32px;
   transition: color 300ms var(--ease), background-color 300ms var(--ease);
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
 }
 
 button,
 a {
   font: inherit;
-}
-
-button,
-a {
   color: inherit;
 }
 
@@ -75,7 +118,7 @@ a:focus-visible {
 .app-header,
 .page-container,
 .app-footer {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
 }
 
@@ -110,9 +153,25 @@ a:focus-visible {
 .language-switcher {
   display: inline-flex;
   align-items: center;
-  padding: 0 var(--space-3);
+  gap: 4px;
+  padding: 4px;
+}
+
+.language-switcher button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-button);
+  background: transparent;
   color: var(--text-muted);
   font-size: 14px;
+  font-weight: 600;
+}
+
+.language-switcher button.active {
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 .theme-toggle {
@@ -146,6 +205,7 @@ a:focus-visible {
 .page-switcher-link {
   display: flex;
   align-items: center;
+  min-height: 44px;
   gap: var(--space-3);
   color: var(--text-muted);
   text-decoration: none;
@@ -161,30 +221,6 @@ a:focus-visible {
   height: 1px;
   flex: 1;
   background: var(--line);
-}
-
-.page-intro {
-  max-width: 640px;
-  padding: var(--space-8);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-block);
-  background: var(--surface);
-}
-
-.eyebrow {
-  color: var(--text-muted);
-}
-
-.page-intro h1 {
-  margin: var(--space-2) 0 var(--space-4);
-  font-size: clamp(32px, 6vw, 56px);
-  line-height: 1.05;
-}
-
-.page-intro p:last-child {
-  margin: 0;
-  color: var(--text-muted);
-  line-height: 1.5;
 }
 
 .app-footer {
@@ -232,12 +268,14 @@ a:focus-visible {
     padding: var(--space-4) 0;
   }
 
-  .page-container {
-    padding: var(--space-8) 0;
+  .app-header,
+  .page-container,
+  .app-footer {
+    width: calc(100% - 32px);
   }
 
-  .page-intro {
-    padding: var(--space-6);
+  .page-container {
+    padding: var(--space-8) 0;
   }
 
   .footer-zones {
