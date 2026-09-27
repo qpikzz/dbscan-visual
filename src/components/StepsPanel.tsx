@@ -7,17 +7,28 @@ type StepItemProps = {
   index: number
   isActive: boolean
   isLast: boolean
+  clusterCount: number
+  noiseCount: number
   onClick?: () => void
 }
 
-function StepItem({ index, isActive, isLast, onClick }: StepItemProps) {
+function StepItem({
+  index,
+  isActive,
+  isLast,
+  clusterCount,
+  noiseCount,
+  onClick,
+}: StepItemProps) {
   const { t } = useLanguage()
   const { reduced, transition } = useMotionSettings()
   const passed = !isActive
 
   const description =
     index === 9 && t.steps[9].includes('{count}')
-      ? t.steps[9].replace('{count}', '0').replace('{noise}', '0')
+      ? t.steps[9]
+          .replace('{count}', String(clusterCount))
+          .replace('{noise}', String(noiseCount))
       : t.steps[index]
 
   return (
@@ -54,6 +65,8 @@ function StepItem({ index, isActive, isLast, onClick }: StepItemProps) {
 
 type StepsPanelProps = {
   steps?: readonly number[]
+  clusterCount?: number
+  noiseCount?: number
   disabled?: boolean
   onStart?: () => void
   onNext?: () => void
@@ -62,6 +75,8 @@ type StepsPanelProps = {
 
 export function StepsPanel({
   steps = [0],
+  clusterCount = 0,
+  noiseCount = 0,
   disabled = false,
   onStart,
   onNext,
@@ -95,6 +110,8 @@ export function StepsPanel({
             index={index}
             isActive={i === steps.length - 1}
             isLast={i === steps.length - 1}
+            clusterCount={clusterCount}
+            noiseCount={noiseCount}
             onClick={i < steps.length - 1 ? () => onSeekStep?.(index) : undefined}
           />
         ))}
