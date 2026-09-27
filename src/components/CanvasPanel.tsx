@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import type { ScenarioId } from '../data'
+import { SCENARIOS } from '../features/dbscan/scenarios'
+import type { Assignment, RadiusCircle } from '../features/dbscan/types'
 import { CanvasView } from '../features/canvas/CanvasView'
 import { MIN_PTS_RANGE, R_RANGE } from '../features/dbscan/constants'
 import { useLanguage } from '../i18n'
@@ -13,6 +15,8 @@ type CanvasPanelProps = {
   scenario: ScenarioId
   r: number
   minPts: number
+  assignments?: readonly Assignment[]
+  circle?: RadiusCircle | null
   onRChange: (value: number) => void
   onMinPtsChange: (value: number) => void
 }
@@ -21,6 +25,8 @@ export function CanvasPanel({
   scenario,
   r,
   minPts,
+  assignments = [],
+  circle = null,
   onRChange,
   onMinPtsChange,
 }: CanvasPanelProps) {
@@ -54,7 +60,12 @@ export function CanvasPanel({
         />
       </div>
       <div className="canvas-wrap">
-        <CanvasView />
+        <CanvasView
+          points={SCENARIOS[scenario].points}
+          assignments={assignments}
+          circle={circle}
+          panEnabled={activeTool === null}
+        />
         <AnimatePresence>
           {scenario === 'create' && (
             <DrawingTools activeTool={activeTool} onChange={setActiveTool} />

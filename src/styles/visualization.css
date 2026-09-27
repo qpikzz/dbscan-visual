@@ -86,9 +86,7 @@
   min-height: 220px;
   overflow: hidden;
   background-color: var(--surface);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 32px 32px;
+  touch-action: none;
 }
 
 .canvas-view {
@@ -96,6 +94,16 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.canvas-view.is-panning {
+  cursor: grabbing;
+}
+
+.canvas-view.tool-active {
+  cursor: crosshair;
 }
 
 .param-control {
