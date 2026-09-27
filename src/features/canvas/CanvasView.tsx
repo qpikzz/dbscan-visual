@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
+import { POINT_LIMIT } from '../dbscan/constants'
 import type { Assignment, Point, RadiusCircle } from '../dbscan/types'
+import { samplePathSegment } from './drawing'
 
 type CanvasViewProps = {
   points: readonly Point[]
   assignments: readonly Assignment[]
   circle: RadiusCircle | null
-  panEnabled: boolean
+  activeTool: 'draw' | 'erase' | null
+  onPointAdd: (point: Point) => void
+  onPointsErase: (points: readonly Point[]) => void
+  onPointLimitReached: () => void
 }
 
 type CanvasSize = {
@@ -29,6 +34,9 @@ const GRID_CELL_SIZE = 32
 const MIN_ZOOM = 0.25
 const MAX_ZOOM = 8
 const POINT_RADIUS = 0.14
+const DRAW_SPACING = 0.45
+const ERASE_SPACING = 0.14
+const ERASE_RADIUS = 0.3
 
 function getThemeColor(element: HTMLElement, token: string): string {
   return getComputedStyle(element).getPropertyValue(token).trim()
@@ -51,13 +59,39 @@ export function CanvasView({
   points,
   assignments,
   circle,
-  panEnabled,
+  activeTool,
+  onPointAdd,
+  onPointsErase,
+  onPointLimitReached,
 }: CanvasViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const transformRef = useRef<ViewTransform>({ zoom: 1, x: 0, y: 0 })
+  const pointsRef = useRef(points)
+  const pointCountRef = useRef(points.length)
+  const limitToastShownRef = useRef(false)
+  const interactionRef = useRef({
+    activeTool,
+    onPointAdd,
+    onPointsErase,
+    onPointLimitReached,
+  })
   const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0, pixelRatio: 1 })
   const [revision, setRevision] = useState(0)
   const [isPanning, setIsPanning] = useState(false)
+
+  if (pointsRef.current !== points) {
+    pointsRef.current = points
+    pointCountRef.current = points.length
+    if (points.length < POINT_LIMIT) {
+      limitToastShownRef.current = false
+    }
+  }
+  interactionRef.current = {
+    activeTool,
+    onPointAdd,
+    onPointsErase,
+    onPointLimitReached,
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -180,10 +214,44 @@ export function CanvasView({
     const pointers = new Map<number, Position>()
     let previousPan: Position | null = null
     let previousPinch: ReturnType<typeof getPinchState> = null
+    let previousDrawPosition: Point | null = null
+    let previousErasePosition: Point | null = null
+    let drawRemainder = 0
+    let eraseRemainder = 0
 
     const localPosition = (event: PointerEvent | WheelEvent): Position => {
       const bounds = canvas.getBoundingClientRect()
       return { x: event.clientX - bounds.left, y: event.clientY - bounds.top }
+    }
+
+    const worldPosition = (position: Position): Point => {
+      const view = transformRef.current
+      const scale = GRID_CELL_SIZE * view.zoom
+      return {
+        x: (position.x - size.width / 2 - view.x) / scale,
+        y: (position.y - size.height / 2 - view.y) / scale,
+      }
+    }
+
+    const addPoint = (point: Point) => {
+      if (pointCountRef.current >= POINT_LIMIT) {
+        if (!limitToastShownRef.current) {
+          limitToastShownRef.current = true
+          interactionRef.current.onPointLimitReached()
+        }
+        return
+      }
+      pointCountRef.current += 1
+      interactionRef.current.onPointAdd(point)
+    }
+
+    const eraseAt = (position: Point) => {
+      const erasedPoints = pointsRef.current.filter(
+        (point) => Math.hypot(point.x - position.x, point.y - position.y) <= ERASE_RADIUS,
+      )
+      if (erasedPoints.length > 0) {
+        interactionRef.current.onPointsErase(erasedPoints)
+      }
     }
 
     const zoomAt = (factor: number, anchor: Position) => {
@@ -205,6 +273,9 @@ export function CanvasView({
     }
 
     const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) {
+        return
+      }
       const position = localPosition(event)
       pointers.set(event.pointerId, position)
       canvas.setPointerCapture(event.pointerId)
@@ -212,7 +283,20 @@ export function CanvasView({
         previousPinch = getPinchState(pointers)
         previousPan = null
         setIsPanning(false)
-      } else if (panEnabled) {
+        return
+      }
+
+      const tool = interactionRef.current.activeTool
+      const point = worldPosition(position)
+      if (tool === 'draw') {
+        addPoint(point)
+        previousDrawPosition = point
+        drawRemainder = 0
+      } else if (tool === 'erase') {
+        eraseAt(point)
+        previousErasePosition = point
+        eraseRemainder = 0
+      } else {
         previousPan = position
         setIsPanning(true)
       }
@@ -239,7 +323,39 @@ export function CanvasView({
         return
       }
 
-      if (panEnabled && previousPan !== null) {
+      const tool = interactionRef.current.activeTool
+      const point = worldPosition(position)
+      if (tool === 'draw') {
+        if (previousDrawPosition === null) {
+          addPoint(point)
+          drawRemainder = 0
+        } else {
+          const samples = samplePathSegment(
+            previousDrawPosition,
+            point,
+            DRAW_SPACING,
+            drawRemainder,
+          )
+          samples.points.forEach(addPoint)
+          drawRemainder = samples.remainder
+        }
+        previousDrawPosition = point
+      } else if (tool === 'erase') {
+        if (previousErasePosition === null) {
+          eraseAt(point)
+          eraseRemainder = 0
+        } else {
+          const samples = samplePathSegment(
+            previousErasePosition,
+            point,
+            ERASE_SPACING,
+            eraseRemainder,
+          )
+          samples.points.forEach(eraseAt)
+          eraseRemainder = samples.remainder
+        }
+        previousErasePosition = point
+      } else if (previousPan !== null) {
         transformRef.current.x += position.x - previousPan.x
         transformRef.current.y += position.y - previousPan.y
         previousPan = position
@@ -251,8 +367,20 @@ export function CanvasView({
       pointers.delete(event.pointerId)
       previousPinch = null
       previousPan = null
-      if (pointers.size === 1 && panEnabled) {
-        previousPan = [...pointers.values()][0] ?? null
+      const remainingPosition = [...pointers.values()][0]
+      if (remainingPosition !== undefined && pointers.size === 1) {
+        if (interactionRef.current.activeTool === null) {
+          previousPan = remainingPosition
+        } else {
+          const remainingPoint = worldPosition(remainingPosition)
+          previousDrawPosition = remainingPoint
+          previousErasePosition = remainingPoint
+        }
+      } else {
+        previousDrawPosition = null
+        previousErasePosition = null
+        drawRemainder = 0
+        eraseRemainder = 0
       }
       setIsPanning(false)
     }
@@ -272,12 +400,12 @@ export function CanvasView({
       canvas.removeEventListener('pointercancel', onPointerEnd)
       canvas.removeEventListener('lostpointercapture', onPointerEnd)
     }
-  }, [panEnabled, size.height, size.width])
+  }, [size.height, size.width])
 
   return (
     <canvas
       ref={canvasRef}
-      className={`canvas-view${panEnabled ? '' : ' tool-active'}${isPanning ? ' is-panning' : ''}`}
+      className={`canvas-view${activeTool === null ? '' : ' tool-active'}${isPanning ? ' is-panning' : ''}`}
       aria-hidden="true"
     />
   )

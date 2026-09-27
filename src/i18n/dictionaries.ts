@@ -31,6 +31,7 @@ export const ru = {
   nextButton: 'Далее',
   drawToolLabel: 'Рисование',
   eraseToolLabel: 'Стирание',
+  pointLimitReached: 'Достигнут лимит точек: 1024',
   stepTitle: (n: number) => `Шаг ${n}`,
   steps: [
     'Нажмите на кнопку выше.',
@@ -82,6 +83,7 @@ export const en: Dictionary = {
   nextButton: 'Next',
   drawToolLabel: 'Draw',
   eraseToolLabel: 'Erase',
+  pointLimitReached: 'Point limit reached: 1024',
   stepTitle: (n: number) => `Step ${n}`,
   steps: [
     'Press the button above.',
