@@ -7,7 +7,7 @@ Design specification for the "Visualization" page. The "Theory" page is out of s
 - Minimalist, modern, flat vector style.
 - Thin outlines (1px), moderate corner radius, no heavy shadows.
 - No raster images. Graphics are SVG or Canvas only.
-- Gradients are not used. Fills are solid.
+- Fills are solid except for the subtle page-background gradient defined in section 4.
 - Pastel palette with blue as the base hue, no dominant accent.
 - References: 2026.hackjunction.com, Google Developer Community, Ollama, Claude.
 
@@ -20,6 +20,7 @@ All colors, radii, and spacing are defined as CSS variables and switched between
 | Token | Light | Dark |
 |---|---|---|
 | `--bg` | `#F6F8FC` | `#0F1420` |
+| `--bg-gradient` | `linear-gradient(135deg, #F6F8FC 0%, #EEF6F0 52%, #F6F8FC 100%)` | `linear-gradient(135deg, #0F1420 0%, #14201C 52%, #0F1420 100%)` |
 | `--surface` | `#FFFFFF` | `#151B2B` |
 | `--line` | `#D6DDEA` | `#2A3349` |
 | `--grid` | `rgba(80, 110, 170, 0.08)` | `rgba(140, 170, 230, 0.07)` |
@@ -63,9 +64,9 @@ Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use
 
 ## 4. Background
 
-- The page background is `--bg` with a faint square grid drawn with `--grid`, cell size 32px, line width 1px.
-- Blocks use `--surface` with a 1px `--line` border, so they separate from the grid background.
-- The page background grid is decorative and static; it does not animate.
+- The page background uses the subtle, theme-specific `--bg-gradient`; it is an organic soft-color gradient, not a flat fill or grid.
+- `--grid` is reserved for the Canvas panel only, where it marks Canvas units as described in section 5.3. It is not used on the page background, Code block, Plots cards, Steps panel, or footer.
+- Blocks use `--surface` with a 1px `--line` border.
 
 ## 5. Page Layout (Desktop)
 
@@ -81,7 +82,7 @@ Vertical order of the page:
 ### 5.1. Header
 
 - Not fixed: it scrolls away with the page.
-- Left: text logo `# DB SCAN`, Nunito 600, 24-28px.
+- Left: the site title `DB SCAN` as a semantic `<h1>`, Nunito 600, 24-28px. The `#` character is not part of the title text.
 - Right: language switch (`Ru` / `En`) and theme toggle (sun icon in light theme, moon icon in dark theme).
 - Language switch is a compact text button; the theme toggle is an icon button. Both use a 1px outline and 8px radius.
 - Icons are thin-line SVG.
@@ -89,6 +90,7 @@ Vertical order of the page:
 ### 5.2. Page Switcher
 
 - A vertical switcher with two sections: "Visual" and "Theory" (RU: "Визуализация" and "Теория").
+- The switcher occupies its own full-width row directly below the header and does not overlap the header controls.
 - Each section has a title row: the title on the left and a thin line extending to the right edge.
 - Only one section is expanded at a time. Expanding a section collapses the other with a height and opacity transition; the collapsed section leaves only its title row.
 - The "Visual" section is expanded by default.
@@ -105,11 +107,12 @@ Both are blocks with the standard border and radius, equal height.
 #### Canvas Panel
 
 - The panel contains the Canvas with a control row on top. No panel title is displayed.
-- Control row: two sliders, `R` and `minPts`, aligned to the right. Each slider has a label, the current value displayed next to it, and a "?" icon button.
+- Control row: two sliders, `R` and `minPts`, aligned to the right. Each slider has a label, the current value displayed next to it, a "?" icon button, and an outlined reset button (`Reset` / `Сбросить`) that restores that parameter to the selected scenario's optimal value. Reset buttons use a thin outline, 8px radius, and no hover micro-interactions.
 - The "?" icon opens a small popover with a short explanation. Text (EN): "R is the radius within which points are considered neighbors. minPts is the minimum number of points nearby that counts as a cluster." Text (RU): "R — радиус, в пределах которого точки считаются соседями. minPts — минимальное количество точек рядом, которое считается кластером."
 - The popover is a bordered `--surface` block with 8px radius, appears with a fade and slide animation, and closes on outside click or on a second click of the icon.
 - The Canvas fills the panel. Aspect ratio: 4:3 on desktop.
 - Canvas background is `--surface` with a grid whose cell size equals 1 unit of R, drawn with `--grid`. The grid scales together with the Canvas zoom.
+- In the "Create" scenario, an outlined "Clear canvas" button (`Очистить холст`) appears alongside the Draw and Erase buttons. It uses a thin outline, 8px radius, and no hover micro-interactions.
 - Points are filled circles; their color is taken from the cluster palette, `--text-muted` for unassigned points, or `--noise` for noise points.
 - The R radius around the currently processed point is drawn as a thin circle outline in `--primary` with a `--primary-soft` fill.
 - The cursor is a grab cursor in pan mode and a crosshair in drawing mode.
@@ -117,10 +120,11 @@ Both are blocks with the standard border and radius, equal height.
 #### Drawing Tools
 
 - Visible only when the "Create" scenario is selected.
-- Two icon buttons ("Draw" and "Erase") in the bottom right corner of the Canvas, over the Canvas.
-- They appear with a fade and slide-up animation and disappear the same way when another scenario is selected.
+- Draw and Erase icon buttons, plus the "Clear canvas" button, are in the bottom right corner of the Canvas, over the Canvas.
+- The Draw and Erase buttons appear with a fade and slide-up animation and disappear the same way when another scenario is selected.
 - The active tool is marked with `--primary-soft` fill and `--primary` outline.
 - When a tool is active, pointer input draws or erases. When no tool is active, pointer input pans the Canvas.
+- "Clear canvas" removes every point and resets the algorithm to step 0.
 
 #### Error Notification
 
@@ -133,6 +137,7 @@ Both are blocks with the standard border and radius, equal height.
 - Top: a primary button. Label "Start" (RU: "Начать") before the first step; after the first press its label becomes "Next" (RU: "Далее").
 - Primary button: `--primary` fill, white text on light theme and `--bg` text on dark theme, 8px radius, 600 weight.
 - Below the button: a vertical timeline of steps. Each step has a dot on a thin vertical line, a title (`Step 0`, `Step 1`, ...), and a description.
+- Each dot is vertically centered against its step title's line-height, placing the dot and title on the same horizontal line.
 - The active step is the last one in the list; passed steps are located above it. Future steps are not shown.
 - Active step: `--primary` dot, `--text` title, description expanded and visible.
 - Passed steps: dot filled with `--line` color, `--text-muted` title, description collapsed.
@@ -143,13 +148,14 @@ Both are blocks with the standard border and radius, equal height.
 
 ### 5.4. Code Block
 
-- Block title: "Code" (RU: "Код").
-- Tabs: Python, JavaScript, C++. Tabs are bordered buttons with 8px radius; the active tab has `--primary-soft` fill and `--primary` outline.
-- Below the tabs: a code area with line numbers, Roboto Mono, in a bordered block with `--surface` background.
-- Line numbers are `--text-muted` and are not selectable. Code text is selectable and copyable.
-- Syntax highlighting uses colors derived from the cluster palette and `--text-muted`, defined per theme.
-- Switching tabs fades the code content out and in.
-- Horizontal overflow scrolls inside the code area.
+Two-column layout on desktop: left column is narrow and fixed-width, right column fills the remaining width.
+Left column: block title "Code" (RU: "Код") at the top, followed by a vertical stack of tab buttons: Python, JavaScript, C++. Tabs are bordered buttons with 8px radius, full width of the left column, stacked with a small gap. The active tab has --primary-soft fill and --primary outline; inactive tabs use the standard --surface background and --line border.
+Right column: a code area with line numbers, Roboto Mono, in a bordered block with --surface background, filling the available height of the block.
+Line numbers are --text-muted and are not selectable. Code text is selectable and copyable.
+Syntax highlighting uses colors derived from the cluster palette and --text-muted, defined per theme.
+Switching tabs fades the code content out and in.
+Horizontal overflow scrolls inside the code area.
+Below tablet width (DESIGN.md section 6 breakpoints), the layout switches to a single column: the tab buttons become a horizontal row above the code area instead of a vertical stack in a side column, keeping the same button styling.
 
 ### 5.5. Plots Block
 

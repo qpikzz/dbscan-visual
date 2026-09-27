@@ -9,7 +9,8 @@ Functional specification for the "Visualization" page.
 | R | Neighbor radius, in Canvas units | 0.1 to 20 | 0.1 |
 | minPts | Minimum number of points in a group for it to count as a cluster | 0 to 100 | 1 |
 
-- Both parameters are controlled by sliders in the Canvas panel, each with a "?" popover (see DESIGN.md).
+- Both parameters are controlled by sliders in the Canvas panel, each with a "?" popover (see DESIGN.md) and a reset button. The reset button restores that parameter to the optimal value set for the currently selected scenario.
+- Resetting either parameter changes its value when needed and follows the normal reset-to-step-0 rule in section 7.
 - One Canvas unit equals one grid cell at zoom level 1.
 - Two points are neighbors if the Euclidean distance between them is strictly less than R.
 - Each prepared scenario defines its own optimal R (and minPts). Selecting a scenario sets these values. The values are chosen when the scenario data is created.
@@ -28,6 +29,7 @@ Functional specification for the "Visualization" page.
 - When the "Draw" tool is active, a click places a point; holding the pointer places points periodically along the pointer path.
 - When the "Erase" tool is active, points under the pointer are removed.
 - When no tool is active, the pointer pans the Canvas.
+- In the "Create" scenario, a "Clear canvas" control removes all points. Clearing the Canvas follows the reset-to-step-0 rule in section 7.
 
 ### 2.3. Point Limit
 
