@@ -87,7 +87,8 @@ openspec/
 ## 9. Workflow
 
 - Work in small steps; each step ends with the project in a working state.
-- For multi-step tasks, create a todo list before implementation, update item statuses as work progresses, and complete all items before finishing. Single-step tasks do not require a todo list.
+- For every task, create a note in `openspec/tasks/` before implementation. The filename format is `T[day]-[taskNumber]-[description].md`: `[day]` is the day of the month, `[taskNumber]` is the task's sequential number for that day, and `[description]` is a concise description of up to five words.
+- Each task note must contain a detailed work plan describing how the agent will solve the task, a todo list, and a final report. Update todo statuses as work progresses and fill in the final report before finishing the task.
 - Before major changes, briefly describe the plan and wait for confirmation.
 - Do not add functionality that is not described in the specs.
 - Do not refactor code outside the scope of the current task.
