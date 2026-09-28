@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { POINT_LIMIT } from '../dbscan/constants'
 import type { Assignment, Point, RadiusCircle } from '../dbscan/types'
+import { useMotionSettings } from '../../hooks/useMotionSettings'
 import { samplePathSegment } from './drawing'
 
 type CanvasViewProps = {
@@ -30,6 +31,25 @@ type Position = {
   y: number
 }
 
+type CanvasFrameSnapshot = {
+  assignments: readonly Assignment[]
+  circle: RadiusCircle | null
+  points: readonly Point[]
+}
+
+type CircleVisual = {
+  x: number
+  y: number
+  radius: number
+  opacity: number
+}
+
+type FrameTransition = {
+  pointColors: readonly string[]
+  circles: readonly CircleVisual[]
+  startTime: number
+}
+
 const GRID_CELL_SIZE = 32
 const MIN_ZOOM = 0.25
 const MAX_ZOOM = 8
@@ -37,6 +57,41 @@ const POINT_RADIUS = 0.14
 const DRAW_SPACING = 0.45
 const ERASE_SPACING = 0.14
 const ERASE_RADIUS = 0.3
+
+function easeStepProgress(progress: number): number {
+  let lowerBound = 0
+  let upperBound = 1
+
+  for (let iteration = 0; iteration < 8; iteration += 1) {
+    const parameter = (lowerBound + upperBound) / 2
+    const inverse = 1 - parameter
+    const xPosition =
+      3 * inverse ** 2 * parameter * 0.22 +
+      3 * inverse * parameter ** 2 * 0.36 +
+      parameter ** 3
+    if (xPosition < progress) {
+      lowerBound = parameter
+    } else {
+      upperBound = parameter
+    }
+  }
+
+  const parameter = (lowerBound + upperBound) / 2
+  return 3 * parameter * (1 - parameter) + parameter ** 3
+}
+
+function mixHexColor(fromColor: string, toColor: string, progress: number): string {
+  const fromHex = fromColor.slice(1)
+  const toHex = toColor.slice(1)
+  const channels = [0, 2, 4].map((offset) => {
+    const fromChannel = Number.parseInt(fromHex.slice(offset, offset + 2), 16)
+    const toChannel = Number.parseInt(toHex.slice(offset, offset + 2), 16)
+    return Math.round(fromChannel + (toChannel - fromChannel) * progress)
+      .toString(16)
+      .padStart(2, '0')
+  })
+  return `#${channels.join('')}`
+}
 
 function getThemeColor(element: HTMLElement, token: string): string {
   return getComputedStyle(element).getPropertyValue(token).trim()
@@ -69,6 +124,11 @@ export function CanvasView({
   const pointsRef = useRef(points)
   const pointCountRef = useRef(points.length)
   const limitToastShownRef = useRef(false)
+  const previousFrameRef = useRef<CanvasFrameSnapshot | null>(null)
+  const transitionRef = useRef<FrameTransition | null>(null)
+  const renderedPointColorsRef = useRef<string[]>([])
+  const renderedCirclesRef = useRef<CircleVisual[]>([])
+  const animationFrameRef = useRef<number | null>(null)
   const interactionRef = useRef({
     activeTool,
     onPointAdd,
@@ -78,6 +138,7 @@ export function CanvasView({
   const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0, pixelRatio: 1 })
   const [revision, setRevision] = useState(0)
   const [isPanning, setIsPanning] = useState(false)
+  const { reduced } = useMotionSettings()
 
   if (pointsRef.current !== points) {
     pointsRef.current = points
@@ -137,8 +198,32 @@ export function CanvasView({
       return
     }
 
-    const transform = transformRef.current
-    const scale = GRID_CELL_SIZE * transform.zoom
+    const previousFrame = previousFrameRef.current
+    const pointsChanged = previousFrame !== null && previousFrame.points !== points
+    const frameChanged = previousFrame !== null &&
+      (previousFrame.assignments !== assignments || previousFrame.circle !== circle)
+
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+
+    if (frameChanged && !pointsChanged && previousFrame !== null) {
+      transitionRef.current = {
+        pointColors: [...renderedPointColorsRef.current],
+        circles: [...renderedCirclesRef.current],
+        startTime: performance.now(),
+      }
+    } else if (pointsChanged) {
+      transitionRef.current = null
+      renderedPointColorsRef.current = []
+      renderedCirclesRef.current = []
+    }
+
+    previousFrameRef.current = { assignments, circle, points }
+
+    const transition = transitionRef.current
+    const duration = reduced ? 100 : 600
     const colors = {
       surface: getThemeColor(canvas, '--surface'),
       grid: getThemeColor(canvas, '--grid'),
@@ -150,60 +235,169 @@ export function CanvasView({
         getThemeColor(canvas, `--cluster-${index + 1}`),
       ),
     }
-
-    context.setTransform(size.pixelRatio, 0, 0, size.pixelRatio, 0, 0)
-    context.clearRect(0, 0, size.width, size.height)
-    context.fillStyle = colors.surface
-    context.fillRect(0, 0, size.width, size.height)
-
-    context.save()
-    context.translate(size.width / 2 + transform.x, size.height / 2 + transform.y)
-    context.scale(scale, scale)
-
-    const left = (-size.width / 2 - transform.x) / scale
-    const right = (size.width / 2 - transform.x) / scale
-    const top = (-size.height / 2 - transform.y) / scale
-    const bottom = (size.height / 2 - transform.y) / scale
-    context.beginPath()
-    context.strokeStyle = colors.grid
-    context.lineWidth = 1 / scale
-    for (let x = Math.floor(left); x <= Math.ceil(right); x += 1) {
-      context.moveTo(x, top)
-      context.lineTo(x, bottom)
+    const assignmentColor = (assignment: Assignment | undefined) => {
+      if (assignment?.kind === 'noise') return colors.noise
+      if (assignment?.kind === 'cluster') {
+        return colors.clusters[assignment.clusterId % colors.clusters.length] ?? colors.muted
+      }
+      return colors.muted
     }
-    for (let y = Math.floor(top); y <= Math.ceil(bottom); y += 1) {
-      context.moveTo(left, y)
-      context.lineTo(right, y)
-    }
-    context.stroke()
+    const targetColors = points.map((_, index) =>
+      assignmentColor(assignments[index]),
+    )
+    const fromColors = transition?.pointColors ?? targetColors
+    const targetCircle = circle === null ? null : points[circle.pointIndex]
+    const targetCircleVisual =
+      circle !== null && targetCircle !== null && targetCircle !== undefined
+        ? { x: targetCircle.x, y: targetCircle.y, radius: circle.radius, opacity: 1 }
+        : null
 
-    const center = circle === null ? undefined : points[circle.pointIndex]
-    if (center !== undefined && circle !== null) {
+    const drawCircle = (
+      targetCircle: CircleVisual | null,
+      opacity: number,
+    ) => {
+      if (targetCircle === null || opacity <= 0) return
+      const visual = { ...targetCircle, opacity }
+      renderedCirclesRef.current.push(visual)
+
+      context.save()
+      context.globalAlpha = opacity
       context.beginPath()
-      context.arc(center.x, center.y, circle.radius, 0, Math.PI * 2)
+      context.arc(
+        visual.x,
+        visual.y,
+        visual.radius,
+        0,
+        Math.PI * 2,
+      )
       context.fillStyle = colors.primarySoft
       context.fill()
       context.strokeStyle = colors.primary
-      context.lineWidth = 1.5 / scale
+      context.lineWidth = 1.5 / (GRID_CELL_SIZE * transformRef.current.zoom)
       context.stroke()
+      context.restore()
     }
 
-    points.forEach((point, index) => {
-      const assignment = assignments[index]
-      let color = colors.muted
-      if (assignment?.kind === 'noise') {
-        color = colors.noise
-      } else if (assignment?.kind === 'cluster') {
-        color = colors.clusters[assignment.clusterId % colors.clusters.length] ?? colors.muted
-      }
-      context.beginPath()
-      context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2)
-      context.fillStyle = color
-      context.fill()
-    })
+    const draw = (progress: number) => {
+      const transform = transformRef.current
+      const scale = GRID_CELL_SIZE * transform.zoom
 
-    context.restore()
-  }, [assignments, circle, points, revision, size])
+      context.setTransform(size.pixelRatio, 0, 0, size.pixelRatio, 0, 0)
+      context.clearRect(0, 0, size.width, size.height)
+      context.fillStyle = colors.surface
+      context.fillRect(0, 0, size.width, size.height)
+
+      context.save()
+      context.translate(size.width / 2 + transform.x, size.height / 2 + transform.y)
+      context.scale(scale, scale)
+
+      const left = (-size.width / 2 - transform.x) / scale
+      const right = (size.width / 2 - transform.x) / scale
+      const top = (-size.height / 2 - transform.y) / scale
+      const bottom = (size.height / 2 - transform.y) / scale
+      context.beginPath()
+      context.strokeStyle = colors.grid
+      context.lineWidth = 1 / scale
+      for (let x = Math.floor(left); x <= Math.ceil(right); x += 1) {
+        context.moveTo(x, top)
+        context.lineTo(x, bottom)
+      }
+      for (let y = Math.floor(top); y <= Math.ceil(bottom); y += 1) {
+        context.moveTo(left, y)
+        context.lineTo(right, y)
+      }
+      context.stroke()
+
+      renderedCirclesRef.current = []
+      if (transition === null) {
+        drawCircle(targetCircleVisual, 1)
+      } else if (
+        reduced &&
+        transition.circles.length === 1 &&
+        targetCircleVisual !== null &&
+        transition.circles[0]?.x === targetCircleVisual.x &&
+        transition.circles[0]?.y === targetCircleVisual.y &&
+        transition.circles[0]?.radius === targetCircleVisual.radius
+      ) {
+        const previousCircle = transition.circles[0]
+        if (previousCircle !== undefined) {
+          drawCircle(
+            targetCircleVisual,
+            previousCircle.opacity + (1 - previousCircle.opacity) * progress,
+          )
+        }
+      } else if (reduced) {
+        transition.circles.forEach((previousCircle) =>
+          drawCircle(previousCircle, previousCircle.opacity * (1 - progress)),
+        )
+        drawCircle(targetCircleVisual, progress)
+      } else if (transition.circles.length === 1 && targetCircleVisual !== null) {
+        const fromCircle = transition.circles[0]
+        if (fromCircle !== undefined) {
+          drawCircle(
+            {
+              x: fromCircle.x + (targetCircleVisual.x - fromCircle.x) * progress,
+              y: fromCircle.y + (targetCircleVisual.y - fromCircle.y) * progress,
+              radius:
+                fromCircle.radius + (targetCircleVisual.radius - fromCircle.radius) * progress,
+              opacity: 1,
+            },
+            fromCircle.opacity + (1 - fromCircle.opacity) * progress,
+          )
+        }
+      } else {
+        transition.circles.forEach((previousCircle) =>
+          drawCircle(previousCircle, previousCircle.opacity * (1 - progress)),
+        )
+        drawCircle(targetCircleVisual, progress)
+      }
+
+      points.forEach((point, index) => {
+        const fromColor = fromColors[index] ?? colors.muted
+        const toColor = targetColors[index] ?? colors.muted
+        const color = transition === null
+          ? toColor
+          : mixHexColor(fromColor, toColor, progress)
+        renderedPointColorsRef.current[index] = color
+        context.beginPath()
+        context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2)
+        context.fillStyle = color
+        context.fill()
+      })
+
+      context.restore()
+    }
+
+    if (transition === null) {
+      draw(1)
+      return
+    }
+
+    const animate = (timestamp: number) => {
+      const elapsed = Math.min((timestamp - transition.startTime) / duration, 1)
+      draw(easeStepProgress(elapsed))
+      if (elapsed < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+      } else {
+        animationFrameRef.current = null
+        transitionRef.current = null
+      }
+    }
+    const elapsed = Math.min((performance.now() - transition.startTime) / duration, 1)
+    draw(easeStepProgress(elapsed))
+    if (elapsed < 1) {
+      animationFrameRef.current = requestAnimationFrame(animate)
+    } else {
+      transitionRef.current = null
+    }
+
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
+      }
+    }
+  }, [assignments, circle, points, reduced, revision, size])
 
   useEffect(() => {
     const canvas = canvasRef.current

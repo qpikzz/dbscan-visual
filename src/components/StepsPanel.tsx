@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
 import { useMotionSettings } from '../hooks/useMotionSettings'
 
@@ -21,7 +21,7 @@ function StepItem({
   onClick,
 }: StepItemProps) {
   const { t } = useLanguage()
-  const { reduced, transition } = useMotionSettings()
+  const { reduced, fadeSlide, transition } = useMotionSettings()
   const passed = !isActive
 
   const description =
@@ -32,7 +32,11 @@ function StepItem({
       : t.steps[index]
 
   return (
-    <li className="step-item">
+    <motion.li
+      className="step-item"
+      {...fadeSlide(10)}
+      transition={transition(0.3)}
+    >
       <div className="step-track">
         <span className={isActive ? 'step-dot active' : 'step-dot'} />
         {!isLast && <span className="step-line" />}
@@ -48,18 +52,22 @@ function StepItem({
             {t.stepTitle(index)}
           </span>
         </button>
-        {isActive && (
-          <motion.div
-            className="step-desc"
-            initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
-            transition={transition(0.3)}
-          >
-            {description}
-          </motion.div>
-        )}
+        <AnimatePresence initial={false}>
+          {isActive && (
+            <motion.div
+              key={`step-description-${index}`}
+              className="step-desc"
+              initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+              animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
+              exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+              transition={transition(0.3)}
+            >
+              {description}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </li>
+    </motion.li>
   )
 }
 
@@ -104,17 +112,19 @@ export function StepsPanel({
         {isFirstRun ? t.startButton : t.nextButton}
       </button>
       <ol className="steps-list" ref={listRef}>
-        {steps.map((index, i) => (
-          <StepItem
-            key={index}
-            index={index}
-            isActive={i === steps.length - 1}
-            isLast={i === steps.length - 1}
-            clusterCount={clusterCount}
-            noiseCount={noiseCount}
-            onClick={i < steps.length - 1 ? () => onSeekStep?.(index) : undefined}
-          />
-        ))}
+        <AnimatePresence initial={false}>
+          {steps.map((index, i) => (
+            <StepItem
+              key={index}
+              index={index}
+              isActive={i === steps.length - 1}
+              isLast={i === steps.length - 1}
+              clusterCount={clusterCount}
+              noiseCount={noiseCount}
+              onClick={i < steps.length - 1 ? () => onSeekStep?.(index) : undefined}
+            />
+          ))}
+        </AnimatePresence>
       </ol>
     </aside>
   )
