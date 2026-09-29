@@ -178,6 +178,12 @@ Below tablet width (DESIGN.md section 6 breakpoints), the layout switches to a s
 - Link URLs are supplied later; the links exist as placeholders until then.
 - A thin `--line` separator sits above the footer.
 
+### 5.7. Theory Page
+
+- The Theory page starts with a bordered, immediately visible table of contents linking to each section; the reading column stays narrow and single-column at all breakpoints.
+- Each main content section appears once on scroll using the shared Reveal animation. The pseudocode blocks reuse the Code block's line numbers, Roboto Mono font, and theme-based syntax colors.
+- The page explains the simplified variant used by the visualization and clearly distinguishes it from classic DBSCAN. Reduced-motion preferences disable movement and use instant table-of-contents navigation.
+
 ## 6. Responsive Layout
 
 Breakpoints: mobile below 768px, tablet 768-1023px, desktop 1024px and above.

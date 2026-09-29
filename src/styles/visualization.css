@@ -499,6 +499,273 @@
   }
 }
 
+/* ---------- Theory page ---------- */
+
+.theory-page {
+  display: grid;
+  max-width: 880px;
+  gap: var(--space-6);
+  margin: 0 auto;
+}
+
+.theory-toc {
+  padding: var(--space-4);
+}
+
+.theory-toc h2,
+.theory-card h2,
+.theory-intro h1 {
+  margin: 0 0 var(--space-3);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.theory-toc ol {
+  display: grid;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding-left: var(--space-6);
+}
+
+.theory-toc a {
+  color: var(--text);
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+
+.theory-content {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.theory-intro {
+  padding: var(--space-4) 0;
+}
+
+.theory-eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.theory-intro h1 {
+  font-size: 28px;
+}
+
+.theory-intro > p:last-child,
+.theory-card p {
+  margin: 0 0 var(--space-3);
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.theory-intro > p:last-child {
+  max-width: 680px;
+  margin-bottom: 0;
+}
+
+.theory-card {
+  min-width: 0;
+  padding: var(--space-6);
+  scroll-margin-top: var(--space-6);
+}
+
+.theory-card > :last-child,
+.theory-parameter > :last-child {
+  margin-bottom: 0;
+}
+
+.theory-card h3 {
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.theory-callout {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius-button) var(--radius-button) 0;
+  background: var(--primary-soft);
+}
+
+.theory-callout p {
+  margin: 0;
+  color: var(--text);
+}
+
+.theory-bullet-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-6);
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.theory-parameter-grid,
+.theory-tradeoff-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.theory-parameter + .theory-parameter,
+.theory-tradeoff-grid > section + section {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.theory-example {
+  padding: var(--space-3);
+  border-radius: var(--radius-button);
+  background: var(--primary-soft);
+  color: var(--text) !important;
+}
+
+.theory-steps {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-6);
+  padding-left: var(--space-6);
+}
+
+.theory-steps li {
+  padding-left: var(--space-2);
+  color: var(--text-muted);
+}
+
+.theory-steps h3 {
+  margin-bottom: var(--space-2);
+}
+
+.theory-steps p {
+  margin: 0;
+}
+
+.theory-pseudocode {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.theory-code {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+}
+
+.theory-code figcaption {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.theory-code .code-pre {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 13px;
+}
+
+.theory-code .code-lines {
+  min-width: max-content;
+}
+
+.theory-point-types,
+.theory-summary dl {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+}
+
+.theory-point-types > div,
+.theory-summary dl > div {
+  display: grid;
+  gap: var(--space-2) var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.theory-point-types dt,
+.theory-summary dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.theory-point-types dd,
+.theory-summary dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.theory-tradeoff-grid section {
+  min-width: 0;
+}
+
+.theory-summary {
+  border-color: var(--primary);
+}
+
+@media (min-width: 1024px) {
+  .theory-toc {
+    padding: var(--space-6);
+  }
+
+  .theory-toc ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theory-parameter-grid,
+  .theory-tradeoff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theory-parameter + .theory-parameter,
+  .theory-tradeoff-grid > section + section {
+    padding-top: 0;
+    padding-left: var(--space-6);
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .theory-point-types > div,
+  .theory-summary dl > div {
+    grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .theory-page,
+  .theory-content {
+    gap: var(--space-4);
+  }
+
+  .theory-card {
+    padding: var(--space-4);
+  }
+
+  .theory-intro h1 {
+    font-size: 24px;
+  }
+
+  .theory-code .code-pre {
+    font-size: 12px;
+  }
+}
+
 /* ---------- Plots block ---------- */
 
 .plots-head {
