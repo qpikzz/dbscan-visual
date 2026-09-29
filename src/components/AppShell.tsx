@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { Reveal } from './Reveal'
 
 type Theme = 'light' | 'dark'
 
@@ -79,18 +80,24 @@ export function AppShell({ children }: AppShellProps) {
         </nav>
         {children}
       </main>
-      <footer className="app-footer">
-        <div className="footer-zones">
-          <div className="footer-author">
-            <span>{t.footerAuthor}</span>
-            <a href="#">{t.footerTelegram}</a>
-            <a href="#">{t.footerGithub}</a>
+      <Reveal>
+        <footer className="app-footer">
+          <div className="footer-zones">
+            <div className="footer-author">
+              <span>{t.footerAuthor}</span>
+              <a href="#" onClick={(event) => event.preventDefault()}>
+                {t.footerTelegram}
+              </a>
+              <a href="#" onClick={(event) => event.preventDefault()}>
+                {t.footerGithub}
+              </a>
+            </div>
+            <div className="footer-mark" aria-hidden="true" />
+            <p className="footer-love">{t.footerLove}</p>
           </div>
-          <div className="footer-mark" aria-hidden="true" />
-          <p className="footer-love">{t.footerLove}</p>
-        </div>
-        <p className="footer-note">{t.footerNote}</p>
-      </footer>
+          <p className="footer-note">{t.footerNote}</p>
+        </footer>
+      </Reveal>
     </div>
   )
 }
