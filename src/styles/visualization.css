@@ -74,7 +74,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-3) var(--space-6);
   padding: var(--space-4) var(--space-6);
 }
@@ -463,10 +463,25 @@
 }
 
 .code-surface {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  height: 520px;
+  max-height: 520px;
   overflow-x: auto;
+  overflow-y: auto;
   background: var(--surface);
+}
+
+.code-surface::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: 40px;
+  margin-top: -40px;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events: none;
 }
 
 .code-pre {
@@ -828,6 +843,11 @@
   width: 100%;
   height: auto;
   aspect-ratio: 5 / 3;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 12px 12px;
+  background-position: center;
 }
 
 .scenario-label {

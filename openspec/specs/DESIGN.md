@@ -20,7 +20,7 @@ All colors, radii, and spacing are defined as CSS variables and switched between
 | Token | Light | Dark |
 |---|---|---|
 | `--bg` | `#F6F8FC` | `#0F1420` |
-| `--bg-gradient` | `linear-gradient(135deg, #F6F8FC 0%, #EEF6F0 52%, #F6F8FC 100%)` | `linear-gradient(135deg, #0F1420 0%, #14201C 52%, #0F1420 100%)` |
+| `--bg-gradient` | `linear-gradient(135deg, #F6F8FC 0%, #E9ECF2 52%, #F6F8FC 100%)` | `linear-gradient(135deg, #0F1420 0%, #171D2C 52%, #0F1420 100%)` |
 | `--surface` | `#FFFFFF` | `#151B2B` |
 | `--line` | `#D6DDEA` | `#2A3349` |
 | `--grid` | `rgba(80, 110, 170, 0.08)` | `rgba(140, 170, 230, 0.07)` |
@@ -64,7 +64,7 @@ Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use
 
 ## 4. Background
 
-- The page background uses the subtle, theme-specific `--bg-gradient`; it is an organic soft-color gradient, not a flat fill or grid.
+- The page background uses the subtle, theme-specific `--bg-gradient`; it is a near-grayscale gradient tonally consistent with `--bg` and `--surface` (very low saturation, just enough tonal variation to read as a gradient rather than a flat fill), not a flat fill or grid.
 - `--grid` is reserved for the Canvas panel only, where it marks Canvas units as described in section 5.3. It is not used on the page background, Code block, Plots cards, Steps panel, or footer.
 - Blocks use `--surface` with a 1px `--line` border.
 
@@ -89,11 +89,10 @@ Vertical order of the page:
 
 ### 5.2. Page Switcher
 
-- A vertical switcher with two sections: "Visual" and "Theory" (RU: "Визуализация" and "Теория").
-- The switcher occupies its own full-width row directly below the header and does not overlap the header controls.
-- Each section has a title row: the title on the left and a thin line extending to the right edge.
-- Only one section is expanded at a time. Expanding a section collapses the other with a height and opacity transition; the collapsed section leaves only its title row.
-- The "Visual" section is expanded by default.
+- A compact two-position vertical toggle with two labeled options: "Визуализация" (top) and "Теория" (bottom), stacked with a small arrow or connector between them indicating they are linked.
+- The toggle is centered horizontally below the header (not full width) and occupies its own row without overlapping header controls.
+- Selecting an option switches the entire page content to show only that page (Visualization or Theory): a full content swap, not an expand/collapse of both. There is no accordion or expand behavior.
+- The selected option is visually marked as active (`--primary` text/border); the inactive one is muted (`--text-muted`). Clicking the inactive option switches to it.
 
 ### 5.3. Visualization Block
 
@@ -107,7 +106,7 @@ Both are blocks with the standard border and radius, equal height.
 #### Canvas Panel
 
 - The panel contains the Canvas with a control row on top. No panel title is displayed.
-- Control row: two sliders, `R` and `minPts`, aligned to the right. Each slider has a label, the current value displayed next to it, a "?" icon button, and an outlined reset button (`Reset` / `Сбросить`) that restores that parameter to the selected scenario's optimal value. Reset buttons use a thin outline, 8px radius, and no hover micro-interactions.
+- Control row: two sliders, `R` and `minPts`, left-aligned against the panel's left edge as one control row (both parameter groups). Each slider has a label, the current value displayed next to it, a "?" icon button, and an outlined reset button (`Reset` / `Сбросить`) that restores that parameter to the selected scenario's optimal value. Reset buttons use a thin outline, 8px radius, and no hover micro-interactions.
 - The "?" icon opens a small popover with a short explanation. Text (EN): "R is the radius within which points are considered neighbors. minPts is the minimum number of points nearby that counts as a cluster." Text (RU): "R — радиус, в пределах которого точки считаются соседями. minPts — минимальное количество точек рядом, которое считается кластером."
 - The popover is a bordered `--surface` block with 8px radius, appears with a fade and slide animation, and closes on outside click or on a second click of the icon.
 - The Canvas fills the panel. Aspect ratio: 4:3 on desktop.
@@ -154,29 +153,36 @@ Right column: a code area with line numbers, Roboto Mono, in a bordered block wi
 Line numbers are --text-muted and are not selectable. Code text is selectable and copyable.
 Syntax highlighting uses colors derived from the cluster palette and --text-muted, defined per theme.
 Switching tabs fades the code content out and in.
-Horizontal overflow scrolls inside the code area.
+The code area has a fixed height sized to show approximately 25 lines, identical for all three languages regardless of actual line count. Longer content scrolls vertically inside the code area (in addition to the existing horizontal overflow scroll).
+The bottom edge of the visible area makes it visually clear that more content exists below: a subtle fade-out gradient (--surface-to-transparent) or a visible partial line cut off at the bottom, not an abrupt hard cut that looks like the end of the code.
 Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layout switches to a single column: the tab buttons become a horizontal row above the code area instead of a vertical stack in a side column, keeping the same button styling.
 
 ### 5.5. Plots Block
 
 - Block title: "Plots" (RU: "Сценарии").
 - Four cards in one row: Circles, Blobs, Half-moons, Create (RU: Круги, Шарики, Полумесяцы, Создать).
-- Each card: bordered block with `--surface` background, a static flat SVG preview on top (thin outlines, cluster palette colors), and a label below.
-- Previews are static; they depict the dataset shape: concentric circles, groups of blobs, two half-moons, and a pencil for "Create".
+- Each card: bordered block with `--surface` background, a subtle `--grid` background grid, a static flat SVG preview on top (thin outlines, cluster palette colors), and a label below.
+- Previews are static; they depict the dataset shape: exactly 3 concentric circles made of dotted/outlined rings in cluster palette colors (Circles), a small number of distinct point clusters as groups of dots (Blobs), two crescent/half-moon-shaped arcs of points (Half-moons), and a pencil icon on an empty background with no points, shapes, or lines (Create).
 - The selected card is not highlighted.
 - The row is one line on desktop and wraps to 2x2 on tablet and mobile.
 
 ### 5.6. Footer
 
 - Three zones in one row:
-  - Left: "Created by Nikita Shvedov" (RU: "Создатель: Nikita Shvedov"), a link to the Telegram channel, and a link to GitHub. Links are plain text without underline and with `--text-muted` color.
+  - Left: a stacked block, top to bottom:
+    1. "Created by Nikita Shvedov" (RU: "Создатель: Nikita Shvedov")
+    2. "Telegram channel" (RU: "Telegram канал"), a link, on its own line, indented slightly relative to line 1
+    3. "VK" (RU: "ВКонтакте"), a link, on its own line, at the same indent as line 2
+    4. "GitHub" (RU: "GitHub"), a link, on its own line, at the same indent as line 2
+    Lines 2-4 are links: plain text, no underline, `--text-muted` color.
   - Center: a slot for an SVG cat mark, to be supplied later. The slot is a fixed-size container of 48px height; it is empty until the asset is added.
-  - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), right-aligned, `--text-muted`.
-- Below the three zones: a centered note in `--text-muted`, 13-14px.
+  - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), wrapped across multiple lines, right-aligned, `--text-muted`.
+- Below the three zones: a centered note in `--text-muted`, 13-14px, wrapped across two lines:
   - EN: "This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points."
   - RU: "Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки."
-- Link URLs are supplied later; the links exist as placeholders until then.
+- Link URLs (Telegram, VK, GitHub) are supplied later; the links exist as placeholders until then.
 - A thin `--line` separator sits above the footer.
+- On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered.
 
 ### 5.7. Theory Page
 
@@ -228,7 +234,7 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.5. Other Transitions
 
-- Page switcher: height and opacity transition of sections.
+- Page switcher: opacity transition on selection.
 - Drawing tools: fade and slide-up appearance.
 - Popover and toast: fade and slide.
 - Code tabs: content fade.

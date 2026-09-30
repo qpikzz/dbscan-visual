@@ -21,7 +21,7 @@ Functional specification for the "Visualization" page.
 
 - Zoom in and out: mouse wheel on desktop, pinch on touch devices.
 - The grid scales together with the zoom; one grid cell always equals one Canvas unit.
-- Pan: dragging the Canvas moves the view. Pan is active only when no drawing tool is active.
+- Pan: dragging the Canvas moves the view. Left-click-drag pans only when no drawing tool is active. Middle mouse button (MMB) drag pans always, regardless of whether a drawing tool (Draw/Erase) is active, so the user does not have to deselect the tool to pan.
 
 ### 2.2. Drawing Mode
 
