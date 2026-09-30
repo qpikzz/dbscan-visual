@@ -5,7 +5,7 @@ export type Language = (typeof supportedLanguages)[number]
 export const defaultLanguage: Language = 'ru'
 
 export const ru = {
-  logo: '# DB SCAN',
+  logo: 'DB SCAN',
   languageLabel: 'Переключить язык',
   languageRu: 'Ru',
   languageEn: 'En',
@@ -143,7 +143,7 @@ export const ru = {
 export type Dictionary = typeof ru
 
 export const en: Dictionary = {
-  logo: '# DB SCAN',
+  logo: 'DB SCAN',
   languageLabel: 'Switch language',
   languageRu: 'Ru',
   languageEn: 'En',

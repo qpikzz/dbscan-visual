@@ -31,7 +31,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <span className="app-logo">{t.logo}</span>
+        <h1 className="app-logo">{t.logo}</h1>
         <div className="app-controls">
           <div className="language-switcher" role="group" aria-label={t.languageLabel}>
             <button
