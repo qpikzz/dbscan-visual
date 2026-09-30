@@ -116,6 +116,7 @@ a:focus-visible {
 }
 
 .app-header,
+.page-switcher,
 .page-container,
 .app-footer {
   width: min(1200px, calc(100% - 48px));
@@ -194,13 +195,15 @@ a:focus-visible {
 }
 
 .page-container {
-  padding: var(--space-16) 0;
+  padding: 0 0 var(--space-16);
 }
 
 .page-switcher {
   display: grid;
   gap: var(--space-4);
+  margin-top: var(--space-6);
   margin-bottom: var(--space-8);
+  padding: 0;
 }
 
 .page-switcher-link {
@@ -270,13 +273,19 @@ a:focus-visible {
   }
 
   .app-header,
+  .page-switcher,
   .page-container,
   .app-footer {
     width: calc(100% - 32px);
   }
 
+  .page-switcher {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+
   .page-container {
-    padding: var(--space-8) 0;
+    padding: 0 0 var(--space-8);
   }
 
   .footer-zones {

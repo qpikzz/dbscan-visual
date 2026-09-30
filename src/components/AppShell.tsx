@@ -67,17 +67,17 @@ export function AppShell({ children }: AppShellProps) {
           </button>
         </div>
       </header>
+      <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
+        <NavLink className="page-switcher-link" to="/visualization">
+          <span>{t.visualLabel}</span>
+          <span className="page-switcher-line" aria-hidden="true" />
+        </NavLink>
+        <NavLink className="page-switcher-link" to="/theory">
+          <span>{t.theoryLabel}</span>
+          <span className="page-switcher-line" aria-hidden="true" />
+        </NavLink>
+      </nav>
       <main className="page-container">
-        <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
-          <NavLink className="page-switcher-link" to="/visualization">
-            <span>{t.visualLabel}</span>
-            <span className="page-switcher-line" aria-hidden="true" />
-          </NavLink>
-          <NavLink className="page-switcher-link" to="/theory">
-            <span>{t.theoryLabel}</span>
-            <span className="page-switcher-line" aria-hidden="true" />
-          </NavLink>
-        </nav>
         {children}
       </main>
       <Reveal>
