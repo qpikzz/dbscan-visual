@@ -155,7 +155,7 @@ Line numbers are --text-muted and are not selectable. Code text is selectable an
 Syntax highlighting uses colors derived from the cluster palette and --text-muted, defined per theme.
 Switching tabs fades the code content out and in.
 Horizontal overflow scrolls inside the code area.
-Below tablet width (DESIGN.md section 6 breakpoints), the layout switches to a single column: the tab buttons become a horizontal row above the code area instead of a vertical stack in a side column, keeping the same button styling.
+Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layout switches to a single column: the tab buttons become a horizontal row above the code area instead of a vertical stack in a side column, keeping the same button styling.
 
 ### 5.5. Plots Block
 

@@ -4,6 +4,7 @@
   --font-sans: 'Nunito', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
   --color-bg: var(--bg);
+  --color-bg-gradient: var(--bg-gradient);
   --color-surface: var(--surface);
   --color-line: var(--line);
   --color-grid: var(--grid);
@@ -26,6 +27,7 @@
   --font-sans: 'Nunito', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
   --bg: #f6f8fc;
+  --bg-gradient: linear-gradient(135deg, #f6f8fc 0%, #eef6f0 52%, #f6f8fc 100%);
   --surface: #ffffff;
   --line: #d6ddea;
   --grid: rgba(80, 110, 170, 0.08);
@@ -66,6 +68,7 @@
 
 :root[data-theme='dark'] {
   --bg: #0f1420;
+  --bg-gradient: linear-gradient(135deg, #0f1420 0%, #14201c 52%, #0f1420 100%);
   --surface: #151b2b;
   --line: #2a3349;
   --grid: rgba(140, 170, 230, 0.07);
@@ -90,9 +93,7 @@
 body {
   color: var(--text);
   background-color: var(--bg);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: var(--bg-gradient);
   transition: color 300ms var(--ease), background-color 300ms var(--ease);
   min-width: 320px;
   min-height: 100vh;
@@ -116,6 +117,7 @@ a:focus-visible {
 }
 
 .app-header,
+.page-switcher,
 .page-container,
 .app-footer {
   width: min(1200px, calc(100% - 48px));
@@ -194,13 +196,15 @@ a:focus-visible {
 }
 
 .page-container {
-  padding: var(--space-16) 0;
+  padding: 0 0 var(--space-16);
 }
 
 .page-switcher {
   display: grid;
   gap: var(--space-4);
+  margin-top: var(--space-6);
   margin-bottom: var(--space-8);
+  padding: 0;
 }
 
 .page-switcher-link {
@@ -248,7 +252,9 @@ a:focus-visible {
 }
 
 .footer-mark {
+  width: 48px;
   height: 48px;
+  justify-self: center;
 }
 
 .footer-love {
@@ -270,13 +276,19 @@ a:focus-visible {
   }
 
   .app-header,
+  .page-switcher,
   .page-container,
   .app-footer {
     width: calc(100% - 32px);
   }
 
+  .page-switcher {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+
   .page-container {
-    padding: var(--space-8) 0;
+    padding: 0 0 var(--space-8);
   }
 
   .footer-zones {

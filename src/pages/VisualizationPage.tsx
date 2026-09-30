@@ -49,6 +49,10 @@ export function VisualizationPage() {
     setMinPts(SCENARIOS[nextScenario].recommended.minPts)
   }
 
+  const clearCreatePoints = () => {
+    setCreatePoints([])
+  }
+
   const startRun = () => {
     if (points.length === 0) return
     setFrames(runDbscan(points, { r, minPts }, createSeed()))
@@ -75,6 +79,8 @@ export function VisualizationPage() {
           scenario={scenario}
           r={r}
           minPts={minPts}
+          recommendedR={SCENARIOS[scenario].recommended.r}
+          recommendedMinPts={SCENARIOS[scenario].recommended.minPts}
           points={points}
           assignments={assignments}
           circle={frame?.circle ?? null}
@@ -86,6 +92,7 @@ export function VisualizationPage() {
           onPointsErase={eraseCreatePoints}
           onRChange={setR}
           onMinPtsChange={setMinPts}
+          onClearCanvas={clearCreatePoints}
           onStart={startRun}
           onNext={advanceStep}
           onSeekStep={seekStep}

@@ -7,6 +7,8 @@ type VisualizationBlockProps = {
   scenario: ScenarioId
   r: number
   minPts: number
+  recommendedR: number
+  recommendedMinPts: number
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
@@ -18,6 +20,7 @@ type VisualizationBlockProps = {
   onPointsErase: (points: readonly Point[]) => void
   onRChange: (value: number) => void
   onMinPtsChange: (value: number) => void
+  onClearCanvas: () => void
   onStart: () => void
   onNext: () => void
   onSeekStep: (step: number) => void
@@ -27,6 +30,8 @@ export function VisualizationBlock({
   scenario,
   r,
   minPts,
+  recommendedR,
+  recommendedMinPts,
   points,
   assignments,
   circle,
@@ -38,6 +43,7 @@ export function VisualizationBlock({
   onPointsErase,
   onRChange,
   onMinPtsChange,
+  onClearCanvas,
   onStart,
   onNext,
   onSeekStep,
@@ -48,6 +54,8 @@ export function VisualizationBlock({
         scenario={scenario}
         r={r}
         minPts={minPts}
+        recommendedR={recommendedR}
+        recommendedMinPts={recommendedMinPts}
         points={points}
         assignments={assignments}
         circle={circle}
@@ -55,6 +63,7 @@ export function VisualizationBlock({
         onPointsErase={onPointsErase}
         onRChange={onRChange}
         onMinPtsChange={onMinPtsChange}
+        onClearCanvas={onClearCanvas}
       />
       <StepsPanel
         steps={steps}
