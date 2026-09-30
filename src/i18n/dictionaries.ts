@@ -136,7 +136,8 @@ export const ru = {
     'Всё получилось! Всего кластеров: {count}. Точек шума: {noise}.',
   ] ,
   footerAuthor: 'Создатель: Nikita Shvedov',
-  footerTelegram: 'Telegram',
+  footerTelegram: 'Telegram канал',
+  footerVk: 'ВКонтакте',
   footerGithub: 'GitHub',
   footerLove: 'Создано с любовью для школьников и студентов',
   footerNote:
@@ -278,7 +279,8 @@ export const en: Dictionary = {
     'Done! Total clusters: {count}. Noise points: {noise}.',
   ],
   footerAuthor: 'Created by Nikita Shvedov',
-  footerTelegram: 'Telegram',
+  footerTelegram: 'Telegram channel',
+  footerVk: 'VK',
   footerGithub: 'GitHub',
   footerLove: 'Made with love for school and university students',
   footerNote:
