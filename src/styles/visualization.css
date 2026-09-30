@@ -171,6 +171,18 @@
   cursor: pointer;
 }
 
+.reset-btn {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .popover {
   position: absolute;
   z-index: 30;
@@ -193,6 +205,7 @@
   right: var(--space-4);
   bottom: var(--space-4);
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
@@ -212,6 +225,18 @@
 .tool-btn.active {
   background: var(--primary-soft);
   border-color: var(--primary);
+}
+
+.tool-clear {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .tool-btn svg {
@@ -284,7 +309,7 @@
   width: 10px;
   height: 10px;
   flex: 0 0 10px;
-  margin-top: 16px;
+  margin-top: calc((44px - 10px) / 2);
   border-radius: 999px;
   background: var(--line);
 }
@@ -490,6 +515,7 @@
 
   .code-tab {
     flex: 0 0 auto;
+    width: 100%;
     text-align: left;
   }
 

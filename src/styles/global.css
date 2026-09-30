@@ -252,7 +252,9 @@ a:focus-visible {
 }
 
 .footer-mark {
+  width: 48px;
   height: 48px;
+  justify-self: center;
 }
 
 .footer-love {

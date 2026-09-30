@@ -10,8 +10,11 @@ type ParameterSliderProps = {
   step: number
   help: string
   helpLabel: string
+  resetText: string
+  resetLabel: string
   format: (value: number) => string
   onChange: (value: number) => void
+  onReset: () => void
 }
 
 export function ParameterSlider({
@@ -22,8 +25,11 @@ export function ParameterSlider({
   step,
   help,
   helpLabel,
+  resetText,
+  resetLabel,
   format,
   onChange,
+  onReset,
 }: ParameterSliderProps) {
   const [open, setOpen] = useState(false)
   const controlRef = useRef<HTMLDivElement>(null)
@@ -66,6 +72,9 @@ export function ParameterSlider({
         onClick={() => setOpen((isOpen) => !isOpen)}
       >
         ?
+      </button>
+      <button type="button" className="reset-btn" aria-label={resetLabel} onClick={onReset}>
+        {resetText}
       </button>
       <AnimatePresence>
         {open && (

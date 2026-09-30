@@ -114,6 +114,9 @@ export const ru = {
   paramRHelp: 'R — радиус, в пределах которого точки считаются соседями.',
   paramMinPtsHelp:
     'minPts — минимальное количество точек рядом, которое считается кластером.',
+  resetButton: 'Сбросить',
+  resetParamLabel: (label: string) => `Сбросить ${label}`,
+  clearCanvasButton: 'Очистить холст',
   startButton: 'Начать',
   nextButton: 'Далее',
   drawToolLabel: 'Рисование',
@@ -253,6 +256,9 @@ export const en: Dictionary = {
     'R is the radius within which points are considered neighbors.',
   paramMinPtsHelp:
     'minPts is the minimum number of points nearby that counts as a cluster.',
+  resetButton: 'Reset',
+  resetParamLabel: (label: string) => `Reset ${label}`,
+  clearCanvasButton: 'Clear canvas',
   startButton: 'Start',
   nextButton: 'Next',
   drawToolLabel: 'Draw',
