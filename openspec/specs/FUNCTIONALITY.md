@@ -102,6 +102,7 @@ There are always 9 steps after the initial step 0. One press of "Next" performs 
 - Initially the panel shows the "Start" button and step 0.
 - After the first press the button becomes "Next"; each press adds the next step to the list and performs it.
 - The active step is the last one; passed steps are above it. The list scrolls down automatically.
+- On mobile and tablet, the step history remains in an inner scrollable list; automatic scrolling keeps the active step and the most recent preceding steps visible.
 - Only the active step's description is expanded.
 - Clicking a passed step rolls the state back to that step; steps after it are removed from the list.
 - After step 9, the "Next" button is disabled.

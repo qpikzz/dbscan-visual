@@ -263,7 +263,8 @@
 
 @media (max-width: 1023px) {
   .steps-panel {
-    max-height: 40vh;
+    height: min(32vh, 320px);
+    max-height: 32vh;
   }
 }
 
@@ -274,8 +275,9 @@
 
 .steps-list {
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   flex-direction: column;
+  min-height: 0;
   margin: 0;
   padding: 0;
   overflow-y: auto;

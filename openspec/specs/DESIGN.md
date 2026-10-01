@@ -28,7 +28,11 @@ All colors, radii, and spacing are defined as CSS variables and switched between
 | `--text-muted` | `#6B7280` | `#8B94A7` |
 | `--primary` | `#6C9BF5` | `#8DB3FF` |
 | `--primary-soft` | `rgba(108, 155, 245, 0.14)` | `rgba(141, 179, 255, 0.16)` |
-| `--noise` | `#3B4252` | `#4E566A` |
+| `--noise-1` | `#2B2F36` | `#42464D` |
+| `--noise-2` | `#3A3F47` | `#4F545D` |
+| `--noise-3` | `#4A5059` | `#5D636D` |
+| `--noise-4` | `#5A626D` | `#6B727D` |
+| `--noise-5` | `#6B7480` | `#79818D` |
 
 ### 2.2. Cluster Palette
 
@@ -43,7 +47,7 @@ Used for cluster coloring on the Canvas. Colors are assigned in this order, in t
 | 5 | Violet | `#A88BEB` | `#B8A0F2` |
 | 6 | Gray | `#9AA3B2` | `#A9B1BF` |
 
-Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use `--noise` (black-gray).
+Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use varied grayscale tones from `--noise-1` through `--noise-5`, assigned consistently per point.
 
 ### 2.3. Shape and Spacing
 
@@ -113,7 +117,7 @@ Both are blocks with the standard border and radius, equal height.
 - Canvas background is `--surface` with a grid whose cell size equals 1 unit of R, drawn with `--grid`. The grid scales together with the Canvas zoom.
 - In the "Create" scenario, an outlined "Clear canvas" button (`Очистить холст`) appears alongside the Draw and Erase buttons. It uses a thin outline, 8px radius, and no hover micro-interactions.
 - Points are filled circles; their color is taken from the cluster palette, `--text-muted` for unassigned points, or `--noise` for noise points.
-- The R radius around the currently processed point is drawn as a thin circle outline in `--primary` with a `--primary-soft` fill.
+- The R radius around the currently processed point is drawn as a thin circle outline in `--primary` with no fill.
 - The cursor is a grab cursor in pan mode and a crosshair in drawing mode.
 
 #### Drawing Tools
@@ -199,7 +203,7 @@ Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 - Mobile: single column. Canvas aspect ratio 1:1. The R and minPts sliders stack vertically in the control row. Plots in 2x2 grid. Footer zones stack vertically and are centered.
 - Tablet: single column for the visualization block (Steps panel above Canvas panel), Plots in 2x2 grid.
 - Desktop: layout as described in section 5.
-- Steps panel height on mobile and tablet is limited to about 40% of the viewport height, with inner scrolling.
+- On mobile and tablet, the Steps panel reserves about one-third of the viewport height (capped at 320px). Its history list scrolls inside the panel, with the active step and roughly the latest 2-3 preceding steps visible; older steps remain accessible by scrolling.
 - Touch targets are at least 44x44px.
 
 ## 7. Themes

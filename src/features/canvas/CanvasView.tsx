@@ -228,22 +228,28 @@ export function CanvasView({
       surface: getThemeColor(canvas, '--surface'),
       grid: getThemeColor(canvas, '--grid'),
       muted: getThemeColor(canvas, '--text-muted'),
-      noise: getThemeColor(canvas, '--noise'),
+      noise: Array.from({ length: 5 }, (_, index) =>
+        getThemeColor(canvas, `--noise-${index + 1}`),
+      ),
       primary: getThemeColor(canvas, '--primary'),
-      primarySoft: getThemeColor(canvas, '--primary-soft'),
       clusters: Array.from({ length: 6 }, (_, index) =>
         getThemeColor(canvas, `--cluster-${index + 1}`),
       ),
     }
-    const assignmentColor = (assignment: Assignment | undefined) => {
-      if (assignment?.kind === 'noise') return colors.noise
+    const assignmentColor = (assignment: Assignment | undefined, point: Point, index: number) => {
+      if (assignment?.kind === 'noise') {
+        const noiseIndex = Math.abs(
+          Math.imul(Math.round(point.x * 1000), 31) ^ Math.round(point.y * 1000) ^ index,
+        ) % colors.noise.length
+        return colors.noise[noiseIndex] ?? colors.noise[0] ?? colors.muted
+      }
       if (assignment?.kind === 'cluster') {
         return colors.clusters[assignment.clusterId % colors.clusters.length] ?? colors.muted
       }
       return colors.muted
     }
-    const targetColors = points.map((_, index) =>
-      assignmentColor(assignments[index]),
+    const targetColors = points.map((point, index) =>
+      assignmentColor(assignments[index], point, index),
     )
     const fromColors = transition?.pointColors ?? targetColors
     const targetCircle = circle === null ? null : points[circle.pointIndex]
@@ -270,8 +276,6 @@ export function CanvasView({
         0,
         Math.PI * 2,
       )
-      context.fillStyle = colors.primarySoft
-      context.fill()
       context.strokeStyle = colors.primary
       context.lineWidth = 1.5 / (GRID_CELL_SIZE * transformRef.current.zoom)
       context.stroke()
@@ -470,16 +474,8 @@ export function CanvasView({
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button === 1) {
         event.preventDefault()
-      const position = localPosition(event)
-      pointers.set(event.pointerId, position)
-
-      if (event.pointerId === middlePanPointerId && previousPan !== null) {
-        transformRef.current.x += position.x - previousPan.x
-        transformRef.current.y += position.y - previousPan.y
-        previousPan = position
-        setRevision((value) => value + 1)
-        return
-      }
+        const position = localPosition(event)
+        pointers.set(event.pointerId, position)
         canvas.setPointerCapture(event.pointerId)
         middlePanPointerId = event.pointerId
         previousPan = position
@@ -521,6 +517,14 @@ export function CanvasView({
       }
       const position = localPosition(event)
       pointers.set(event.pointerId, position)
+
+      if (event.pointerId === middlePanPointerId && previousPan !== null) {
+        transformRef.current.x += position.x - previousPan.x
+        transformRef.current.y += position.y - previousPan.y
+        previousPan = position
+        setRevision((value) => value + 1)
+        return
+      }
 
       if (pointers.size >= 2) {
         const nextPinch = getPinchState(pointers)
