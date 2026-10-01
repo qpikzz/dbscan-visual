@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { Reveal } from './Reveal'
 
 type Theme = 'light' | 'dark'
 
@@ -30,7 +31,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <span className="app-logo">{t.logo}</span>
+        <h1 className="app-logo">{t.logo}</h1>
         <div className="app-controls">
           <div className="language-switcher" role="group" aria-label={t.languageLabel}>
             <button
@@ -66,31 +67,43 @@ export function AppShell({ children }: AppShellProps) {
           </button>
         </div>
       </header>
+      <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
+        <NavLink className="page-switcher-option" to="/visualization">
+          {t.visualLabel}
+        </NavLink>
+        <span className="page-switcher-connector" aria-hidden="true">
+          <svg viewBox="0 0 12 16">
+            <path d="M6 1v12m0 0-4-4m4 4 4-4" />
+          </svg>
+        </span>
+        <NavLink className="page-switcher-option" to="/theory">
+          {t.theoryLabel}
+        </NavLink>
+      </nav>
       <main className="page-container">
-        <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
-          <NavLink className="page-switcher-link" to="/visualization">
-            <span>{t.visualLabel}</span>
-            <span className="page-switcher-line" aria-hidden="true" />
-          </NavLink>
-          <NavLink className="page-switcher-link" to="/theory">
-            <span>{t.theoryLabel}</span>
-            <span className="page-switcher-line" aria-hidden="true" />
-          </NavLink>
-        </nav>
         {children}
       </main>
-      <footer className="app-footer">
-        <div className="footer-zones">
-          <div className="footer-author">
-            <span>{t.footerAuthor}</span>
-            <a href="#">{t.footerTelegram}</a>
-            <a href="#">{t.footerGithub}</a>
+      <Reveal>
+        <footer className="app-footer">
+          <div className="footer-zones">
+            <div className="footer-author">
+              <span className="footer-author-name">{t.footerAuthor}</span>
+              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+                {t.footerTelegram}
+              </a>
+              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+                {t.footerVk}
+              </a>
+              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+                {t.footerGithub}
+              </a>
+            </div>
+            <div className="footer-mark" aria-hidden="true" />
+            <p className="footer-love">{t.footerLove}</p>
           </div>
-          <div className="footer-mark" aria-hidden="true" />
-          <p className="footer-love">{t.footerLove}</p>
-        </div>
-        <p className="footer-note">{t.footerNote}</p>
-      </footer>
+          <p className="footer-note">{t.footerNote}</p>
+        </footer>
+      </Reveal>
     </div>
   )
 }

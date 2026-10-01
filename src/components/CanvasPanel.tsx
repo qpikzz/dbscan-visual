@@ -15,6 +15,8 @@ type CanvasPanelProps = {
   scenario: ScenarioId
   r: number
   minPts: number
+  recommendedR: number
+  recommendedMinPts: number
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
@@ -22,12 +24,15 @@ type CanvasPanelProps = {
   onPointsErase: (points: readonly Point[]) => void
   onRChange: (value: number) => void
   onMinPtsChange: (value: number) => void
+  onClearCanvas: () => void
 }
 
 export function CanvasPanel({
   scenario,
   r,
   minPts,
+  recommendedR,
+  recommendedMinPts,
   points,
   assignments = [],
   circle = null,
@@ -35,6 +40,7 @@ export function CanvasPanel({
   onPointsErase,
   onRChange,
   onMinPtsChange,
+  onClearCanvas,
 }: CanvasPanelProps) {
   const { t } = useLanguage()
   const { fadeSlide, transition } = useMotionSettings()
@@ -68,7 +74,10 @@ export function CanvasPanel({
           format={(value) => value.toFixed(1)}
           help={t.paramRHelp}
           helpLabel={t.paramHelpLabel(t.paramR)}
+          resetText={t.resetButton}
+          resetLabel={t.resetParamLabel(t.paramR)}
           onChange={onRChange}
+          onReset={() => onRChange(recommendedR)}
         />
         <ParameterSlider
           label={t.paramMinPts}
@@ -79,7 +88,10 @@ export function CanvasPanel({
           format={(value) => String(Math.round(value))}
           help={t.paramMinPtsHelp}
           helpLabel={t.paramHelpLabel(t.paramMinPts)}
+          resetText={t.resetButton}
+          resetLabel={t.resetParamLabel(t.paramMinPts)}
           onChange={onMinPtsChange}
+          onReset={() => onMinPtsChange(recommendedMinPts)}
         />
       </div>
       <div className="canvas-wrap">
@@ -108,7 +120,7 @@ export function CanvasPanel({
         </AnimatePresence>
         <AnimatePresence>
           {scenario === 'create' && (
-            <DrawingTools activeTool={activeTool} onChange={setActiveTool} />
+            <DrawingTools activeTool={activeTool} onChange={setActiveTool} onClear={onClearCanvas} />
           )}
         </AnimatePresence>
       </div>

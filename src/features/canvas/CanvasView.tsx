@@ -407,6 +407,7 @@ export function CanvasView({
 
     const pointers = new Map<number, Position>()
     let previousPan: Position | null = null
+    let middlePanPointerId: number | null = null
     let previousPinch: ReturnType<typeof getPinchState> = null
     let previousDrawPosition: Point | null = null
     let previousErasePosition: Point | null = null
@@ -467,6 +468,24 @@ export function CanvasView({
     }
 
     const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button === 1) {
+        event.preventDefault()
+      const position = localPosition(event)
+      pointers.set(event.pointerId, position)
+
+      if (event.pointerId === middlePanPointerId && previousPan !== null) {
+        transformRef.current.x += position.x - previousPan.x
+        transformRef.current.y += position.y - previousPan.y
+        previousPan = position
+        setRevision((value) => value + 1)
+        return
+      }
+        canvas.setPointerCapture(event.pointerId)
+        middlePanPointerId = event.pointerId
+        previousPan = position
+        setIsPanning(true)
+        return
+      }
       if (event.pointerType === 'mouse' && event.button !== 0) {
         return
       }
@@ -559,6 +578,12 @@ export function CanvasView({
 
     const onPointerEnd = (event: PointerEvent) => {
       pointers.delete(event.pointerId)
+      if (event.pointerId === middlePanPointerId) {
+        middlePanPointerId = null
+        previousPan = null
+        setIsPanning(false)
+        return
+      }
       previousPinch = null
       previousPan = null
       const remainingPosition = [...pointers.values()][0]
@@ -579,12 +604,19 @@ export function CanvasView({
       setIsPanning(false)
     }
 
+    const onAuxClick = (event: MouseEvent) => {
+      if (event.button === 1) {
+        event.preventDefault()
+      }
+    }
+
     canvas.addEventListener('wheel', onWheel, { passive: false })
     canvas.addEventListener('pointerdown', onPointerDown)
     canvas.addEventListener('pointermove', onPointerMove)
     canvas.addEventListener('pointerup', onPointerEnd)
     canvas.addEventListener('pointercancel', onPointerEnd)
     canvas.addEventListener('lostpointercapture', onPointerEnd)
+    canvas.addEventListener('auxclick', onAuxClick)
 
     return () => {
       canvas.removeEventListener('wheel', onWheel)
@@ -593,6 +625,7 @@ export function CanvasView({
       canvas.removeEventListener('pointerup', onPointerEnd)
       canvas.removeEventListener('pointercancel', onPointerEnd)
       canvas.removeEventListener('lostpointercapture', onPointerEnd)
+      canvas.removeEventListener('auxclick', onAuxClick)
     }
   }, [size.height, size.width])
 

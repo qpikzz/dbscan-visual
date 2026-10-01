@@ -6,9 +6,10 @@ import type { ActiveTool } from './CanvasPanel'
 type DrawingToolsProps = {
   activeTool: ActiveTool
   onChange: (tool: ActiveTool) => void
+  onClear: () => void
 }
 
-export function DrawingTools({ activeTool, onChange }: DrawingToolsProps) {
+export function DrawingTools({ activeTool, onChange, onClear }: DrawingToolsProps) {
   const { t } = useLanguage()
   const { fadeSlide, transition } = useMotionSettings()
   const toolsAnimation = fadeSlide(24)
@@ -41,6 +42,9 @@ export function DrawingTools({ activeTool, onChange }: DrawingToolsProps) {
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M7 12.5 15.5 4l4 4L11 16.5h-6l-3 3M7 19.5h12" />
           </svg>
+        </button>
+        <button type="button" className="tool-clear" onClick={onClear}>
+          {t.clearCanvasButton}
         </button>
       </motion.div>
   )
