@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { POINT_LIMIT } from '../dbscan/constants'
+import type { ScenarioId } from '../../data'
 import type { Assignment, Point, RadiusCircle } from '../dbscan/types'
 import { useMotionSettings } from '../../hooks/useMotionSettings'
 import { samplePathSegment } from './drawing'
 
 type CanvasViewProps = {
+  scenario: ScenarioId
   points: readonly Point[]
   assignments: readonly Assignment[]
   circle: RadiusCircle | null
@@ -51,8 +53,9 @@ type FrameTransition = {
 }
 
 const GRID_CELL_SIZE = 32
-const MIN_ZOOM = 0.25
+const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
+const FIT_PADDING = 40
 const POINT_RADIUS = 0.14
 const DRAW_SPACING = 0.45
 const ERASE_SPACING = 0.14
@@ -111,6 +114,7 @@ function getPinchState(positions: Map<number, Position>) {
 }
 
 export function CanvasView({
+  scenario,
   points,
   assignments,
   circle,
@@ -121,6 +125,7 @@ export function CanvasView({
 }: CanvasViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const transformRef = useRef<ViewTransform>({ zoom: 1, x: 0, y: 0 })
+  const fittedScenarioRef = useRef<ScenarioId | null>(null)
   const pointsRef = useRef(points)
   const pointCountRef = useRef(points.length)
   const limitToastShownRef = useRef(false)
@@ -190,6 +195,53 @@ export function CanvasView({
       window.removeEventListener('resize', updateSize)
     }
   }, [])
+
+  useLayoutEffect(() => {
+    if (size.width === 0 || size.height === 0 || fittedScenarioRef.current === scenario) {
+      return
+    }
+    fittedScenarioRef.current = scenario
+
+    if (points.length === 0) {
+      transformRef.current = { zoom: 1, x: 0, y: 0 }
+      setRevision((value) => value + 1)
+      return
+    }
+
+    const bounds = points.reduce(
+      (current, point) => ({
+        minX: Math.min(current.minX, point.x),
+        maxX: Math.max(current.maxX, point.x),
+        minY: Math.min(current.minY, point.y),
+        maxY: Math.max(current.maxY, point.y),
+      }),
+      {
+        minX: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+      },
+    )
+    const worldWidth = Math.max(bounds.maxX - bounds.minX, 1)
+    const worldHeight = Math.max(bounds.maxY - bounds.minY, 1)
+    const availableWidth = Math.max(size.width - FIT_PADDING * 2, 1)
+    const availableHeight = Math.max(size.height - FIT_PADDING * 2, 1)
+    const zoom = Math.min(
+      1,
+      availableWidth / (worldWidth * GRID_CELL_SIZE),
+      availableHeight / (worldHeight * GRID_CELL_SIZE),
+    )
+    const scale = GRID_CELL_SIZE * zoom
+    const centerX = (bounds.minX + bounds.maxX) / 2
+    const centerY = (bounds.minY + bounds.maxY) / 2
+
+    transformRef.current = {
+      zoom: Math.max(MIN_ZOOM, zoom),
+      x: -centerX * scale,
+      y: -centerY * scale,
+    }
+    setRevision((value) => value + 1)
+  }, [points, scenario, size.height, size.width])
 
   useEffect(() => {
     const canvas = canvasRef.current

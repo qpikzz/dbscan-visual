@@ -44,6 +44,9 @@ export function VisualizationPage() {
 
   const selectScenario = (nextScenario: ScenarioId) => {
     if (nextScenario === scenario) return
+    if (nextScenario === 'create') {
+      setCreatePoints([])
+    }
     setScenario(nextScenario)
     setR(SCENARIOS[nextScenario].recommended.r)
     setMinPts(SCENARIOS[nextScenario].recommended.minPts)

@@ -21,6 +21,7 @@ Functional specification for the "Visualization" page.
 
 - Zoom in and out: mouse wheel on desktop, pinch on touch devices.
 - The grid scales together with the zoom; one grid cell always equals one Canvas unit.
+- On initial load and when selecting a scenario, the camera automatically fits the full point set in the Canvas with a margin. Subsequent user zooming and panning are preserved until the next scenario selection.
 - Pan: dragging the Canvas moves the view. Left-click-drag pans only when no drawing tool is active. Middle mouse button (MMB) drag pans always, regardless of whether a drawing tool (Draw/Erase) is active, so the user does not have to deselect the tool to pan.
 
 ### 2.2. Drawing Mode
@@ -40,7 +41,7 @@ Functional specification for the "Visualization" page.
 
 Four scenarios, shown as cards: Circles, Blobs, Half-moons, Create.
 
-- Circles, Blobs, and Half-moons are prepared datasets with fixed point positions. The number of points in each is whatever the dataset requires, not exceeding 1024.
+- Circles, Blobs, and Half-moons are prepared datasets with fixed point positions. Each dataset contains at least 128 points and no more than 1024. Their points are irregularly distributed within the intended shape boundaries, with visible spacing within each shape and clear gaps between separate shapes at default Canvas zoom. Circles use two or three layers per ring. Half-moons are two interlocking crescent arcs, each using two or three point layers. The recommended R for every prepared scenario is at least 1 and keeps each intended shape connected without joining separate shapes.
 - Creating the datasets is a separate task and is not defined in this document.
 - Create lets the user draw their own points (see 2.2).
 - Selecting a scenario:
@@ -48,6 +49,7 @@ Four scenarios, shown as cards: Circles, Blobs, Half-moons, Create.
   2. resets all point colors to gray;
   3. animates points flying from their current positions to the new positions;
   4. sets R and minPts to the scenario's optimal values.
+  5. selecting Create starts with an empty Canvas; points drawn in a previous Create session are cleared.
 
 ## 4. Algorithm
 

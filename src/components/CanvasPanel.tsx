@@ -96,6 +96,7 @@ export function CanvasPanel({
       </div>
       <div className="canvas-wrap">
         <CanvasView
+          scenario={scenario}
           points={points}
           assignments={assignments}
           circle={circle}
