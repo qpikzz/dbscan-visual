@@ -165,8 +165,8 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 
 - Block title: "Plots" (RU: "Сценарии").
 - Four cards in one row: Circles, Blobs, Half-moons, Create (RU: Круги, Шарики, Полумесяцы, Создать).
-- Each card: bordered block with `--surface` background, a subtle `--grid` background grid, a static flat SVG preview on top (thin outlines, cluster palette colors), and a label below.
-- Previews are static; they depict the dataset shape: exactly 3 concentric circles made of dotted/outlined rings in cluster palette colors (Circles), a small number of distinct point clusters as groups of dots (Blobs), two crescent/half-moon-shaped arcs of points (Half-moons), and a pencil icon on an empty background with no points, shapes, or lines (Create).
+- Each card: bordered block with `--surface` background, a subtle `--grid` background grid, a static flat SVG preview on top (individual dots in cluster palette colors), and a label below.
+- Previews are static and depict the scenario: exactly 3 concentric rings made of individual dots (Circles), a small number of distinct groups of dots (Blobs), two crescent/half-moon-shaped arcs of dots (Half-moons), and a minimal cursor silhouette made entirely of dots (Create). The Create cursor is a card illustration only; selecting Create opens the main Canvas with no points.
 - The selected card is not highlighted.
 - The row is one line on desktop and wraps to 2x2 on tablet and mobile.
 
