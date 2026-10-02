@@ -3,6 +3,8 @@ export type Point = {
   y: number
 }
 
+export const NO_CLUSTER_ID = -1
+
 export type DbscanParams = {
   r: number
   minPts: number
@@ -41,33 +43,58 @@ export type ExpandEvent = {
   addedIndices: number[]
 }
 
-export type MarkNoiseEvent = {
-  type: 'mark-noise'
-  clusterIds: number[]
+export type RetractRadiusEvent = {
+  type: 'retract-radius'
+  pointIndex: number
+}
+
+export type CompleteGroupEvent = {
+  type: 'complete-group'
+  clusterId: number
+  memberIndices: number[]
+  isNoise: boolean
+  keepCurrentPoint: boolean
   clusterCount: number
   noiseCount: number
 }
 
-export type FrameEvent = SelectSeedEvent | SelectNextEvent | ExpandEvent | MarkNoiseEvent
+export type FinalizeEvent = {
+  type: 'finalize'
+  clusterCount: number
+  noiseCount: number
+}
+
+export type FrameEvent =
+  | SelectSeedEvent
+  | SelectNextEvent
+  | ExpandEvent
+  | RetractRadiusEvent
+  | CompleteGroupEvent
+  | FinalizeEvent
 
 export type Frame = {
   step: number
   events: FrameEvent[]
   assignments: Assignment[]
   circle: RadiusCircle | null
+  currentPointIndex: number | null
   clusterCount: number
   noiseCount: number
 }
 
 export type RunState = {
   points: readonly Point[]
+  neighborsByPoint: number[][]
   r: number
   minPts: number
   prng: Prng
   assignments: Assignment[]
   expanded: boolean[]
   clusterSizes: number[]
+  groups: number[][]
+  remainingGroupIds: number[]
   currentClusterId: number
+  currentGroupId: number | null
   focusIndex: number | null
   circle: RadiusCircle | null
   clusterCount: number

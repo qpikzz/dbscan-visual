@@ -26,6 +26,7 @@ All colors, radii, and spacing are defined as CSS variables and switched between
 | `--grid` | `rgba(80, 110, 170, 0.08)` | `rgba(140, 170, 230, 0.07)` |
 | `--text` | `#1F2937` | `#E6EAF2` |
 | `--text-muted` | `#6B7280` | `#8B94A7` |
+| `--pulse` | `#FFFFFF` | `#FFFFFF` |
 | `--primary` | `#6C9BF5` | `#8DB3FF` |
 | `--primary-soft` | `rgba(108, 155, 245, 0.14)` | `rgba(141, 179, 255, 0.16)` |
 | `--noise-1` | `#2B2F36` | `#42464D` |
@@ -228,7 +229,17 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.3. Step Transitions
 
-- Canvas changes between algorithm steps are animated: point color changes, the R circle moving between points, and cluster color fill.
+- Canvas playback uses the ordered events from the algorithm frames; all selection, expansion, capture order, and group membership decisions remain in the algorithm core.
+- When the initial point is selected in step 1 or step 6, a single white (`--pulse`) selection ring appears larger and semi-transparent, then smoothly converges and fades into the point (an osu!-style approach circle). A subtle `--text` outline keeps the ring visible on either theme. No ring appears for subsequent point selections within a growing group.
+- Exactly one point may pulse: the current point, drawn above every other point. Its fill smoothly changes to the cluster color. While it remains current, its size smoothly oscillates from its normal radius up to at most 1.5 times that radius and back, using an ease-in-out cycle. No other point pulses, and the size pulse stops as soon as the current point changes.
+- Radius growth and retraction use a smooth ease-in-out curve with no abrupt start or stop. When expansion starts, the R circle grows from zero to R around the current point over at least 600ms. Before selecting the next current point, the current circle retracts from R back into the point; the next selection begins after retraction.
+- On step 3, after the previous point's circle retracts and the next point is selected, its full R circle appears around it. The circle stays in place during step 4 while newly discovered neighbors are captured.
+- Newly found points are captured in the order supplied by the algorithm frame. At the start of every step, the acceleration timer and capture ramp reset. Before 5 seconds within that step, points are colored one at a time with fades of at least 200ms and start intervals that decrease linearly from 120ms toward a 20ms floor. After the threshold, captures continue one at a time; their start intervals and fade durations decay by a factor of 0.97 per captured point with no lower floor, smoothly approaching zero. Internal point selections become immediate in this mode. The step 1 and step 6 starting-point rings retain their 600ms duration. The timer does not reset during repeated events or group transitions inside steps 5 and 8.
+- In repeated growth cycles, the core only emits selection and radius events for cluster members that still have an unassigned neighbor within R. Members without new neighbors are marked processed and skipped without selection, retraction, radius growth, or expansion events; they remain in the group and count toward minPts. Group completion occurs when no expandable members remain.
+- The step 1 and step 6 selection pings last at least 600ms. Before 5 seconds within a step, R-circle growth lasts 600ms and retraction lasts 300ms. After the threshold, each subsequent radius transition within that step uses its normal base duration multiplied by `0.97^n`, where `n` is the count of accelerated radius transitions in that step starting at 1; there is no minimum duration. Internal point-selection delays also become zero in exponential mode. The timer and acceleration counters reset at each new step, but not between repeated events or groups inside steps 5 and 8.
+- As soon as a group has no more unexpanded members that can reach unassigned neighbors, the algorithm checks its size against minPts. Undersized groups transition to the noise palette at that group-completion event, during steps 5 or 8 as applicable; step 9 does not recolor points.
+- Step 9 retracts the final R circle and clears the current point's pulse and top-layer state while finalizing the summary. Rolling back to an earlier step may skip or abbreviate the animation, but must land on that frame's exact final visual state.
+- Each step's Canvas playback is capped at 30 seconds. If its scheduled animation exceeds this limit, playback snaps to the exact final visual state of that same step; it does not advance the step history or impose a total runtime limit across steps 1-9.
 - New step entries in the Steps panel slide and fade in; the description expands by height.
 - Rolling back to a previous step animates the Canvas to that step's state.
 
@@ -248,4 +259,4 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 - No hover animations or micro-interactions (no scale, pulse, or movement on hover).
 - Interactive elements show a pointer cursor, a visible focus outline in `--primary`, and no scale or motion on press.
-- With `prefers-reduced-motion`, durations are shortened to about 100ms, movement is removed, and only opacity transitions remain.
+- With `prefers-reduced-motion`, the step 1 and step 6 ring pings and current-point size pulse collapse to a single static white highlight; intra-group point selections have no ring. Sequential captures collapse to a single fast fade. Radius and color transitions use shortened opacity-only changes without spatial movement. The frame's final point assignments, noise state, summary, and cleared/current-point state remain identical to standard motion.

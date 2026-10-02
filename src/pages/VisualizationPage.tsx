@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import type { ScenarioId } from '../data'
 import { VisualizationBlock } from '../components/VisualizationBlock'
 import { CodeBlock } from '../components/CodeBlock'
@@ -7,7 +7,8 @@ import { Reveal } from '../components/Reveal'
 import { POINT_LIMIT } from '../features/dbscan/constants'
 import { createSeed, runDbscan } from '../features/dbscan'
 import { SCENARIOS } from '../features/dbscan/scenarios'
-import type { Assignment, Frame, Point } from '../features/dbscan/types'
+import { createFrameAnimationPlans } from '../features/canvas/animation'
+import type { Assignment, Frame, FrameEvent, Point } from '../features/dbscan/types'
 import '../styles/visualization.css'
 
 export function VisualizationPage() {
@@ -21,6 +22,12 @@ export function VisualizationPage() {
   const points = scenario === 'create' ? createPoints : SCENARIOS[scenario].points
   const frame = frames?.[activeStep]
   const assignments: readonly Assignment[] = frame?.assignments ?? []
+  const events: readonly FrameEvent[] = frame?.events ?? []
+  const currentPointIndex = frame?.currentPointIndex ?? null
+  const animationPlans = useMemo(
+    () => frames === null ? [] : createFrameAnimationPlans(frames),
+    [frames],
+  )
 
   useLayoutEffect(() => {
     setFrames(null)
@@ -87,6 +94,13 @@ export function VisualizationPage() {
           points={points}
           assignments={assignments}
           circle={frame?.circle ?? null}
+          events={events}
+          frameStep={activeStep}
+          currentPointIndex={currentPointIndex}
+          captureIntervals={animationPlans[activeStep]?.captureIntervalsByEvent ?? []}
+          captureFadeDurations={animationPlans[activeStep]?.captureFadeDurationsByEvent ?? []}
+          selectionDurations={animationPlans[activeStep]?.selectionDurationsByEvent ?? []}
+          radiusDurations={animationPlans[activeStep]?.radiusDurationsByEvent ?? []}
           steps={steps}
           clusterCount={frame?.clusterCount ?? 0}
           noiseCount={frame?.noiseCount ?? 0}
