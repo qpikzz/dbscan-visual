@@ -4,14 +4,16 @@ export { createPrng, createSeed, pickRandom } from './prng'
 export { runDbscan } from './frames'
 export type {
   Assignment,
+  CompleteGroupEvent,
   DbscanParams,
   ExpandEvent,
+  FinalizeEvent,
   Frame,
   FrameEvent,
-  MarkNoiseEvent,
   Point,
   Prng,
   RadiusCircle,
+  RetractRadiusEvent,
   SelectNextEvent,
   SelectSeedEvent,
   Seed,
