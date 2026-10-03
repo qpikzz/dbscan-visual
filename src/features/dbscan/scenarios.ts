@@ -1,5 +1,6 @@
 import { DEFAULT_PARAMETERS } from './constants'
 import type { DbscanParams, Point } from './types'
+import { PREPARED_SCENARIO_POINTS } from '../../data/preparedScenarios'
 
 export const SCENARIO_IDS = ['circles', 'blobs', 'half-moons', 'create'] as const
 
@@ -29,31 +30,27 @@ export const DEFAULT_SCENARIO_ID: ScenarioId = 'circles'
 
 export const INITIAL_STEP = 0
 
-// TODO(Day 3.3 follow-up): fill `points` for the prepared scenarios. Generating the
-// datasets is a separate task, so the arrays stay empty here and the module keeps
-// working. The `recommended` values are tuned to the expected dataset scale and
-// must be re-checked once the coordinates exist.
 export const SCENARIOS: Record<ScenarioId, Scenario> = {
   circles: {
     id: 'circles',
     labelKey: 'scenarioCircles',
     kind: 'prepared',
-    points: NO_POINTS,
-    recommended: { r: 2.4, minPts: 4 },
+    points: PREPARED_SCENARIO_POINTS.circles,
+    recommended: { r: 2, minPts: 4 },
   },
   blobs: {
     id: 'blobs',
     labelKey: 'scenarioBlobs',
     kind: 'prepared',
-    points: NO_POINTS,
-    recommended: { r: 3, minPts: 6 },
+    points: PREPARED_SCENARIO_POINTS.blobs,
+    recommended: { r: 1.8, minPts: 5 },
   },
   'half-moons': {
     id: 'half-moons',
     labelKey: 'scenarioHalfMoons',
     kind: 'prepared',
-    points: NO_POINTS,
-    recommended: { r: 1.2, minPts: 4 },
+    points: PREPARED_SCENARIO_POINTS['half-moons'],
+    recommended: { r: 1.5, minPts: 5 },
   },
   create: {
     id: 'create',

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ScenarioId } from '../data'
-import type { Assignment, Point, RadiusCircle } from '../features/dbscan/types'
+import type { Assignment, FrameEvent, Point, RadiusCircle } from '../features/dbscan/types'
 import { CanvasView } from '../features/canvas/CanvasView'
 import { MIN_PTS_RANGE, R_RANGE } from '../features/dbscan/constants'
 import { useMotionSettings } from '../hooks/useMotionSettings'
@@ -20,6 +20,13 @@ type CanvasPanelProps = {
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
+  events: readonly FrameEvent[]
+  frameStep: number
+  currentPointIndex: number | null
+  captureIntervals: readonly (readonly number[])[]
+  captureFadeDurations: readonly (readonly number[])[]
+  selectionDurations: readonly number[]
+  radiusDurations: readonly number[]
   onPointAdd: (point: Point) => void
   onPointsErase: (points: readonly Point[]) => void
   onRChange: (value: number) => void
@@ -36,6 +43,13 @@ export function CanvasPanel({
   points,
   assignments = [],
   circle = null,
+  events,
+  frameStep,
+  currentPointIndex,
+  captureIntervals,
+  captureFadeDurations,
+  selectionDurations,
+  radiusDurations,
   onPointAdd,
   onPointsErase,
   onRChange,
@@ -96,9 +110,18 @@ export function CanvasPanel({
       </div>
       <div className="canvas-wrap">
         <CanvasView
+          scenario={scenario}
+          r={r}
           points={points}
           assignments={assignments}
           circle={circle}
+          events={events}
+          frameStep={frameStep}
+          currentPointIndex={currentPointIndex}
+          captureIntervals={captureIntervals}
+          captureFadeDurations={captureFadeDurations}
+          selectionDurations={selectionDurations}
+          radiusDurations={radiusDurations}
           activeTool={canvasTool}
           onPointAdd={onPointAdd}
           onPointsErase={onPointsErase}

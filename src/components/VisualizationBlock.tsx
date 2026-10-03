@@ -1,5 +1,5 @@
 import type { ScenarioId } from '../data'
-import type { Assignment, Point, RadiusCircle } from '../features/dbscan/types'
+import type { Assignment, FrameEvent, Point, RadiusCircle } from '../features/dbscan/types'
 import { CanvasPanel } from './CanvasPanel'
 import { StepsPanel } from './StepsPanel'
 
@@ -12,6 +12,13 @@ type VisualizationBlockProps = {
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
+  events: readonly FrameEvent[]
+  frameStep: number
+  currentPointIndex: number | null
+  captureIntervals: readonly (readonly number[])[]
+  captureFadeDurations: readonly (readonly number[])[]
+  selectionDurations: readonly number[]
+  radiusDurations: readonly number[]
   steps: readonly number[]
   clusterCount: number
   noiseCount: number
@@ -35,6 +42,13 @@ export function VisualizationBlock({
   points,
   assignments,
   circle,
+  events,
+  frameStep,
+  currentPointIndex,
+  captureIntervals,
+  captureFadeDurations,
+  selectionDurations,
+  radiusDurations,
   steps,
   clusterCount,
   noiseCount,
@@ -59,6 +73,13 @@ export function VisualizationBlock({
         points={points}
         assignments={assignments}
         circle={circle}
+        events={events}
+        frameStep={frameStep}
+        currentPointIndex={currentPointIndex}
+        captureIntervals={captureIntervals}
+        captureFadeDurations={captureFadeDurations}
+        selectionDurations={selectionDurations}
+        radiusDurations={radiusDurations}
         onPointAdd={onPointAdd}
         onPointsErase={onPointsErase}
         onRChange={onRChange}

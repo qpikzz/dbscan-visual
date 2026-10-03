@@ -1,14 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { POINT_LIMIT } from '../dbscan/constants'
-import type { Assignment, Point, RadiusCircle } from '../dbscan/types'
+import type { ScenarioId } from '../../data'
+import type { Assignment, FrameEvent, Point, RadiusCircle } from '../dbscan/types'
 import { useMotionSettings } from '../../hooks/useMotionSettings'
 import { samplePathSegment } from './drawing'
+import {
+  CAPTURE_FADE_DURATION,
+  MAX_STEP_ANIMATION_DURATION,
+  MIN_STEP_DURATION,
+  NOISE_FADE_DURATION,
+  PULSE_CYCLE_DURATION,
+} from './animation'
 
 type CanvasViewProps = {
+  scenario: ScenarioId
   points: readonly Point[]
   assignments: readonly Assignment[]
   circle: RadiusCircle | null
+  events: readonly FrameEvent[]
+  captureIntervals: readonly (readonly number[])[]
+  frameStep: number
+  currentPointIndex: number | null
+  r: number
   activeTool: 'draw' | 'erase' | null
+  captureFadeDurations: readonly (readonly number[])[]
+  selectionDurations: readonly number[]
+  radiusDurations: readonly number[]
   onPointAdd: (point: Point) => void
   onPointsErase: (points: readonly Point[]) => void
   onPointLimitReached: () => void
@@ -35,24 +52,67 @@ type CanvasFrameSnapshot = {
   assignments: readonly Assignment[]
   circle: RadiusCircle | null
   points: readonly Point[]
+  step: number
+  currentPointIndex: number | null
 }
 
 type CircleVisual = {
+  pointIndex: number
   x: number
   y: number
   radius: number
-  opacity: number
 }
 
-type FrameTransition = {
-  pointColors: readonly string[]
-  circles: readonly CircleVisual[]
+type ColorMotion = {
+  pointIndex: number
+  fromColor: string
+  toColor: string
+  start: number
+  duration: number
+  mode: 'blend' | 'fade'
+}
+
+type CircleMotion = {
+  pointIndex: number
+  fromRadius: number
+  toRadius: number
+  start: number
+  duration: number
+}
+
+type RingMotion = {
+  pointIndex: number
+  start: number
+  duration: number
+}
+
+type CurrentMotion = {
+  start: number
+  pointIndex: number | null
+  pulseStart: number | null
+}
+
+type FramePlayback = {
   startTime: number
+  duration: number
+  reduced: boolean
+  colorMotions: readonly ColorMotion[]
+  circleMotions: readonly CircleMotion[]
+  ringMotions: readonly RingMotion[]
+  currentMotions: readonly CurrentMotion[]
+  startColors: readonly string[]
+  startCircle: CircleVisual | null
+  startCurrentPointIndex: number | null
+  startPulseTime: number | null
+  targetColors: readonly string[]
+  targetCircle: CircleVisual | null
+  targetCurrentPointIndex: number | null
 }
 
 const GRID_CELL_SIZE = 32
-const MIN_ZOOM = 0.25
+const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
+const FIT_PADDING = 40
 const POINT_RADIUS = 0.14
 const DRAW_SPACING = 0.45
 const ERASE_SPACING = 0.14
@@ -78,6 +138,10 @@ function easeStepProgress(progress: number): number {
 
   const parameter = (lowerBound + upperBound) / 2
   return 3 * parameter * (1 - parameter) + parameter ** 3
+}
+
+function easeInOutProgress(progress: number): number {
+  return (1 - Math.cos(Math.PI * progress)) / 2
 }
 
 function mixHexColor(fromColor: string, toColor: string, progress: number): string {
@@ -111,23 +175,35 @@ function getPinchState(positions: Map<number, Position>) {
 }
 
 export function CanvasView({
+  scenario,
   points,
   assignments,
   circle,
+  events,
+  captureIntervals,
+  frameStep,
+  currentPointIndex,
+  r,
   activeTool,
+  captureFadeDurations,
+  selectionDurations,
+  radiusDurations,
   onPointAdd,
   onPointsErase,
   onPointLimitReached,
 }: CanvasViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const transformRef = useRef<ViewTransform>({ zoom: 1, x: 0, y: 0 })
+  const fittedScenarioRef = useRef<ScenarioId | null>(null)
   const pointsRef = useRef(points)
   const pointCountRef = useRef(points.length)
   const limitToastShownRef = useRef(false)
   const previousFrameRef = useRef<CanvasFrameSnapshot | null>(null)
-  const transitionRef = useRef<FrameTransition | null>(null)
+  const playbackRef = useRef<FramePlayback | null>(null)
   const renderedPointColorsRef = useRef<string[]>([])
-  const renderedCirclesRef = useRef<CircleVisual[]>([])
+  const renderedCircleRef = useRef<CircleVisual | null>(null)
+  const renderedCurrentPointRef = useRef<number | null>(null)
+  const renderedPulseTimeRef = useRef<number | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const interactionRef = useRef({
     activeTool,
@@ -191,6 +267,53 @@ export function CanvasView({
     }
   }, [])
 
+  useLayoutEffect(() => {
+    if (size.width === 0 || size.height === 0 || fittedScenarioRef.current === scenario) {
+      return
+    }
+    fittedScenarioRef.current = scenario
+
+    if (points.length === 0) {
+      transformRef.current = { zoom: 1, x: 0, y: 0 }
+      setRevision((value) => value + 1)
+      return
+    }
+
+    const bounds = points.reduce(
+      (current, point) => ({
+        minX: Math.min(current.minX, point.x),
+        maxX: Math.max(current.maxX, point.x),
+        minY: Math.min(current.minY, point.y),
+        maxY: Math.max(current.maxY, point.y),
+      }),
+      {
+        minX: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+      },
+    )
+    const worldWidth = Math.max(bounds.maxX - bounds.minX, 1)
+    const worldHeight = Math.max(bounds.maxY - bounds.minY, 1)
+    const availableWidth = Math.max(size.width - FIT_PADDING * 2, 1)
+    const availableHeight = Math.max(size.height - FIT_PADDING * 2, 1)
+    const zoom = Math.min(
+      1,
+      availableWidth / (worldWidth * GRID_CELL_SIZE),
+      availableHeight / (worldHeight * GRID_CELL_SIZE),
+    )
+    const scale = GRID_CELL_SIZE * zoom
+    const centerX = (bounds.minX + bounds.maxX) / 2
+    const centerY = (bounds.minY + bounds.maxY) / 2
+
+    transformRef.current = {
+      zoom: Math.max(MIN_ZOOM, zoom),
+      x: -centerX * scale,
+      y: -centerY * scale,
+    }
+    setRevision((value) => value + 1)
+  }, [points, scenario, size.height, size.width])
+
   useEffect(() => {
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
@@ -199,35 +322,25 @@ export function CanvasView({
     }
 
     const previousFrame = previousFrameRef.current
-    const pointsChanged = previousFrame !== null && previousFrame.points !== points
+    const pointsChanged = previousFrame !== null &&
+      (previousFrame.points !== points || previousFrame.step > frameStep)
     const frameChanged = previousFrame !== null &&
-      (previousFrame.assignments !== assignments || previousFrame.circle !== circle)
+      (previousFrame.step !== frameStep ||
+        previousFrame.assignments !== assignments ||
+        previousFrame.circle !== circle ||
+        previousFrame.currentPointIndex !== currentPointIndex)
 
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current)
       animationFrameRef.current = null
     }
 
-    if (frameChanged && !pointsChanged && previousFrame !== null) {
-      transitionRef.current = {
-        pointColors: [...renderedPointColorsRef.current],
-        circles: [...renderedCirclesRef.current],
-        startTime: performance.now(),
-      }
-    } else if (pointsChanged) {
-      transitionRef.current = null
-      renderedPointColorsRef.current = []
-      renderedCirclesRef.current = []
-    }
-
-    previousFrameRef.current = { assignments, circle, points }
-
-    const transition = transitionRef.current
-    const duration = reduced ? 100 : 600
     const colors = {
       surface: getThemeColor(canvas, '--surface'),
       grid: getThemeColor(canvas, '--grid'),
       muted: getThemeColor(canvas, '--text-muted'),
+      text: getThemeColor(canvas, '--text'),
+      pulse: getThemeColor(canvas, '--pulse'),
       noise: Array.from({ length: 5 }, (_, index) =>
         getThemeColor(canvas, `--noise-${index + 1}`),
       ),
@@ -236,10 +349,13 @@ export function CanvasView({
         getThemeColor(canvas, `--cluster-${index + 1}`),
       ),
     }
-    const assignmentColor = (assignment: Assignment | undefined, point: Point, index: number) => {
+    const assignmentColor = (assignment: Assignment | undefined, pointIndex: number) => {
+      const point = points[pointIndex]
       if (assignment?.kind === 'noise') {
         const noiseIndex = Math.abs(
-          Math.imul(Math.round(point.x * 1000), 31) ^ Math.round(point.y * 1000) ^ index,
+          Math.imul(Math.round((point?.x ?? 0) * 1000), 31) ^
+            Math.round((point?.y ?? 0) * 1000) ^
+            pointIndex,
         ) % colors.noise.length
         return colors.noise[noiseIndex] ?? colors.noise[0] ?? colors.muted
       }
@@ -248,41 +364,275 @@ export function CanvasView({
       }
       return colors.muted
     }
-    const targetColors = points.map((point, index) =>
-      assignmentColor(assignments[index], point, index),
-    )
-    const fromColors = transition?.pointColors ?? targetColors
-    const targetCircle = circle === null ? null : points[circle.pointIndex]
-    const targetCircleVisual =
-      circle !== null && targetCircle !== null && targetCircle !== undefined
-        ? { x: targetCircle.x, y: targetCircle.y, radius: circle.radius, opacity: 1 }
-        : null
-
-    const drawCircle = (
-      targetCircle: CircleVisual | null,
-      opacity: number,
-    ) => {
-      if (targetCircle === null || opacity <= 0) return
-      const visual = { ...targetCircle, opacity }
-      renderedCirclesRef.current.push(visual)
-
+    const targetColors = points.map((_, index) => assignmentColor(assignments[index], index))
+    const makeCircleVisual = (target: RadiusCircle | null): CircleVisual | null => {
+      if (target === null || points[target.pointIndex] === undefined) {
+        return null
+      }
+      const point = points[target.pointIndex]
+      if (point === undefined) {
+        return null
+      }
+      return { pointIndex: target.pointIndex, x: point.x, y: point.y, radius: target.radius }
+    }
+    const targetCircle = makeCircleVisual(circle)
+    const drawCircle = (visual: CircleVisual | null, opacity = 1) => {
+      if (visual === null || opacity <= 0 || visual.radius <= 0) return
       context.save()
       context.globalAlpha = opacity
       context.beginPath()
-      context.arc(
-        visual.x,
-        visual.y,
-        visual.radius,
-        0,
-        Math.PI * 2,
-      )
+      context.arc(visual.x, visual.y, visual.radius, 0, Math.PI * 2)
       context.strokeStyle = colors.primary
       context.lineWidth = 1.5 / (GRID_CELL_SIZE * transformRef.current.zoom)
       context.stroke()
       context.restore()
     }
 
-    const draw = (progress: number) => {
+    const baseColors = points.map((_, index) =>
+      renderedPointColorsRef.current[index] ?? targetColors[index] ?? colors.muted,
+    )
+    const startCircle = pointsChanged ? null : renderedCircleRef.current
+    const startCurrentPointIndex = pointsChanged
+      ? null
+      : renderedCurrentPointRef.current ?? previousFrame?.currentPointIndex ?? null
+    const startPulseTime = pointsChanged ? null : renderedPulseTimeRef.current
+    const animateForward = frameChanged &&
+      !pointsChanged &&
+      previousFrame !== null &&
+      frameStep === previousFrame.step + 1
+    const motionModeChanged = playbackRef.current !== null &&
+      playbackRef.current.reduced !== reduced
+    const existingPlayback =
+      !frameChanged && !pointsChanged && !motionModeChanged
+        ? playbackRef.current
+        : null
+
+    let playback = existingPlayback
+    if (animateForward || (reduced && frameChanged && !pointsChanged)) {
+      const colorMotions: ColorMotion[] = []
+      const circleMotions: CircleMotion[] = []
+      const ringMotions: RingMotion[] = []
+      const currentMotions: CurrentMotion[] = []
+      let duration = 0
+
+      if (reduced) {
+        targetColors.forEach((targetColor, pointIndex) => {
+          const fromColor = baseColors[pointIndex] ?? targetColor
+          if (fromColor !== targetColor) {
+            colorMotions.push({
+              pointIndex,
+              fromColor,
+              toColor: targetColor,
+              start: 0,
+              duration: 100,
+              mode: 'fade',
+            })
+          }
+        })
+        duration = 100
+      } else {
+        let elapsed = 0
+        let scheduledCurrentPoint = startCurrentPointIndex
+        const plannedColors = [...baseColors]
+
+        const scheduleColor = (
+          pointIndex: number,
+          toColor: string,
+          start: number,
+          durationMs: number,
+          mode: ColorMotion['mode'] = 'blend',
+        ) => {
+          const fromColor = plannedColors[pointIndex] ?? colors.muted
+          colorMotions.push({
+            pointIndex,
+            fromColor,
+            toColor,
+            start,
+            duration: durationMs,
+            mode,
+          })
+          plannedColors[pointIndex] = toColor
+        }
+
+        for (let eventIndex = 0; eventIndex < events.length; eventIndex += 1) {
+          const event = events[eventIndex]
+          const eventCaptureIntervals = captureIntervals[eventIndex]
+          const eventCaptureFadeDurations = captureFadeDurations[eventIndex]
+          const eventSelectionDuration = selectionDurations[eventIndex]
+          const eventRadiusDuration = radiusDurations[eventIndex]
+          if (
+            event === undefined ||
+            eventCaptureIntervals === undefined ||
+            eventCaptureFadeDurations === undefined ||
+            eventSelectionDuration === undefined ||
+            eventRadiusDuration === undefined
+          ) {
+            throw new Error('Canvas frame animation plan does not match its events')
+          }
+          if (event.type === 'select-seed' || event.type === 'select-next') {
+            const selectionDuration = eventSelectionDuration
+            const clusterColor = colors.clusters[event.clusterId % colors.clusters.length] ?? colors.muted
+            if (
+              (frameStep === 1 || frameStep === 6) &&
+              event.type === 'select-seed'
+            ) {
+              ringMotions.push({
+                pointIndex: event.pointIndex,
+                start: elapsed,
+                duration: selectionDuration,
+              })
+            }
+            scheduleColor(
+              event.pointIndex,
+              clusterColor,
+              elapsed,
+              CAPTURE_FADE_DURATION,
+              'fade',
+            )
+            scheduledCurrentPoint = event.pointIndex
+            currentMotions.push({
+              start: elapsed,
+              pointIndex: event.pointIndex,
+              pulseStart: elapsed + selectionDuration,
+            })
+            elapsed += selectionDuration
+            if (frameStep === 3 && event.type === 'select-next') {
+              const growDuration = eventRadiusDuration
+              circleMotions.push({
+                pointIndex: event.pointIndex,
+                fromRadius: 0,
+                toRadius: r,
+                start: elapsed,
+                duration: growDuration,
+              })
+              elapsed += growDuration
+            }
+          } else if (event.type === 'expand') {
+            const previousCircleRadius =
+              frameStep === 4 && startCircle?.pointIndex === event.centerIndex
+                ? startCircle.radius
+                : 0
+            if (previousCircleRadius < r) {
+              const growDuration = eventRadiusDuration
+              circleMotions.push({
+                pointIndex: event.centerIndex,
+                fromRadius: previousCircleRadius,
+                toRadius: r,
+                start: elapsed,
+                duration: growDuration,
+              })
+              elapsed += growDuration
+            }
+
+            const clusterColor = colors.clusters[event.clusterId % colors.clusters.length] ?? colors.muted
+            let captureEnd = elapsed
+            event.addedIndices.forEach((pointIndex, index) => {
+              if (index > 0) {
+                const interval = eventCaptureIntervals[index]
+                if (interval === undefined) {
+                  throw new Error('Canvas capture timing is missing a point interval')
+                }
+                elapsed += interval
+              }
+              const fadeDuration = eventCaptureFadeDurations[index]
+              if (fadeDuration === undefined) {
+                throw new Error('Canvas capture animation plan is missing a fade duration')
+              }
+              scheduleColor(
+                pointIndex,
+                clusterColor,
+                elapsed,
+                fadeDuration,
+                'fade',
+              )
+              captureEnd = Math.max(captureEnd, elapsed + fadeDuration)
+            })
+            elapsed = captureEnd
+          } else if (event.type === 'retract-radius') {
+            const retractDuration = eventRadiusDuration
+            const currentRadius =
+              startCircle?.pointIndex === event.pointIndex ? startCircle.radius : r
+            circleMotions.push({
+              pointIndex: event.pointIndex,
+              fromRadius: currentRadius,
+              toRadius: 0,
+              start: elapsed,
+              duration: retractDuration,
+            })
+            currentMotions.push({
+              start: elapsed,
+              pointIndex: scheduledCurrentPoint,
+              pulseStart: null,
+            })
+            elapsed += retractDuration
+          } else if (event.type === 'complete-group' && event.isNoise) {
+            const noiseFadeDuration = NOISE_FADE_DURATION
+            for (const pointIndex of event.memberIndices) {
+              scheduleColor(
+                pointIndex,
+                assignmentColor({ kind: 'noise' }, pointIndex),
+                elapsed,
+                noiseFadeDuration,
+                'fade',
+              )
+            }
+            elapsed += noiseFadeDuration
+            if (!event.keepCurrentPoint) {
+              scheduledCurrentPoint = null
+              currentMotions.push({ start: elapsed, pointIndex: null, pulseStart: null })
+            }
+          } else if (event.type === 'complete-group' && !event.keepCurrentPoint) {
+            scheduledCurrentPoint = null
+            currentMotions.push({ start: elapsed, pointIndex: null, pulseStart: null })
+          } else if (event.type === 'finalize') {
+            scheduledCurrentPoint = null
+            currentMotions.push({ start: elapsed, pointIndex: null, pulseStart: null })
+          }
+        }
+
+        duration = Math.max(elapsed, MIN_STEP_DURATION)
+      }
+
+      playback = {
+        startTime: performance.now(),
+        duration: Math.min(duration, MAX_STEP_ANIMATION_DURATION),
+        reduced,
+        colorMotions,
+        circleMotions,
+        ringMotions,
+        currentMotions,
+        startColors: baseColors,
+        startCircle,
+        startCurrentPointIndex,
+        startPulseTime,
+        targetColors,
+        targetCircle,
+        targetCurrentPointIndex: currentPointIndex,
+      }
+      playbackRef.current = playback
+    } else if (frameChanged || pointsChanged || motionModeChanged) {
+      playback = null
+      playbackRef.current = null
+      if (pointsChanged) {
+        renderedPointColorsRef.current = []
+        renderedCircleRef.current = null
+        renderedCurrentPointRef.current = null
+        renderedPulseTimeRef.current = null
+      } else if ((frameChanged && !animateForward) || motionModeChanged) {
+        renderedPulseTimeRef.current =
+          reduced || currentPointIndex === null ? null : performance.now()
+      }
+    }
+
+    previousFrameRef.current = {
+      assignments,
+      circle,
+      points,
+      step: frameStep,
+      currentPointIndex,
+    }
+
+    const draw = (timestamp: number) => {
       const transform = transformRef.current
       const scale = GRID_CELL_SIZE * transform.zoom
 
@@ -312,87 +662,259 @@ export function CanvasView({
       }
       context.stroke()
 
-      renderedCirclesRef.current = []
-      if (transition === null) {
-        drawCircle(targetCircleVisual, 1)
-      } else if (
-        reduced &&
-        transition.circles.length === 1 &&
-        targetCircleVisual !== null &&
-        transition.circles[0]?.x === targetCircleVisual.x &&
-        transition.circles[0]?.y === targetCircleVisual.y &&
-        transition.circles[0]?.radius === targetCircleVisual.radius
-      ) {
-        const previousCircle = transition.circles[0]
-        if (previousCircle !== undefined) {
-          drawCircle(
-            targetCircleVisual,
-            previousCircle.opacity + (1 - previousCircle.opacity) * progress,
-          )
+      const activePlayback = playbackRef.current
+      const elapsed = activePlayback === null
+        ? 0
+        : Math.min(timestamp - activePlayback.startTime, activePlayback.duration)
+      let visibleColors: readonly string[] = targetColors
+      let visibleCircle = targetCircle
+      let visibleCurrentPoint = currentPointIndex
+      let pulseTime: number | null = reduced ? null : timestamp
+      let ring: { pointIndex: number; radius: number; opacity: number } | null = null
+      const pointOverlays = new Map<number, { color: string; opacity: number }>()
+
+      if (activePlayback !== null && elapsed < activePlayback.duration) {
+        const animatedColors = [...activePlayback.startColors]
+        for (const motion of activePlayback.colorMotions) {
+          if (elapsed < motion.start) {
+            continue
+          }
+          const progress = motion.duration <= 0
+            ? 1
+            : Math.min((elapsed - motion.start) / motion.duration, 1)
+          const eased = motion.mode === 'fade'
+            ? easeInOutProgress(progress)
+            : easeStepProgress(progress)
+          if (motion.mode === 'fade' && progress < 1) {
+            animatedColors[motion.pointIndex] = motion.fromColor
+            pointOverlays.set(motion.pointIndex, {
+              color: motion.toColor,
+              opacity: eased,
+            })
+          } else {
+            animatedColors[motion.pointIndex] = mixHexColor(
+              motion.fromColor,
+              motion.toColor,
+              eased,
+            )
+          }
         }
-      } else if (reduced) {
-        transition.circles.forEach((previousCircle) =>
-          drawCircle(previousCircle, previousCircle.opacity * (1 - progress)),
-        )
-        drawCircle(targetCircleVisual, progress)
-      } else if (transition.circles.length === 1 && targetCircleVisual !== null) {
-        const fromCircle = transition.circles[0]
-        if (fromCircle !== undefined) {
-          drawCircle(
-            {
-              x: fromCircle.x + (targetCircleVisual.x - fromCircle.x) * progress,
-              y: fromCircle.y + (targetCircleVisual.y - fromCircle.y) * progress,
-              radius:
-                fromCircle.radius + (targetCircleVisual.radius - fromCircle.radius) * progress,
-              opacity: 1,
-            },
-            fromCircle.opacity + (1 - fromCircle.opacity) * progress,
+        visibleColors = animatedColors
+
+        if (activePlayback.reduced) {
+          const progress = activePlayback.duration === 0
+            ? 1
+            : elapsed / activePlayback.duration
+          drawCircle(activePlayback.startCircle, 1 - progress)
+          drawCircle(activePlayback.targetCircle, progress)
+          visibleCircle = progress >= 1
+            ? activePlayback.targetCircle
+            : activePlayback.startCircle
+          visibleCurrentPoint = activePlayback.targetCurrentPointIndex
+          pulseTime = null
+        } else {
+          let circleState = activePlayback.startCircle
+          for (const motion of activePlayback.circleMotions) {
+            if (elapsed < motion.start) {
+              break
+            }
+            const progress = motion.duration <= 0
+              ? 1
+              : Math.min((elapsed - motion.start) / motion.duration, 1)
+            const point = points[motion.pointIndex]
+            if (point === undefined) {
+              continue
+            }
+            const radius = motion.fromRadius +
+              (motion.toRadius - motion.fromRadius) * easeInOutProgress(progress)
+            circleState = radius <= 0
+              ? null
+              : { pointIndex: motion.pointIndex, x: point.x, y: point.y, radius }
+            if (progress < 1) {
+              break
+            }
+          }
+          if (elapsed >= activePlayback.duration) {
+            circleState = activePlayback.targetCircle
+          }
+          visibleCircle = circleState
+
+          visibleCurrentPoint = activePlayback.startCurrentPointIndex
+          pulseTime = activePlayback.startPulseTime
+          for (const motion of activePlayback.currentMotions) {
+            if (elapsed < motion.start) {
+              break
+            }
+            visibleCurrentPoint = motion.pointIndex
+            pulseTime = motion.pulseStart === null || elapsed < motion.pulseStart
+              ? null
+              : activePlayback.startTime + motion.pulseStart
+          }
+
+          for (const motion of activePlayback.ringMotions) {
+            if (elapsed < motion.start || elapsed > motion.start + motion.duration) {
+              continue
+            }
+            const progress = motion.duration <= 0
+              ? 1
+              : (elapsed - motion.start) / motion.duration
+            ring = {
+              pointIndex: motion.pointIndex,
+              radius: POINT_RADIUS * (4.5 - 3.5 * easeInOutProgress(progress)),
+              opacity: 0.9 * (1 - easeInOutProgress(progress)),
+            }
+          }
+        }
+      } else if (activePlayback !== null) {
+        visibleColors = activePlayback.targetColors
+        visibleCircle = activePlayback.targetCircle
+        visibleCurrentPoint = activePlayback.targetCurrentPointIndex
+        if (!activePlayback.reduced && visibleCurrentPoint !== null) {
+          pulseTime = activePlayback.currentMotions.reduce(
+            (last, motion) => motion.pointIndex === visibleCurrentPoint && motion.pulseStart !== null
+              ? activePlayback.startTime + motion.pulseStart
+              : last,
+            activePlayback.startPulseTime,
           )
+        } else {
+          pulseTime = null
         }
       } else {
-        transition.circles.forEach((previousCircle) =>
-          drawCircle(previousCircle, previousCircle.opacity * (1 - progress)),
-        )
-        drawCircle(targetCircleVisual, progress)
+        visibleColors = targetColors
+        visibleCircle = targetCircle
+        visibleCurrentPoint = currentPointIndex
+        pulseTime = reduced ? null : renderedPulseTimeRef.current ?? timestamp
+      }
+
+      if (activePlayback === null || !activePlayback.reduced || elapsed >= activePlayback.duration) {
+        drawCircle(visibleCircle)
       }
 
       points.forEach((point, index) => {
-        const fromColor = fromColors[index] ?? colors.muted
-        const toColor = targetColors[index] ?? colors.muted
-        const color = transition === null
-          ? toColor
-          : mixHexColor(fromColor, toColor, progress)
-        renderedPointColorsRef.current[index] = color
+        if (index === visibleCurrentPoint) {
+          return
+        }
         context.beginPath()
         context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2)
-        context.fillStyle = color
+        context.fillStyle = visibleColors[index] ?? colors.muted
         context.fill()
+        const overlay = pointOverlays.get(index)
+        if (overlay !== undefined) {
+          context.save()
+          context.globalAlpha = overlay.opacity
+          context.fillStyle = overlay.color
+          context.fill()
+          context.restore()
+        }
       })
+
+      const currentPoint = visibleCurrentPoint === null
+        ? undefined
+        : points[visibleCurrentPoint]
+      if (currentPoint !== undefined && visibleCurrentPoint !== null) {
+        if (ring !== null) {
+          const ringPoint = points[ring.pointIndex]
+          if (ringPoint !== undefined) {
+            context.save()
+            context.beginPath()
+            context.arc(ringPoint.x, ringPoint.y, ring.radius, 0, Math.PI * 2)
+            context.globalAlpha = ring.opacity * 0.45
+            context.strokeStyle = colors.text
+            context.lineWidth = 4 / (GRID_CELL_SIZE * transformRef.current.zoom)
+            context.stroke()
+            context.globalAlpha = ring.opacity
+            context.beginPath()
+            context.arc(ringPoint.x, ringPoint.y, ring.radius, 0, Math.PI * 2)
+            context.strokeStyle = colors.pulse
+            context.lineWidth = 2 / (GRID_CELL_SIZE * transformRef.current.zoom)
+            context.stroke()
+            context.restore()
+          }
+        }
+
+        let currentPointRadius = POINT_RADIUS
+        if (!reduced && pulseTime !== null) {
+          const pulseElapsed = Math.max(timestamp - pulseTime, 0)
+          const phase = (pulseElapsed % PULSE_CYCLE_DURATION) / PULSE_CYCLE_DURATION
+          const pulseProgress = (1 - Math.cos(phase * Math.PI * 2)) / 2
+          currentPointRadius *= 1 + 0.5 * pulseProgress
+        }
+
+        if (reduced) {
+          context.save()
+          context.globalAlpha = 0.38
+          context.beginPath()
+          context.arc(currentPoint.x, currentPoint.y, POINT_RADIUS * 7.5, 0, Math.PI * 2)
+          context.strokeStyle = colors.text
+          context.lineWidth = 5 / (GRID_CELL_SIZE * transformRef.current.zoom)
+          context.stroke()
+          context.globalAlpha = 0.92
+          context.beginPath()
+          context.arc(currentPoint.x, currentPoint.y, POINT_RADIUS * 7.5, 0, Math.PI * 2)
+          context.strokeStyle = colors.pulse
+          context.lineWidth = 3 / (GRID_CELL_SIZE * transformRef.current.zoom)
+          context.stroke()
+          context.restore()
+        }
+        context.beginPath()
+        context.arc(currentPoint.x, currentPoint.y, currentPointRadius, 0, Math.PI * 2)
+        context.fillStyle = visibleColors[visibleCurrentPoint] ?? colors.muted
+        context.fill()
+        const overlay = pointOverlays.get(visibleCurrentPoint)
+        if (overlay !== undefined) {
+          context.save()
+          context.globalAlpha = overlay.opacity
+          context.fillStyle = overlay.color
+          context.fill()
+          context.restore()
+        }
+      }
+
+      visibleColors.forEach((color, index) => {
+        renderedPointColorsRef.current[index] = color ?? colors.muted
+      })
+      renderedCircleRef.current = visibleCircle
+      renderedCurrentPointRef.current = visibleCurrentPoint
+      renderedPulseTimeRef.current = pulseTime
 
       context.restore()
     }
 
-    if (transition === null) {
-      draw(1)
-      return
+    if (playback === null && !reduced && currentPointIndex !== null) {
+      playbackRef.current = null
     }
 
-    const animate = (timestamp: number) => {
-      const elapsed = Math.min((timestamp - transition.startTime) / duration, 1)
-      draw(easeStepProgress(elapsed))
-      if (elapsed < 1) {
+    draw(performance.now())
+    const activePlayback = playbackRef.current
+    const needsPulse = !reduced && renderedCurrentPointRef.current !== null
+    if (activePlayback !== null || needsPulse) {
+      const animate = (timestamp: number) => {
+        draw(timestamp)
+        const currentPlayback = playbackRef.current
+        if (
+          currentPlayback !== null &&
+          timestamp - currentPlayback.startTime < currentPlayback.duration
+        ) {
+          animationFrameRef.current = requestAnimationFrame(animate)
+          return
+        }
+        if (currentPlayback !== null) {
+          playbackRef.current = null
+          draw(timestamp)
+        }
+        if (!reduced && renderedCurrentPointRef.current !== null) {
+          animationFrameRef.current = requestAnimationFrame(animate)
+        } else {
+          animationFrameRef.current = null
+        }
+      }
+      if (activePlayback !== null && activePlayback.duration > 0 || needsPulse) {
         animationFrameRef.current = requestAnimationFrame(animate)
       } else {
-        animationFrameRef.current = null
-        transitionRef.current = null
+        playbackRef.current = null
       }
-    }
-    const elapsed = Math.min((performance.now() - transition.startTime) / duration, 1)
-    draw(easeStepProgress(elapsed))
-    if (elapsed < 1) {
-      animationFrameRef.current = requestAnimationFrame(animate)
     } else {
-      transitionRef.current = null
+      playbackRef.current = null
     }
 
     return () => {
@@ -401,7 +923,22 @@ export function CanvasView({
         animationFrameRef.current = null
       }
     }
-  }, [assignments, circle, points, reduced, revision, size])
+  }, [
+    assignments,
+    circle,
+    captureIntervals,
+    captureFadeDurations,
+    selectionDurations,
+    radiusDurations,
+    currentPointIndex,
+    events,
+    frameStep,
+    points,
+    r,
+    reduced,
+    revision,
+    size,
+  ])
 
   useEffect(() => {
     const canvas = canvasRef.current

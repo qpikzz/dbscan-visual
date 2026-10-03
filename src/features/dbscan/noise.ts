@@ -1,34 +1,37 @@
-import type { MarkNoiseEvent, RunState } from './types'
+import { NO_CLUSTER_ID } from './types'
+import type { CompleteGroupEvent, RunState } from './types'
 
-export function findNoiseClusters(state: RunState): number[] {
-  const noiseClusterIds: number[] = []
-  for (let clusterId = 0; clusterId < state.clusterSizes.length; clusterId += 1) {
-    const size = state.clusterSizes[clusterId] ?? 0
-    if (size < state.minPts) {
-      noiseClusterIds.push(clusterId)
-    }
-  }
-  return noiseClusterIds
-}
-
-export function markNoise(state: RunState): MarkNoiseEvent {
-  const clusterIds = findNoiseClusters(state)
-  const noise = new Set(clusterIds)
-  let noiseCount = 0
-
-  for (let i = 0; i < state.assignments.length; i += 1) {
-    const assignment = state.assignments[i]
-    if (assignment === undefined || assignment.kind !== 'cluster') {
-      continue
-    }
-    if (noise.has(assignment.clusterId)) {
-      state.assignments[i] = { kind: 'noise' }
-      noiseCount += 1
-    }
+export function completeGroup(
+  state: RunState,
+  keepCurrentPoint: boolean,
+): CompleteGroupEvent | null {
+  const clusterId = state.currentClusterId
+  const groupId = state.currentGroupId
+  if (clusterId === NO_CLUSTER_ID || groupId === null) {
+    return null
   }
 
-  state.noiseCount = noiseCount
-  state.clusterCount = state.clusterSizes.length - clusterIds.length
+  const memberIndices = state.groups[groupId] ?? []
+  const isNoise = (state.clusterSizes[clusterId] ?? 0) < state.minPts
+  if (isNoise) {
+    for (const pointIndex of memberIndices) {
+      state.assignments[pointIndex] = { kind: 'noise' }
+    }
+    state.noiseCount += memberIndices.length
+  } else {
+    state.clusterCount += 1
+  }
 
-  return { type: 'mark-noise', clusterIds, clusterCount: state.clusterCount, noiseCount }
+  state.currentClusterId = NO_CLUSTER_ID
+  state.currentGroupId = null
+
+  return {
+    type: 'complete-group',
+    clusterId,
+    memberIndices: [...memberIndices],
+    isNoise,
+    keepCurrentPoint,
+    clusterCount: state.clusterCount,
+    noiseCount: state.noiseCount,
+  }
 }
