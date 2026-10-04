@@ -20,6 +20,7 @@ type CanvasPanelProps = {
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
+  probeHighlights?: readonly number[]
   events: readonly FrameEvent[]
   frameStep: number
   currentPointIndex: number | null
@@ -43,6 +44,7 @@ export function CanvasPanel({
   points,
   assignments = [],
   circle = null,
+  probeHighlights = [],
   events,
   frameStep,
   currentPointIndex,
@@ -115,6 +117,7 @@ export function CanvasPanel({
           points={points}
           assignments={assignments}
           circle={circle}
+          probeHighlights={probeHighlights}
           events={events}
           frameStep={frameStep}
           currentPointIndex={currentPointIndex}

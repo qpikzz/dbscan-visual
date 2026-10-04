@@ -94,6 +94,7 @@ export function VisualizationPage() {
           points={points}
           assignments={assignments}
           circle={frame?.circle ?? null}
+          probeHighlights={frame?.probeHighlights ?? []}
           events={events}
           frameStep={activeStep}
           currentPointIndex={currentPointIndex}
@@ -104,6 +105,7 @@ export function VisualizationPage() {
           steps={steps}
           clusterCount={frame?.clusterCount ?? 0}
           noiseCount={frame?.noiseCount ?? 0}
+          algorithmScenario={frame?.scenario ?? 'standard'}
           disabled={points.length === 0 || (activeStep === 9 && frames !== null)}
           onPointAdd={addCreatePoint}
           onPointsErase={eraseCreatePoints}

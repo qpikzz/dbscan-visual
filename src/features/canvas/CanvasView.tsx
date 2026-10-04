@@ -17,6 +17,7 @@ type CanvasViewProps = {
   points: readonly Point[]
   assignments: readonly Assignment[]
   circle: RadiusCircle | null
+  probeHighlights: readonly number[]
   events: readonly FrameEvent[]
   captureIntervals: readonly (readonly number[])[]
   frameStep: number
@@ -54,6 +55,7 @@ type CanvasFrameSnapshot = {
   points: readonly Point[]
   step: number
   currentPointIndex: number | null
+  probeHighlights: readonly number[]
 }
 
 type CircleVisual = {
@@ -92,6 +94,14 @@ type CurrentMotion = {
   pulseStart: number | null
 }
 
+type ProbeMotion = {
+  start: number
+  duration: number
+  centerIndices: readonly number[]
+  highlightedIndices: readonly number[]
+  showCircle: boolean
+}
+
 type FramePlayback = {
   startTime: number
   duration: number
@@ -100,6 +110,7 @@ type FramePlayback = {
   circleMotions: readonly CircleMotion[]
   ringMotions: readonly RingMotion[]
   currentMotions: readonly CurrentMotion[]
+  probeMotions: readonly ProbeMotion[]
   startColors: readonly string[]
   startCircle: CircleVisual | null
   startCurrentPointIndex: number | null
@@ -179,6 +190,7 @@ export function CanvasView({
   points,
   assignments,
   circle,
+  probeHighlights,
   events,
   captureIntervals,
   frameStep,
@@ -328,7 +340,8 @@ export function CanvasView({
       (previousFrame.step !== frameStep ||
         previousFrame.assignments !== assignments ||
         previousFrame.circle !== circle ||
-        previousFrame.currentPointIndex !== currentPointIndex)
+        previousFrame.currentPointIndex !== currentPointIndex ||
+        previousFrame.probeHighlights !== probeHighlights)
 
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current)
@@ -413,6 +426,7 @@ export function CanvasView({
       const circleMotions: CircleMotion[] = []
       const ringMotions: RingMotion[] = []
       const currentMotions: CurrentMotion[] = []
+      const probeMotions: ProbeMotion[] = []
       let duration = 0
 
       if (reduced) {
@@ -587,6 +601,26 @@ export function CanvasView({
           } else if (event.type === 'finalize') {
             scheduledCurrentPoint = null
             currentMotions.push({ start: elapsed, pointIndex: null, pulseStart: null })
+          } else if (event.type === 'noise-probe') {
+            probeMotions.push({
+              start: elapsed,
+              duration: event.duration,
+              centerIndices: event.centerIndices,
+              highlightedIndices: event.highlightedIndices,
+              showCircle: event.showCircle,
+            })
+            elapsed += event.duration
+          } else if (event.type === 'noise-recolor') {
+            for (const pointIndex of event.pointIndices) {
+              scheduleColor(
+                pointIndex,
+                assignmentColor({ kind: 'noise' }, pointIndex),
+                elapsed,
+                NOISE_FADE_DURATION,
+                'fade',
+              )
+            }
+            elapsed += NOISE_FADE_DURATION
           }
         }
 
@@ -601,6 +635,7 @@ export function CanvasView({
         circleMotions,
         ringMotions,
         currentMotions,
+        probeMotions,
         startColors: baseColors,
         startCircle,
         startCurrentPointIndex,
@@ -630,6 +665,7 @@ export function CanvasView({
       points,
       step: frameStep,
       currentPointIndex,
+      probeHighlights,
     }
 
     const draw = (timestamp: number) => {
@@ -672,6 +708,9 @@ export function CanvasView({
       let pulseTime: number | null = reduced ? null : timestamp
       let ring: { pointIndex: number; radius: number; opacity: number } | null = null
       const pointOverlays = new Map<number, { color: string; opacity: number }>()
+      const pointOutlines = new Map<number, number>(
+        probeHighlights.map((pointIndex) => [pointIndex, 1]),
+      )
 
       if (activePlayback !== null && elapsed < activePlayback.duration) {
         const animatedColors = [...activePlayback.startColors]
@@ -751,6 +790,43 @@ export function CanvasView({
               : activePlayback.startTime + motion.pulseStart
           }
 
+          for (const motion of activePlayback.probeMotions) {
+            if (elapsed < motion.start || elapsed > motion.start + motion.duration) {
+              continue
+            }
+            const progress = motion.duration <= 0
+              ? 1
+              : Math.min((elapsed - motion.start) / motion.duration, 1)
+            if (motion.showCircle && motion.centerIndices.length > 0) {
+              const pathPosition = progress * (motion.centerIndices.length - 1)
+              const pathIndex = Math.floor(pathPosition)
+              const fromIndex = motion.centerIndices[pathIndex]
+              const toIndex = motion.centerIndices[
+                Math.min(pathIndex + 1, motion.centerIndices.length - 1)
+              ]
+              const fromPoint = fromIndex === undefined ? undefined : points[fromIndex]
+              const toPoint = toIndex === undefined ? undefined : points[toIndex]
+              if (fromPoint !== undefined && toPoint !== undefined) {
+                const segmentProgress = pathPosition - pathIndex
+                visibleCircle = {
+                  pointIndex: fromIndex,
+                  x: fromPoint.x + (toPoint.x - fromPoint.x) * segmentProgress,
+                  y: fromPoint.y + (toPoint.y - fromPoint.y) * segmentProgress,
+                  radius: r,
+                }
+              }
+            } else if (!motion.showCircle && startCircle !== null) {
+              visibleCircle = {
+                ...startCircle,
+                radius: startCircle.radius * (1 - progress),
+              }
+            }
+            const opacity = 1 - easeStepProgress(progress)
+            for (const pointIndex of motion.highlightedIndices) {
+              pointOutlines.set(pointIndex, opacity)
+            }
+          }
+
           for (const motion of activePlayback.ringMotions) {
             if (elapsed < motion.start || elapsed > motion.start + motion.duration) {
               continue
@@ -804,6 +880,17 @@ export function CanvasView({
           context.globalAlpha = overlay.opacity
           context.fillStyle = overlay.color
           context.fill()
+          context.restore()
+        }
+        const outlineOpacity = pointOutlines.get(index) ?? 0
+        if (outlineOpacity > 0) {
+          context.save()
+          context.globalAlpha = outlineOpacity
+          context.beginPath()
+          context.arc(point.x, point.y, POINT_RADIUS * 1.8, 0, Math.PI * 2)
+          context.strokeStyle = colors.primary
+          context.lineWidth = 2 / (GRID_CELL_SIZE * transformRef.current.zoom)
+          context.stroke()
           context.restore()
         }
       })
@@ -926,6 +1013,7 @@ export function CanvasView({
   }, [
     assignments,
     circle,
+    probeHighlights,
     captureIntervals,
     captureFadeDurations,
     selectionDurations,
