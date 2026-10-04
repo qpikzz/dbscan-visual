@@ -57,21 +57,23 @@ Four scenarios, shown as cards: Circles, Blobs, Half-moons, Create.
 
 A simplified DBSCAN variant:
 
-1. A cluster starts from a randomly chosen point that is not assigned to any cluster.
+1. A cluster starts from a randomly chosen point in a pre-run group with at least minPts points.
 2. The cluster grows by repeatedly taking all unassigned neighbors (distance < R) of points already in the cluster.
-3. When the cluster stops growing, a new cluster starts from another random unassigned point.
-4. The process repeats until every point belongs to a cluster.
+3. When the cluster stops growing, another cluster starts from a random point in a remaining group with at least minPts points.
+4. The process repeats until every eligible group has been processed; groups smaller than minPts are recorded as noise without being started.
 5. Every resulting group with fewer than minPts points is marked as noise.
 
 Core and border points are not distinguished.
 
 ### 4.2. Pre-run Partition and Randomness
 
-- Before playback, the algorithm core partitions the input points into connected groups using the neighbor relation (Euclidean distance strictly less than R). This partition only determines the order in which groups are started; the core still determines all assignments and noise results.
+- Before playback, the algorithm core partitions the input points into connected groups using the neighbor relation (Euclidean distance strictly less than R). A group with at least minPts points is eligible to start a cluster; every smaller group is known to be noise and is never a starting-point candidate.
 - Random choices within each not-yet-found group use a seeded PRNG. The seed is fixed when the run starts (Start pressed at step 0), so rolling back to a step reproduces the same event sequence and state. Every new run from step 0 uses a new seed.
-- The core picks a random starting point from the first group at step 1, then from each not-yet-found group when the previous group has finished. Expansion processes each newly discovered neighbor in a deterministic order recorded in the frame events.
+- Steps 1 and 6 choose a random group only from the remaining groups with at least minPts points, then choose a point only from that group's members. The eligible-group pool is filtered once from the pre-run component sizes before playback; undersized noise groups are excluded, then recorded as noise without a starting-point selection. This enforces the invariant that steps 1 and 6 never pick noise points.
+- The core picks a random starting point from the first eligible group at step 1, then from each not-yet-found eligible group when the previous group has finished. Expansion processes each newly discovered neighbor in a deterministic order recorded in the frame events.
 - A point already assigned to the current cluster is selected for expansion only if it has at least one unassigned neighbor within R. Members with no unassigned neighbors are marked processed by the core without emitting selection, retraction, radius-growth, or expansion animation events. They remain members of the group and count toward minPts.
 - A completed group is checked against minPts as soon as no unexpanded member can reach an unassigned neighbor. If it is smaller than minPts, every point in that group becomes noise immediately in that step's final state and its completion event. Step 9 does not recolor groups.
+- Pre-run groups smaller than minPts are excluded from cluster-start selection and recorded as noise during step 5, without selecting or expanding any of their points.
 
 ### 4.3. Frames
 
@@ -80,17 +82,19 @@ Core and border points are not distinguished.
 
 ## 5. Steps
 
+### 5.1. Standard Scenario
+
 There are always 9 steps after the initial step 0. One press of "Next" performs one entire step: all points that belong to the step are colored during that press, with animation. Under standard motion settings, each step takes at least 300ms so its events can be seen and analyzed. Each individual step's Canvas playback is capped at 30 seconds; if a step's scheduled animation exceeds the cap, playback snaps to that step's exact final visual state without changing the active step or step history. There is no total runtime limit across steps 1-9. Only the current point pulses, by smoothly growing from its normal size up to 1.5 times that size and back while it remains current. The starting-point selections in steps 1 and 6 get a single white, converging ring ping; intra-group point selections do not. The 5-second acceleration timer resets at the start of each step. Within a step and before 5 seconds elapse, point captures are sequential, with fades of at least 200ms and linearly decreasing start intervals. After the threshold, captures continue one at a time while their intervals and fade durations decrease exponentially by a factor of 0.97 per captured point, without a lower limit and approaching zero. Internal point selections have no delay; starting-point selection rings retain their normal duration. Radius growth/retraction also accelerates after the threshold: each subsequent transition uses its normal base duration multiplied by 0.97^n, where n counts accelerated radius transitions in that step starting at 1, without a lower limit. The timer does not reset during repeated events or group transitions inside steps 5 and 8.
 
 | Step | EN text | RU text | Effect on the Canvas |
 |---|---|---|---|
 | 0 | Press the button above. | Нажмите на кнопку выше. | Initial state. All points gray. |
-| 1 | Pick an arbitrary point. | Выбираем произвольную точку. | A random point from the first pre-run group is chosen. A single white converging selection-ring ping marks it, then it moves to the top rendering layer, fades to the first cluster color, and starts pulsing in size up to 1.5 times its normal size. |
+| 1 | Pick an arbitrary point. | Выбираем произвольную точку. | A random point from the first pre-run group with at least minPts points is chosen. A single white converging selection-ring ping marks it, then it moves to the top rendering layer, fades to the first cluster color, and starts pulsing in size up to 1.5 times its normal size. |
 | 2 | Take all its neighbors: points closer than R. | Забираем все соседние точки: расстояние до них меньше R. | The R circle grows from zero to R over 0.6 seconds unless 5 seconds have elapsed in this step. Before the threshold, unassigned neighbors are captured one at a time with fades of at least 0.2 seconds and linearly decreasing start intervals; after it, captures remain one at a time while start intervals and fade durations decrease exponentially toward zero. |
 | 3 | Pick the next point inside the painted area. | Выбираем следующую точку в закрашенной области. | The current R circle retracts to its point and its size pulse stops. The next unexpanded point in the group becomes current, moves to the top layer and starts pulsing in size; its full R circle appears around it. No selection ring is shown. |
 | 4 | Take all new points that are neighbors of it. | Забираем все новые точки, которые являются её соседями. | The R circle grows from the new current point, with its duration shortened exponentially if 5 seconds have elapsed in this step. Newly discovered neighbors are captured sequentially; after the threshold their start intervals and fade durations shrink exponentially toward zero. |
 | 5 | Continue the same way until the cluster stops growing. | Продолжаем так, пока кластер не перестанет расти. | The step 3-4 cycle repeats only for points that still have unassigned neighbors within R. Other members are marked processed without animation. This step starts with a fresh 5-second timer: captures remain sequential and radius transitions use 600ms growth / 300ms retraction until the threshold. After it, internal selections have no delay, capture intervals and fade durations decrease by 0.97 per point toward zero, and each subsequent radius transition uses its base duration multiplied by 0.97^n without a minimum. The timer does not reset between repeated events. No selection ring is shown. When no expandable members remain, the group is checked immediately against minPts and, if too small, all its points turn to noise. |
-| 6 | Pick a random point that does not belong to any cluster. | Выбираем случайную точку, не принадлежащую ни одному кластеру. | A random point from the next not-yet-found pre-run group is chosen by a single white converging ring ping, moves to the top layer, is colored with the next cluster color, and pulses in size. If no group remains, nothing changes. |
+| 6 | Pick a random point that does not belong to any cluster. | Выбираем случайную точку, не принадлежащую ни одному кластеру. | A random point from the next not-yet-found pre-run group with at least minPts points is chosen by a single white converging ring ping, moves to the top layer, is colored with the next cluster color, and pulses in size. If no eligible group remains, nothing changes. |
 | 7 | Take all its neighbors. | Забираем все соседние для неё точки. | The R circle grows from the current point, with its duration shortened exponentially if 5 seconds have elapsed in this step. Unassigned neighbors are captured sequentially; after the threshold their start intervals and fade durations shrink exponentially toward zero. If no new group was started, nothing changes. |
 | 8 | Repeat until every point belongs to a cluster. | Повторяем, пока все точки не попадут в кластеры. | Steps 3-5 repeat within each remaining group, processing only points with unassigned neighbors within R; members without new neighbors are skipped without animation. Step 8 starts its own fresh 5-second timer; within step 8, acceleration does not reset for new groups or repeated events. After its threshold, internal selections have no delay, capture intervals and fades decrease by 0.97 per point toward zero, and each subsequent radius transition uses its base duration multiplied by 0.97^n. Each group is checked against minPts as soon as no expandable members remain and any undersized group is recolored as noise then; the cycle continues until no groups remain. |
 | 9 | Done! Total clusters: {count}. Noise points: {noise}. | Всё получилось! Всего кластеров: {count}. Точек шума: {noise}. | The last R circle retracts. No points are recolored; the step finalizes the summary and clears the R-circle, pulsing, and top-layer state. |
@@ -100,6 +104,41 @@ There are always 9 steps after the initial step 0. One press of "Next" performs 
 - Cluster colors follow the palette in DESIGN.md, in the order clusters are created.
 - A point with no neighbors forms a group of one point.
 - Autoplay and "jump to end" are not provided.
+
+### 5.2. No-Clusters Scenario
+
+Used when no cluster exists after the pre-run partition (every group has fewer than minPts points, so every point is noise). The step texts are humorous. The step count stays 9.
+
+| Step | EN text | RU text | Effect on the Canvas |
+|---|---|---|---|
+| 0 | Press the button above. | Нажмите на кнопку выше. | Initial state. All points gray. |
+| 1 | Pick an arbitrary point. | Выбираем произвольную точку. | A random point is highlighted with a `--primary` outline; its fill stays gray. |
+| 2 | Looking for all its neighbors... Hmm, odd. This point looks like noise. | Ищем все соседние точки... Хм, странно. Кажется, эта точка — шум. | The R circle is drawn; points within R are briefly highlighted with a `--primary` outline, then the highlight fades. |
+| 3 | Well, it happens. Let's pick another point. | Ну ладно, бывает. Выбираем другую точку. | Another random point is highlighted; the R circle moves to it. |
+| 4 | Looking for neighbors... Nothing here either. What's going on? | Ищем соседей... И тут пусто. Что же такое? | Points within R are briefly highlighted, then the highlight fades. |
+| 5 | One more try, maybe we'll get lucky. | Пробуем ещё раз, вдруг повезёт. | A third random point is highlighted; the R circle moves to it and neighbors are briefly highlighted. |
+| 6 | No luck. Checking the rest of the points: same story. | Не повезло. Проверяем остальные точки: та же история. | The R circle sweeps across the remaining points in sequence. |
+| 7 | Maybe it's not the points. Is minPts too high? | Может, дело не в точках. Не слишком ли большой minPts? | The R circle disappears. No other change. |
+| 8 | Checking every last point: no clusters found. | Проверяем все точки до последней: кластеров нет. | The R circle sweeps across all points again, faster. |
+| 9 | Done! Clusters: 0, noise: {countNoise} points. Try lowering minPts or increasing R. | Готово! Кластеров: 0, шум: {countNoise} точек. Попробуйте уменьшить minPts или увеличить R. | All points are recolored with the noise color. |
+
+### 5.3. Single-Cluster Scenarios
+
+These cases apply when exactly one pre-run group has at least minPts points. The standard steps 1-5 select and grow that cluster. Steps 6-8 remain in the nine-step sequence but have no Canvas events, R circle, point highlighting, or other Canvas change; their localized acknowledgments are:
+
+| Step | EN text | RU text |
+|---|---|---|
+| 6 | There are no remaining points that can form another cluster. | Не осталось точек, которые могут образовать ещё один кластер. |
+| 7 | No additional cluster group remains to process. | Больше нет кластерных групп для обработки. |
+| 8 | Every cluster group has already been checked. | Все кластерные группы уже проверены. |
+
+When that one group contains every point, there are no noise points. When other pre-run groups exist, each is smaller than minPts and is recorded as noise during step 5 without being selected as a starting point. Step 9 uses the standard summary with the actual counts: "Done! Total clusters: 1. Noise points: 0." / "Всё получилось! Всего кластеров: 1. Точек шума: 0." when there is no noise, and substitutes the actual noise count when noise points remain.
+
+### 5.4. General Rules
+
+- All scenarios show exactly 9 steps after the initial step 0; exceptional cases do not remove steps.
+- The no-clusters script's point probes are explanatory highlights, not cluster-start selections. No point is assigned to a cluster during steps 1-8 in that scenario.
+- In all scenarios, the step 9 summary reports final cluster and noise counts. The no-clusters scenario colors all points as noise in step 9; standard and single-cluster scenarios record undersized pre-run groups as noise during step 5.
 
 ## 6. Steps Panel Behavior
 

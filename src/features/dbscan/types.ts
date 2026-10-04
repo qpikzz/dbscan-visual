@@ -14,6 +14,12 @@ export type Seed = number
 
 export type Prng = () => number
 
+export type RunScenario =
+  | 'standard'
+  | 'no-clusters'
+  | 'single-cluster-no-noise'
+  | 'single-cluster-with-noise'
+
 export type Assignment =
   | { kind: 'unassigned' }
   | { kind: 'cluster'; clusterId: number }
@@ -64,20 +70,37 @@ export type FinalizeEvent = {
   noiseCount: number
 }
 
+export type NoiseProbeEvent = {
+  type: 'noise-probe'
+  centerIndices: number[]
+  highlightedIndices: number[]
+  showCircle: boolean
+  duration: number
+}
+
+export type NoiseRecolorEvent = {
+  type: 'noise-recolor'
+  pointIndices: number[]
+}
+
 export type FrameEvent =
   | SelectSeedEvent
   | SelectNextEvent
   | ExpandEvent
   | RetractRadiusEvent
   | CompleteGroupEvent
+  | NoiseProbeEvent
+  | NoiseRecolorEvent
   | FinalizeEvent
 
 export type Frame = {
   step: number
+  scenario: RunScenario
   events: FrameEvent[]
   assignments: Assignment[]
   circle: RadiusCircle | null
   currentPointIndex: number | null
+  probeHighlights: number[]
   clusterCount: number
   noiseCount: number
 }
@@ -92,11 +115,14 @@ export type RunState = {
   expanded: boolean[]
   clusterSizes: number[]
   groups: number[][]
+  noiseGroupIds: number[]
   remainingGroupIds: number[]
+  scenario: RunScenario
   currentClusterId: number
   currentGroupId: number | null
   focusIndex: number | null
   circle: RadiusCircle | null
+  probeHighlights: number[]
   clusterCount: number
   noiseCount: number
 }

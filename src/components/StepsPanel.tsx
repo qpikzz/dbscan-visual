@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
 import { useMotionSettings } from '../hooks/useMotionSettings'
+import type { RunScenario } from '../features/dbscan/types'
 
 type StepItemProps = {
   index: number
@@ -9,6 +10,7 @@ type StepItemProps = {
   isLast: boolean
   clusterCount: number
   noiseCount: number
+  scenario: RunScenario
   onClick?: () => void
 }
 
@@ -18,18 +20,25 @@ function StepItem({
   isLast,
   clusterCount,
   noiseCount,
+  scenario,
   onClick,
 }: StepItemProps) {
   const { t } = useLanguage()
   const { reduced, fadeSlide, transition } = useMotionSettings()
   const passed = !isActive
 
-  const description =
-    index === 9 && t.steps[9].includes('{count}')
-      ? t.steps[9]
-          .replace('{count}', String(clusterCount))
-          .replace('{noise}', String(noiseCount))
-      : t.steps[index]
+  const isSingleCluster = scenario === 'single-cluster-no-noise' ||
+    scenario === 'single-cluster-with-noise'
+  const description = scenario === 'no-clusters'
+    ? (t.noClusterSteps[index] ?? t.steps[index] ?? '')
+        .replace('{countNoise}', String(noiseCount))
+    : isSingleCluster && index >= 6 && index <= 8
+      ? t.singleClusterAcknowledgements[index - 6] ?? t.steps[index]
+      : index === 9 && t.steps[9]?.includes('{count}')
+        ? t.steps[9]
+            .replace('{count}', String(clusterCount))
+            .replace('{noise}', String(noiseCount))
+        : t.steps[index]
 
   return (
     <motion.li
@@ -75,6 +84,7 @@ type StepsPanelProps = {
   steps?: readonly number[]
   clusterCount?: number
   noiseCount?: number
+  scenario?: RunScenario
   disabled?: boolean
   onStart?: () => void
   onNext?: () => void
@@ -85,6 +95,7 @@ export function StepsPanel({
   steps = [0],
   clusterCount = 0,
   noiseCount = 0,
+  scenario = 'standard',
   disabled = false,
   onStart,
   onNext,
@@ -121,6 +132,7 @@ export function StepsPanel({
               isLast={i === steps.length - 1}
               clusterCount={clusterCount}
               noiseCount={noiseCount}
+              scenario={scenario}
               onClick={i < steps.length - 1 ? () => onSeekStep?.(index) : undefined}
             />
           ))}

@@ -1,5 +1,11 @@
 import type { ScenarioId } from '../data'
-import type { Assignment, FrameEvent, Point, RadiusCircle } from '../features/dbscan/types'
+import type {
+  Assignment,
+  FrameEvent,
+  Point,
+  RadiusCircle,
+  RunScenario,
+} from '../features/dbscan/types'
 import { CanvasPanel } from './CanvasPanel'
 import { StepsPanel } from './StepsPanel'
 
@@ -12,6 +18,7 @@ type VisualizationBlockProps = {
   points: readonly Point[]
   assignments?: readonly Assignment[]
   circle?: RadiusCircle | null
+  probeHighlights?: readonly number[]
   events: readonly FrameEvent[]
   frameStep: number
   currentPointIndex: number | null
@@ -22,6 +29,7 @@ type VisualizationBlockProps = {
   steps: readonly number[]
   clusterCount: number
   noiseCount: number
+  algorithmScenario: RunScenario
   disabled: boolean
   onPointAdd: (point: Point) => void
   onPointsErase: (points: readonly Point[]) => void
@@ -42,6 +50,7 @@ export function VisualizationBlock({
   points,
   assignments,
   circle,
+  probeHighlights,
   events,
   frameStep,
   currentPointIndex,
@@ -52,6 +61,7 @@ export function VisualizationBlock({
   steps,
   clusterCount,
   noiseCount,
+  algorithmScenario,
   disabled,
   onPointAdd,
   onPointsErase,
@@ -73,6 +83,7 @@ export function VisualizationBlock({
         points={points}
         assignments={assignments}
         circle={circle}
+        probeHighlights={probeHighlights}
         events={events}
         frameStep={frameStep}
         currentPointIndex={currentPointIndex}
@@ -90,6 +101,7 @@ export function VisualizationBlock({
         steps={steps}
         clusterCount={clusterCount}
         noiseCount={noiseCount}
+        scenario={algorithmScenario}
         disabled={disabled}
         onStart={onStart}
         onNext={onNext}

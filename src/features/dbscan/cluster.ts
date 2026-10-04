@@ -9,6 +9,7 @@ import type {
   FrameEvent,
   Point,
   RetractRadiusEvent,
+  RunScenario,
   RunState,
   SelectNextEvent,
   SelectSeedEvent,
@@ -60,6 +61,20 @@ export function createRunState(
     neighborsWithin(points, pointIndex, params.r),
   )
   const groups = partitionGroups(neighborsByPoint)
+  const qualifyingGroupIds = groups.flatMap((group, groupId) =>
+    group.length >= params.minPts ? [groupId] : [],
+  )
+  const noiseGroupIds = groups.flatMap((group, groupId) =>
+    group.length < params.minPts ? [groupId] : [],
+  )
+  let scenario: RunScenario = 'standard'
+  if (qualifyingGroupIds.length === 0) {
+    scenario = 'no-clusters'
+  } else if (qualifyingGroupIds.length === 1) {
+    scenario = noiseGroupIds.length === 0
+      ? 'single-cluster-no-noise'
+      : 'single-cluster-with-noise'
+  }
   return {
     points,
     neighborsByPoint,
@@ -70,11 +85,14 @@ export function createRunState(
     expanded: points.map(() => false),
     clusterSizes: [],
     groups,
-    remainingGroupIds: groups.map((_, index) => index),
+    noiseGroupIds,
+    remainingGroupIds: qualifyingGroupIds,
+    scenario,
     currentClusterId: NO_CLUSTER_ID,
     currentGroupId: null,
     focusIndex: null,
     circle: null,
+    probeHighlights: [],
     clusterCount: 0,
     noiseCount: 0,
   }
