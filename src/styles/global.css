@@ -128,7 +128,6 @@ a:focus-visible {
 }
 
 .app-header,
-.page-switcher,
 .page-container,
 .app-footer {
   width: min(1200px, calc(100% - 48px));
@@ -136,29 +135,81 @@ a:focus-visible {
 }
 
 .app-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-6);
+  gap: var(--space-4);
   padding: var(--space-6) 0;
   border-bottom: 1px solid var(--line);
 }
 
 .app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
   margin: 0;
   font-size: 24px;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.app-logo-mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  fill: var(--primary-soft);
+  stroke: var(--primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.app-logo-mark path {
+  fill: none;
+  stroke: var(--text-muted);
+}
+
+.app-logo-mark circle {
+  fill: var(--surface);
+  stroke: var(--text);
+}
+
+.app-logo-mark .logo-point-primary {
+  fill: var(--primary);
+  stroke: var(--primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: var(--space-2);
+}
+
+.page-switcher {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
 }
 
 .app-controls {
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: var(--space-2);
 }
 
 .language-switcher,
+.page-switcher,
 .theme-toggle {
-  min-height: 44px;
+  height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius-button);
   background: var(--surface);
@@ -167,23 +218,30 @@ a:focus-visible {
 .language-switcher {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px;
+  gap: 2px;
+  padding: 3px;
 }
 
-.language-switcher button {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 var(--space-2);
-  border: none;
-  border-radius: var(--radius-button);
+.language-switcher button,
+.page-switcher-option {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
   background: transparent;
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.language-switcher button.active {
+.language-switcher button.active,
+.page-switcher-option.active {
+  border-color: var(--primary);
   background: var(--primary-soft);
   color: var(--primary);
 }
@@ -191,9 +249,16 @@ a:focus-visible {
 .theme-toggle {
   display: inline-grid;
   width: 44px;
-  padding: 0;
+  padding: 3px;
+  color: var(--text-muted);
   cursor: pointer;
   place-items: center;
+}
+
+.theme-toggle.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 .theme-toggle svg {
@@ -210,52 +275,49 @@ a:focus-visible {
   padding: 0 0 var(--space-16);
 }
 
-.page-switcher {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: fit-content;
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-8);
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0;
+.page-switcher-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 5px;
+  background: var(--primary-soft);
+  transition: transform 250ms var(--ease);
+  pointer-events: none;
+}
+
+.page-switcher-indicator[data-active='theory'] {
+  transform: translateX(100%);
 }
 
 .page-switcher-option {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid transparent;
-  border-radius: var(--radius-button);
-  color: var(--text-muted);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 300ms var(--ease), border-color 300ms var(--ease);
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  border-color: transparent;
+  transition: color 250ms var(--ease);
 }
 
 .page-switcher-option.active {
   border-color: var(--primary);
+  background: transparent;
   color: var(--primary);
 }
 
-.page-switcher-connector {
-  display: inline-grid;
-  place-items: center;
-  color: var(--text-muted);
+.page-transition {
+  animation: page-fade-slide 250ms var(--ease);
 }
 
-.page-switcher-connector svg {
-  width: 12px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
+@keyframes page-fade-slide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .app-footer {
@@ -312,19 +374,45 @@ a:focus-visible {
 
 @media (max-width: 767px) {
   .app-header {
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: var(--space-4) 0;
+    row-gap: var(--space-3);
   }
 
   .app-header,
-  .page-switcher,
   .page-container,
   .app-footer {
     width: calc(100% - 32px);
   }
 
-  .page-switcher {
-    margin-top: var(--space-4);
-    margin-bottom: var(--space-8);
+  .header-actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .language-switcher button,
+  .page-switcher-option {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .app-logo {
+    font-size: 20px;
+  }
+
+  .app-logo-mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  .theme-toggle {
+    width: 40px;
+  }
+
+  .app-controls {
+    gap: 6px;
   }
 
   .page-container {
@@ -357,5 +445,13 @@ a:focus-visible {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 100ms !important;
+  }
+
+  .page-switcher-indicator {
+    transition: none;
+  }
+
+  .page-transition {
+    animation: none;
   }
 }
