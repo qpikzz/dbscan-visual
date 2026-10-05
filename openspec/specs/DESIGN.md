@@ -78,28 +78,26 @@ Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use
 Vertical order of the page:
 
 1. Header
-2. Page switcher
-3. Visualization block (Canvas panel + Steps panel)
-4. Code block
-5. Plots block
-6. Footer
+2. Visualization block (Canvas panel + Steps panel)
+3. Code block
+4. Plots block
+5. Footer
 
 ### 5.1. Header
 
 - Not fixed: it scrolls away with the page.
-- Left: the site title `DB SCAN` as a semantic `<h1>`, Nunito 600, 24-28px. The `#` character is not part of the title text.
-- Right: language switch (`Ru` / `En`) and theme toggle (sun icon in light theme, moon icon in dark theme).
-- Language switch is a compact text button; the theme toggle is an icon button. Both use a 1px outline and 8px radius.
-- Icons are thin-line SVG.
-
-### 5.2. Page Switcher
-
-- A compact two-position vertical toggle with two labeled options: "Визуализация" (top) and "Теория" (bottom), stacked with a small arrow or connector between them indicating they are linked.
-- The toggle is centered horizontally below the header (not full width) and occupies its own row without overlapping header controls.
+- One header row, from left to right: the site logo on the far left, followed by a compact group on the right containing the page switcher, language switch, and theme toggle. The controls in this group have consistent small gaps.
+- The logo is a semantic `<h1>` containing the title `DB SCAN` in Nunito 600, 24-28px, preceded on the same baseline by a small SVG radar mark with two slightly irregular, rounded concentric rings: an unfilled outer ring outlined in `--text` and an inner ring filled with `--primary`, with no separate center dot. The `#` character is not part of the title text. No raster imagery or gradients are used.
+- The page switcher is a compact single-row, two-option segmented toggle inside the header: "Визуализация" and "Теория" sit side by side in one bordered control.
+- No arrow or connector is rendered as a static element at any time. The page option changes state immediately, and only the page content transitions; no moving indicator is rendered.
 - Selecting an option switches the entire page content to show only that page (Visualization or Theory): a full content swap, not an expand/collapse of both. There is no accordion or expand behavior.
-- The selected option is visually marked as active (`--primary` text/border); the inactive one is muted (`--text-muted`). Clicking the inactive option switches to it.
+- The selected page option and language use `--primary-soft` fill with a 1px `--primary` border and `--primary` text; inactive options are muted with `--text-muted`. The theme toggle uses the same active treatment when dark theme is enabled and muted styling otherwise. Clicking a page or language option, or toggling the theme, updates that control's active state. Both page options have equal-width tracks and use the same static active-state styling as the language options.
+- The page switcher, language switch (`Ru` / `En`), and theme toggle (sun icon in light theme, moon icon in dark theme) share a 44px height, 1px `--line` outer border, 8px outer radius, and 3px inner padding. Segmented options are 36px high with consistent vertical alignment. The selected segment uses a 1px `--primary` border and `--primary-soft` fill. Controls are compact and aligned on the same baseline.
+- Switching changes the active option immediately, without a moving background indicator; page content crossfades with a small vertical slide per section 8. With `prefers-reduced-motion`, the page swap is instant with no slide, per section 8.6.
+- Below the mobile breakpoint, the right-side control group may wrap onto another line within the header; it remains grouped and above the header's single bottom separator, and all controls retain their shared sizing.
+- The header's bottom separator has 24px spacing below on desktop and 16px on mobile, matching the spacing scale. The header's existing vertical padding provides matching space above the separator.
 
-### 5.3. Visualization Block
+### 5.2. Visualization Block
 
 Two columns in a single row:
 
@@ -150,7 +148,7 @@ Both are blocks with the standard border and radius, equal height.
 - New steps appear with a fade and slide-in animation; the description expands with a height transition.
 - If the list exceeds the panel height, it scrolls inside the panel; the scrollbar is thin and styled with `--line`.
 
-### 5.4. Code Block
+### 5.3. Code Block
 
 Two-column layout on desktop: left column is narrow and fixed-width, right column fills the remaining width.
 Left column: block title "Code" (RU: "Код") at the top, followed by a vertical stack of tab buttons: Python, JavaScript, C++. Tabs are bordered buttons with 8px radius, full width of the left column, stacked with a small gap. The active tab has --primary-soft fill and --primary outline; inactive tabs use the standard --surface background and --line border.
@@ -162,7 +160,7 @@ The code area has a fixed height sized to show approximately 25 lines, identical
 The bottom edge of the visible area makes it visually clear that more content exists below: a subtle fade-out gradient (--surface-to-transparent) or a visible partial line cut off at the bottom, not an abrupt hard cut that looks like the end of the code.
 Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layout switches to a single column: the tab buttons become a horizontal row above the code area instead of a vertical stack in a side column, keeping the same button styling.
 
-### 5.5. Plots Block
+### 5.4. Plots Block
 
 - Block title: "Plots" (RU: "Сценарии").
 - Four cards in one row: Circles, Blobs, Half-moons, Create (RU: Круги, Шарики, Полумесяцы, Создать).
@@ -171,7 +169,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 - The selected card is not highlighted.
 - The row is one line on desktop and wraps to 2x2 on tablet and mobile.
 
-### 5.6. Footer
+### 5.5. Footer
 
 - Three zones in one row:
   - Left: a stacked block, top to bottom:
@@ -189,7 +187,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 - A thin `--line` separator sits above the footer.
 - On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered.
 
-### 5.7. Theory Page
+### 5.6. Theory Page
 
 - The Theory page starts with a bordered, immediately visible table of contents linking to each section; the reading column stays narrow and single-column at all breakpoints.
 - Each main content section appears once on scroll using the shared Reveal animation. The pseudocode blocks reuse the Code block's line numbers, Roboto Mono font, and theme-based syntax colors.
@@ -249,7 +247,7 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.5. Other Transitions
 
-- Page switcher: opacity transition on selection.
+- Page switcher: the active option changes immediately with the same static fill and border treatment as the language switch; page content crossfades with a small slide. The content swap is instant with `prefers-reduced-motion`.
 - Drawing tools: fade and slide-up appearance.
 - Popover and toast: fade and slide.
 - Code tabs: content fade.
