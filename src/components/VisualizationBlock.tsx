@@ -27,6 +27,7 @@ type VisualizationBlockProps = {
   selectionDurations: readonly number[]
   radiusDurations: readonly number[]
   steps: readonly number[]
+  finalStepIndex: number | null
   clusterCount: number
   noiseCount: number
   algorithmScenario: RunScenario
@@ -59,6 +60,7 @@ export function VisualizationBlock({
   selectionDurations,
   radiusDurations,
   steps,
+  finalStepIndex,
   clusterCount,
   noiseCount,
   algorithmScenario,
@@ -99,6 +101,7 @@ export function VisualizationBlock({
       />
       <StepsPanel
         steps={steps}
+        finalStepIndex={finalStepIndex}
         clusterCount={clusterCount}
         noiseCount={noiseCount}
         scenario={algorithmScenario}

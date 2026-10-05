@@ -21,6 +21,7 @@ export function VisualizationPage() {
   const [activeStep, setActiveStep] = useState(0)
   const points = scenario === 'create' ? createPoints : SCENARIOS[scenario].points
   const frame = frames?.[activeStep]
+  const finalStepIndex = frames === null ? null : frames.length - 1
   const assignments: readonly Assignment[] = frame?.assignments ?? []
   const events: readonly FrameEvent[] = frame?.events ?? []
   const currentPointIndex = frame?.currentPointIndex ?? null
@@ -72,14 +73,16 @@ export function VisualizationPage() {
 
   const advanceStep = () => {
     const nextStep = activeStep + 1
-    if (frames === null || nextStep > 9) return
+    if (frames === null || nextStep >= frames.length) return
     setActiveStep(nextStep)
     setSteps((current) => [...current, nextStep])
   }
 
   const seekStep = (step: number) => {
-    setActiveStep(step)
-    setSteps((current) => current.filter((shownStep) => shownStep <= step))
+    if (frames === null) return
+    const targetStep = Math.max(0, Math.min(step, frames.length - 1))
+    setActiveStep(targetStep)
+    setSteps((current) => current.filter((shownStep) => shownStep <= targetStep))
   }
 
   return (
@@ -103,10 +106,11 @@ export function VisualizationPage() {
           selectionDurations={animationPlans[activeStep]?.selectionDurationsByEvent ?? []}
           radiusDurations={animationPlans[activeStep]?.radiusDurationsByEvent ?? []}
           steps={steps}
+          finalStepIndex={finalStepIndex}
           clusterCount={frame?.clusterCount ?? 0}
           noiseCount={frame?.noiseCount ?? 0}
           algorithmScenario={frame?.scenario ?? 'standard'}
-          disabled={points.length === 0 || (activeStep === 9 && frames !== null)}
+          disabled={points.length === 0 || (finalStepIndex !== null && activeStep >= finalStepIndex)}
           onPointAdd={addCreatePoint}
           onPointsErase={eraseCreatePoints}
           onRChange={setR}
