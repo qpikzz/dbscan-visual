@@ -24,7 +24,6 @@ export function AppShell({ children }: AppShellProps) {
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
   const { language, setLanguage, t } = useLanguage()
   const location = useLocation()
-  const activePage = location.pathname.startsWith('/theory') ? 'theory' : 'visualization'
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -35,17 +34,13 @@ export function AppShell({ children }: AppShellProps) {
       <header className="app-header">
         <h1 className="app-logo">
           <svg className="app-logo-mark" aria-hidden="true" viewBox="0 0 28 28">
-            <circle className="logo-point logo-point-primary" cx="6" cy="7" r="3" />
-            <circle className="logo-point" cx="20" cy="6" r="3" />
-            <circle className="logo-point" cx="12" cy="20" r="3" />
-            <circle className="logo-point" cx="23" cy="19" r="2.5" />
-            <path d="m8.8 7 8.3-.6M7.6 9.6l3.2 7.5m8.6-8.3-5.9 9.1m3.6 1.2 4.5.1" />
+            <path d="M14 2.8c6.5 0 11 4.7 11.1 11s-4.7 11.3-11 11.2S2.8 20.4 2.9 14 7.6 2.9 14 2.8Z" />
+            <path className="logo-mark-inner" d="M14 7.3c4 .1 6.7 2.9 6.6 6.7s-2.9 6.8-6.7 6.7-6.7-3-6.6-6.8 2.9-6.7 6.7-6.6Z" />
           </svg>
           <span>{t.logo}</span>
         </h1>
         <div className="header-actions">
           <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
-            <span className="page-switcher-indicator" data-active={activePage} aria-hidden="true" />
             <NavLink
               className={({ isActive }) =>
                 isActive ? 'page-switcher-option active' : 'page-switcher-option'

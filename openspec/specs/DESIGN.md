@@ -87,14 +87,15 @@ Vertical order of the page:
 
 - Not fixed: it scrolls away with the page.
 - One header row, from left to right: the site logo on the far left, followed by a compact group on the right containing the page switcher, language switch, and theme toggle. The controls in this group have consistent small gaps.
-- The logo is a semantic `<h1>` containing the title `DB SCAN` in Nunito 600, 24-28px, preceded on the same baseline by a small flat geometric cluster mark: three or four points with minimal connecting strokes in the existing theme tokens. The `#` character is not part of the title text. No raster imagery or gradients are used.
+- The logo is a semantic `<h1>` containing the title `DB SCAN` in Nunito 600, 24-28px, preceded on the same baseline by a small SVG radar mark with two slightly irregular, rounded concentric rings: an unfilled outer ring outlined in `--text` and an inner ring filled with `--primary`, with no separate center dot. The `#` character is not part of the title text. No raster imagery or gradients are used.
 - The page switcher is a compact single-row, two-option segmented toggle inside the header: "Визуализация" and "Теория" sit side by side in one bordered control.
-- No arrow or connector is rendered as a static element at any time. Any directional cue exists only as a brief transition effect while switching (sliding indicator, content crossfade), never as permanent UI.
+- No arrow or connector is rendered as a static element at any time. The page option changes state immediately, and only the page content transitions; no moving indicator is rendered.
 - Selecting an option switches the entire page content to show only that page (Visualization or Theory): a full content swap, not an expand/collapse of both. There is no accordion or expand behavior.
-- The selected page option and language use `--primary-soft` fill with a 1px `--primary` border and `--primary` text; inactive options are muted with `--text-muted`. The theme toggle uses the same active treatment when dark theme is enabled and muted styling otherwise. Clicking a page or language option, or toggling the theme, updates that control's active state. The sliding page indicator supplies the active fill beneath the option; the selected option supplies the single visible outline.
+- The selected page option and language use `--primary-soft` fill with a 1px `--primary` border and `--primary` text; inactive options are muted with `--text-muted`. The theme toggle uses the same active treatment when dark theme is enabled and muted styling otherwise. Clicking a page or language option, or toggling the theme, updates that control's active state. Both page options have equal-width tracks and use the same static active-state styling as the language options.
 - The page switcher, language switch (`Ru` / `En`), and theme toggle (sun icon in light theme, moon icon in dark theme) share a 44px height, 1px `--line` outer border, 8px outer radius, and 3px inner padding. Segmented options are 36px high with consistent vertical alignment. The selected segment uses a 1px `--primary` border and `--primary-soft` fill. Controls are compact and aligned on the same baseline.
-- Switching plays a brief, smooth transition per section 8: a sliding highlight/indicator glides from one option to the other inside the toggle, and the page content crossfades (opacity with a small vertical slide). With `prefers-reduced-motion`, the swap is instant with no slide, per section 8.6.
+- Switching changes the active option immediately, without a moving background indicator; page content crossfades with a small vertical slide per section 8. With `prefers-reduced-motion`, the page swap is instant with no slide, per section 8.6.
 - Below the mobile breakpoint, the right-side control group may wrap onto another line within the header; it remains grouped and above the header's single bottom separator, and all controls retain their shared sizing.
+- The header's bottom separator has 24px spacing below on desktop and 16px on mobile, matching the spacing scale. The header's existing vertical padding provides matching space above the separator.
 
 ### 5.2. Visualization Block
 
@@ -246,7 +247,7 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.5. Other Transitions
 
-- Page switcher: sliding indicator glides between options (transform, 200-300ms) and page content crossfades with a small slide; instant swap with `prefers-reduced-motion`.
+- Page switcher: the active option changes immediately with the same static fill and border treatment as the language switch; page content crossfades with a small slide. The content swap is instant with `prefers-reduced-motion`.
 - Drawing tools: fade and slide-up appearance.
 - Popover and toast: fade and slide.
 - Code tabs: content fade.
