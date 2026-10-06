@@ -246,7 +246,11 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.4. Scenario Change
 
-- When another scenario is selected, points fly from their current positions to the new positions and their colors reset to gray with a smooth transition.
+- When another scenario is selected, smoothly scroll the page until the Canvas panel is at the top of the viewport. Start the point transition immediately when the scroll completes, without an extra pause.
+- Match points by nearest on-Canvas distance. When the new scenario has at least as many points, assign each new point to its nearest old point, with no old point used as the source for more than three flights; when a source reaches that cap, use the next-nearest source with capacity. When the new scenario has fewer points, send every old point to its nearest new point, allowing multiple old points to converge on the same destination.
+- When the new scenario has no points, send all old points outward past the visible Canvas bounds and fade them out. When the old scenario has no points, bring new points in from just outside those bounds. If a point-count increase exceeds the available three-flights-per-source capacity, bring the remaining new points in from outside the Canvas.
+- Flights use ease-in-out motion for 1.4 seconds, with slight per-point staggering for shared sources or destinations so the complete transition remains about 1.5 seconds. Moving points reset to gray and leave a small, semi-transparent comet tail that fades behind each moving point.
+- With `prefers-reduced-motion`, replace flights and trails with an instant position swap and a simple fade.
 
 ### 8.5. Other Transitions
 

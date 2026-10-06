@@ -11,6 +11,10 @@ import {
   NOISE_FADE_DURATION,
   PULSE_CYCLE_DURATION,
 } from './animation'
+import {
+  matchScenarioPoints,
+  type ScenarioTransitionRequest,
+} from './scenarioTransition'
 
 type CanvasViewProps = {
   scenario: ScenarioId
@@ -27,9 +31,11 @@ type CanvasViewProps = {
   captureFadeDurations: readonly (readonly number[])[]
   selectionDurations: readonly number[]
   radiusDurations: readonly number[]
+  scenarioTransition: ScenarioTransitionRequest | null
   onPointAdd: (point: Point) => void
   onPointsErase: (points: readonly Point[]) => void
   onPointLimitReached: () => void
+  onScenarioTransitionComplete: (id: number) => void
 }
 
 type CanvasSize = {
@@ -47,6 +53,23 @@ type ViewTransform = {
 type Position = {
   x: number
   y: number
+}
+
+type ScenarioFlight = {
+  from: Position
+  to: Position
+  delay: number
+  fade: 'in' | 'out' | null
+}
+
+type ScenarioFlightPlayback = {
+  id: number
+  startTime: number
+  duration: number
+  reduced: boolean
+  flights: readonly ScenarioFlight[]
+  fromPositions: readonly Position[]
+  toPositions: readonly Position[]
 }
 
 type CanvasFrameSnapshot = {
@@ -121,6 +144,10 @@ type FramePlayback = {
 }
 
 const GRID_CELL_SIZE = 32
+const SCENARIO_FLIGHT_DURATION = 1400
+const SCENARIO_FLIGHT_STAGGER = 24
+const SCENARIO_MAX_STAGGER = 96
+const SCENARIO_REDUCED_FADE_DURATION = 180
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
 const FIT_PADDING = 40
@@ -155,6 +182,51 @@ function easeInOutProgress(progress: number): number {
   return (1 - Math.cos(Math.PI * progress)) / 2
 }
 
+function projectPoint(
+  point: Point,
+  transform: ViewTransform,
+  size: CanvasSize,
+): Position {
+  const scale = GRID_CELL_SIZE * transform.zoom
+  return {
+    x: size.width / 2 + transform.x + point.x * scale,
+    y: size.height / 2 + transform.y + point.y * scale,
+  }
+}
+
+function getOutsidePosition(
+  point: Position,
+  width: number,
+  height: number,
+  index: number,
+  outward: boolean,
+): Position {
+  const centerX = width / 2
+  const centerY = height / 2
+  let dx = point.x - centerX
+  let dy = point.y - centerY
+  if (Math.hypot(dx, dy) < 0.001) {
+    const angle = index * 2.399963229728653
+    dx = Math.cos(angle)
+    dy = Math.sin(angle)
+  }
+  const length = Math.hypot(dx, dy)
+  const unitX = dx / length
+  const unitY = dy / length
+  const edgeDistance = Math.min(
+    (width / 2) / Math.max(Math.abs(unitX), 0.0001),
+    (height / 2) / Math.max(Math.abs(unitY), 0.0001),
+  )
+  const pointDistance = (point.x - centerX) * unitX + (point.y - centerY) * unitY
+  const distance = outward
+    ? Math.max(edgeDistance + 24, pointDistance + 24)
+    : edgeDistance + 24
+  return {
+    x: centerX + unitX * distance,
+    y: centerY + unitY * distance,
+  }
+}
+
 function mixHexColor(fromColor: string, toColor: string, progress: number): string {
   const fromHex = fromColor.slice(1)
   const toHex = toColor.slice(1)
@@ -170,6 +242,21 @@ function mixHexColor(fromColor: string, toColor: string, progress: number): stri
 
 function getThemeColor(element: HTMLElement, token: string): string {
   return getComputedStyle(element).getPropertyValue(token).trim()
+}
+
+function getRgbaColor(color: string, alpha: number): string {
+  const match = /^#([0-9a-f]{6})$/i.exec(color)
+  if (match === null) {
+    throw new Error(`Unsupported Canvas theme color: ${color}`)
+  }
+  const hex = match[1]
+  if (hex === undefined) {
+    throw new Error(`Invalid Canvas theme color: ${color}`)
+  }
+  const red = Number.parseInt(hex.slice(0, 2), 16)
+  const green = Number.parseInt(hex.slice(2, 4), 16)
+  const blue = Number.parseInt(hex.slice(4, 6), 16)
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 }
 
 function getPinchState(positions: Map<number, Position>) {
@@ -200,18 +287,24 @@ export function CanvasView({
   captureFadeDurations,
   selectionDurations,
   radiusDurations,
+  scenarioTransition,
   onPointAdd,
   onPointsErase,
   onPointLimitReached,
+  onScenarioTransitionComplete,
 }: CanvasViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const transformRef = useRef<ViewTransform>({ zoom: 1, x: 0, y: 0 })
   const fittedScenarioRef = useRef<ScenarioId | null>(null)
+  const previousScenarioRef = useRef<ScenarioId | null>(null)
+  const scenarioStartTransformRef = useRef<ViewTransform | null>(null)
   const pointsRef = useRef(points)
   const pointCountRef = useRef(points.length)
   const limitToastShownRef = useRef(false)
   const previousFrameRef = useRef<CanvasFrameSnapshot | null>(null)
   const playbackRef = useRef<FramePlayback | null>(null)
+  const scenarioFlightRef = useRef<ScenarioFlightPlayback | null>(null)
+  const activeScenarioTransitionIdRef = useRef<number | null>(null)
   const renderedPointColorsRef = useRef<string[]>([])
   const renderedCircleRef = useRef<CircleVisual | null>(null)
   const renderedCurrentPointRef = useRef<number | null>(null)
@@ -222,6 +315,7 @@ export function CanvasView({
     onPointAdd,
     onPointsErase,
     onPointLimitReached,
+    onScenarioTransitionComplete,
   })
   const [size, setSize] = useState<CanvasSize>({ width: 0, height: 0, pixelRatio: 1 })
   const [revision, setRevision] = useState(0)
@@ -240,6 +334,7 @@ export function CanvasView({
     onPointAdd,
     onPointsErase,
     onPointLimitReached,
+    onScenarioTransitionComplete,
   }
 
   useEffect(() => {
@@ -278,6 +373,15 @@ export function CanvasView({
       window.removeEventListener('resize', updateSize)
     }
   }, [])
+
+  useLayoutEffect(() => {
+    if (previousScenarioRef.current !== scenario) {
+      if (previousScenarioRef.current !== null) {
+        scenarioStartTransformRef.current = { ...transformRef.current }
+      }
+      previousScenarioRef.current = scenario
+    }
+  }, [scenario])
 
   useLayoutEffect(() => {
     if (size.width === 0 || size.height === 0 || fittedScenarioRef.current === scenario) {
@@ -362,6 +466,10 @@ export function CanvasView({
         getThemeColor(canvas, `--cluster-${index + 1}`),
       ),
     }
+    const trailColors = {
+      transparent: getRgbaColor(colors.primary, 0),
+      visible: getRgbaColor(colors.primary, 0.34),
+    }
     const assignmentColor = (assignment: Assignment | undefined, pointIndex: number) => {
       const point = points[pointIndex]
       if (assignment?.kind === 'noise') {
@@ -378,6 +486,69 @@ export function CanvasView({
       return colors.muted
     }
     const targetColors = points.map((_, index) => assignmentColor(assignments[index], index))
+    if (scenarioTransition === null) {
+      activeScenarioTransitionIdRef.current = null
+    } else if (
+      scenarioTransition.id !== activeScenarioTransitionIdRef.current &&
+      previousFrame !== null &&
+      previousFrame.points !== points
+    ) {
+      const sourceTransform = scenarioStartTransformRef.current ?? transformRef.current
+      const sourcePositions = scenarioTransition.fromPoints.map((point) =>
+        projectPoint(point, sourceTransform, size),
+      )
+      const destinationPositions = points.map((point) =>
+        projectPoint(point, transformRef.current, size),
+      )
+      const matches = matchScenarioPoints(sourcePositions, destinationPositions)
+      const groupRanks = new Map<number, number>()
+      let maximumDelay = 0
+      const flights = matches.map((match, index): ScenarioFlight => {
+        const rank = groupRanks.get(match.staggerGroup) ?? 0
+        groupRanks.set(match.staggerGroup, rank + 1)
+        const delay = Math.min(rank * SCENARIO_FLIGHT_STAGGER, SCENARIO_MAX_STAGGER)
+        maximumDelay = Math.max(maximumDelay, delay)
+        const source = match.sourceIndex === null
+          ? null
+          : sourcePositions[match.sourceIndex] ?? null
+        const destination = match.destinationIndex === null
+          ? null
+          : destinationPositions[match.destinationIndex] ?? null
+        const from = source ?? getOutsidePosition(
+          destination ?? { x: size.width / 2, y: size.height / 2 },
+          size.width,
+          size.height,
+          index,
+          false,
+        )
+        const to = destination ?? getOutsidePosition(
+          source ?? { x: size.width / 2, y: size.height / 2 },
+          size.width,
+          size.height,
+          index,
+          true,
+        )
+        return {
+          from,
+          to,
+          delay,
+          fade: source === null ? 'in' : destination === null ? 'out' : null,
+        }
+      })
+      scenarioFlightRef.current = {
+        id: scenarioTransition.id,
+        startTime: performance.now(),
+        duration: reduced
+          ? SCENARIO_REDUCED_FADE_DURATION
+          : SCENARIO_FLIGHT_DURATION + maximumDelay,
+        reduced,
+        flights,
+        fromPositions: sourcePositions,
+        toPositions: destinationPositions,
+      }
+      activeScenarioTransitionIdRef.current = scenarioTransition.id
+      scenarioStartTransformRef.current = null
+    }
     const makeCircleVisual = (target: RadiusCircle | null): CircleVisual | null => {
       if (target === null || points[target.pointIndex] === undefined) {
         return null
@@ -698,6 +869,90 @@ export function CanvasView({
       }
       context.stroke()
 
+      const scenarioFlight = scenarioFlightRef.current
+      if (
+        scenarioFlight !== null &&
+        timestamp - scenarioFlight.startTime < scenarioFlight.duration
+      ) {
+        const flightElapsed = Math.max(timestamp - scenarioFlight.startTime, 0)
+        const pointRadius = POINT_RADIUS * scale
+        context.setTransform(size.pixelRatio, 0, 0, size.pixelRatio, 0, 0)
+
+        const drawFlightPoint = (position: Position, opacity: number) => {
+          if (opacity <= 0) return
+          context.globalAlpha = opacity
+          context.beginPath()
+          context.arc(position.x, position.y, pointRadius, 0, Math.PI * 2)
+          context.fillStyle = colors.muted
+          context.fill()
+          context.globalAlpha = 1
+        }
+
+        if (scenarioFlight.reduced) {
+          const progress = Math.min(flightElapsed / scenarioFlight.duration, 1)
+          const oldOpacity = 1 - progress
+          const newOpacity = progress
+          scenarioFlight.fromPositions.forEach((position) =>
+            drawFlightPoint(position, oldOpacity),
+          )
+          scenarioFlight.toPositions.forEach((position) =>
+            drawFlightPoint(position, newOpacity),
+          )
+        } else {
+          scenarioFlight.flights.forEach((flight) => {
+            const progress = Math.max(
+              0,
+              Math.min((flightElapsed - flight.delay) / SCENARIO_FLIGHT_DURATION, 1),
+            )
+            const eased = easeInOutProgress(progress)
+            const head = {
+              x: flight.from.x + (flight.to.x - flight.from.x) * eased,
+              y: flight.from.y + (flight.to.y - flight.from.y) * eased,
+            }
+            let opacity = 1
+            if (flight.fade === 'in') {
+              opacity = easeInOutProgress(Math.min(progress / 0.24, 1))
+            } else if (flight.fade === 'out') {
+              opacity = 1 - easeInOutProgress(Math.max((progress - 0.72) / 0.28, 0))
+            }
+
+            if (progress > 0 && opacity > 0) {
+              const directionX = head.x - flight.from.x
+              const directionY = head.y - flight.from.y
+              const traveledDistance = Math.hypot(directionX, directionY)
+              if (traveledDistance > 0.1) {
+                const tailLength = Math.min(traveledDistance, 24)
+                const tail = {
+                  x: head.x - directionX / traveledDistance * tailLength,
+                  y: head.y - directionY / traveledDistance * tailLength,
+                }
+                const gradient = context.createLinearGradient(
+                  tail.x,
+                  tail.y,
+                  head.x,
+                  head.y,
+                )
+                gradient.addColorStop(0, trailColors.transparent)
+                gradient.addColorStop(1, trailColors.visible)
+                context.save()
+                context.globalAlpha = opacity
+                context.strokeStyle = gradient
+                context.lineWidth = 3
+                context.lineCap = 'round'
+                context.beginPath()
+                context.moveTo(tail.x, tail.y)
+                context.lineTo(head.x, head.y)
+                context.stroke()
+                context.restore()
+              }
+            }
+            drawFlightPoint(head, opacity)
+          })
+        }
+        context.restore()
+        return
+      }
+
       const activePlayback = playbackRef.current
       const elapsed = activePlayback === null
         ? 0
@@ -974,9 +1229,20 @@ export function CanvasView({
     draw(performance.now())
     const activePlayback = playbackRef.current
     const needsPulse = !reduced && renderedCurrentPointRef.current !== null
-    if (activePlayback !== null || needsPulse) {
+    const needsScenarioTransition = scenarioFlightRef.current !== null
+    if (activePlayback !== null || needsPulse || needsScenarioTransition) {
       const animate = (timestamp: number) => {
         draw(timestamp)
+        const currentScenarioFlight = scenarioFlightRef.current
+        if (currentScenarioFlight !== null) {
+          if (timestamp - currentScenarioFlight.startTime < currentScenarioFlight.duration) {
+            animationFrameRef.current = requestAnimationFrame(animate)
+            return
+          }
+          scenarioFlightRef.current = null
+          interactionRef.current.onScenarioTransitionComplete(currentScenarioFlight.id)
+          draw(timestamp)
+        }
         const currentPlayback = playbackRef.current
         if (
           currentPlayback !== null &&
@@ -995,7 +1261,11 @@ export function CanvasView({
           animationFrameRef.current = null
         }
       }
-      if (activePlayback !== null && activePlayback.duration > 0 || needsPulse) {
+      if (
+        (activePlayback !== null && activePlayback.duration > 0) ||
+        needsPulse ||
+        needsScenarioTransition
+      ) {
         animationFrameRef.current = requestAnimationFrame(animate)
       } else {
         playbackRef.current = null
@@ -1025,6 +1295,7 @@ export function CanvasView({
     r,
     reduced,
     revision,
+    scenarioTransition,
     size,
   ])
 

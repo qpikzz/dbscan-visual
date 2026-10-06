@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ScenarioId } from '../data'
 import { VisualizationBlock } from '../components/VisualizationBlock'
 import { CodeBlock } from '../components/CodeBlock'
@@ -8,8 +8,67 @@ import { POINT_LIMIT } from '../features/dbscan/constants'
 import { createSeed, runDbscan } from '../features/dbscan'
 import { SCENARIOS } from '../features/dbscan/scenarios'
 import { createFrameAnimationPlans } from '../features/canvas/animation'
+import type { ScenarioTransitionRequest } from '../features/canvas/scenarioTransition'
 import type { Assignment, Frame, FrameEvent, Point } from '../features/dbscan/types'
+import { useMotionSettings } from '../hooks/useMotionSettings'
 import '../styles/visualization.css'
+
+function scrollToCanvasPanel(
+  panel: HTMLElement,
+  reducedMotion: boolean,
+): Promise<void> {
+  const scrollMarginTop = Number.parseFloat(getComputedStyle(panel).scrollMarginTop) || 0
+  if (Math.abs(panel.getBoundingClientRect().top - scrollMarginTop) < 1) {
+    return Promise.resolve()
+  }
+
+  if (reducedMotion) {
+    panel.scrollIntoView({ behavior: 'instant', block: 'start' })
+    return Promise.resolve()
+  }
+
+  return new Promise((resolve) => {
+    let settled = false
+    let settleTimer: number | null = null
+    let fallbackTimer: number | null = null
+    let animationFrame: number | null = null
+    let lastTop = panel.getBoundingClientRect().top
+    let stableFrames = 0
+
+    const finish = () => {
+      if (settled) return
+      settled = true
+      if (settleTimer !== null) window.clearTimeout(settleTimer)
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer)
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame)
+      window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('scrollend', finish)
+      resolve()
+    }
+
+    const onScroll = () => {
+      if (settleTimer !== null) window.clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(finish, 100)
+    }
+
+    const waitUntilStable = () => {
+      const top = panel.getBoundingClientRect().top
+      stableFrames = Math.abs(top - lastTop) < 0.5 ? stableFrames + 1 : 0
+      lastTop = top
+      if (stableFrames >= 5) {
+        finish()
+      } else {
+        animationFrame = window.requestAnimationFrame(waitUntilStable)
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    document.addEventListener('scrollend', finish, { once: true })
+    fallbackTimer = window.setTimeout(finish, 2500)
+    animationFrame = window.requestAnimationFrame(waitUntilStable)
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
 
 export function VisualizationPage() {
   const [scenario, setScenario] = useState<ScenarioId>('circles')
@@ -19,6 +78,12 @@ export function VisualizationPage() {
   const [frames, setFrames] = useState<Frame[] | null>(null)
   const [steps, setSteps] = useState<number[]>([0])
   const [activeStep, setActiveStep] = useState(0)
+  const [scenarioTransition, setScenarioTransition] =
+    useState<ScenarioTransitionRequest | null>(null)
+  const canvasPanelRef = useRef<HTMLElement | null>(null)
+  const scenarioTransitionIdRef = useRef(0)
+  const scenarioSelectionRequestRef = useRef(0)
+  const { reduced } = useMotionSettings()
   const points = scenario === 'create' ? createPoints : SCENARIOS[scenario].points
   const frame = frames?.[activeStep]
   const finalStepIndex = frames === null ? null : frames.length - 1
@@ -50,14 +115,30 @@ export function VisualizationPage() {
     })
   }
 
-  const selectScenario = (nextScenario: ScenarioId) => {
+  const selectScenario = async (nextScenario: ScenarioId) => {
     if (nextScenario === scenario) return
+    const requestId = scenarioSelectionRequestRef.current + 1
+    scenarioSelectionRequestRef.current = requestId
+    const canvasPanel = canvasPanelRef.current
+    if (canvasPanel === null) {
+      throw new Error('Canvas panel is unavailable during scenario selection')
+    }
+    await scrollToCanvasPanel(canvasPanel, reduced)
+    if (requestId !== scenarioSelectionRequestRef.current) return
+
+    const transitionId = scenarioTransitionIdRef.current + 1
+    scenarioTransitionIdRef.current = transitionId
+    setScenarioTransition({ id: transitionId, fromPoints: points })
     if (nextScenario === 'create') {
       setCreatePoints([])
     }
     setScenario(nextScenario)
     setR(SCENARIOS[nextScenario].recommended.r)
     setMinPts(SCENARIOS[nextScenario].recommended.minPts)
+  }
+
+  const completeScenarioTransition = (id: number) => {
+    setScenarioTransition((current) => current?.id === id ? null : current)
   }
 
   const clearCreatePoints = () => {
@@ -105,6 +186,8 @@ export function VisualizationPage() {
           captureFadeDurations={animationPlans[activeStep]?.captureFadeDurationsByEvent ?? []}
           selectionDurations={animationPlans[activeStep]?.selectionDurationsByEvent ?? []}
           radiusDurations={animationPlans[activeStep]?.radiusDurationsByEvent ?? []}
+          scenarioTransition={scenarioTransition}
+          canvasPanelRef={canvasPanelRef}
           steps={steps}
           finalStepIndex={finalStepIndex}
           clusterCount={frame?.clusterCount ?? 0}
@@ -116,6 +199,7 @@ export function VisualizationPage() {
           onRChange={setR}
           onMinPtsChange={setMinPts}
           onClearCanvas={clearCreatePoints}
+          onScenarioTransitionComplete={completeScenarioTransition}
           onStart={startRun}
           onNext={advanceStep}
           onSeekStep={seekStep}

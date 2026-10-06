@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ScenarioId } from '../data'
 import type { Assignment, FrameEvent, Point, RadiusCircle } from '../features/dbscan/types'
@@ -8,6 +8,7 @@ import { useMotionSettings } from '../hooks/useMotionSettings'
 import { useLanguage } from '../i18n'
 import { DrawingTools } from './DrawingTools'
 import { ParameterSlider } from './ParameterSlider'
+import type { ScenarioTransitionRequest } from '../features/canvas/scenarioTransition'
 
 export type ActiveTool = 'draw' | 'erase' | null
 
@@ -28,11 +29,14 @@ type CanvasPanelProps = {
   captureFadeDurations: readonly (readonly number[])[]
   selectionDurations: readonly number[]
   radiusDurations: readonly number[]
+  scenarioTransition: ScenarioTransitionRequest | null
+  canvasPanelRef: RefObject<HTMLElement | null>
   onPointAdd: (point: Point) => void
   onPointsErase: (points: readonly Point[]) => void
   onRChange: (value: number) => void
   onMinPtsChange: (value: number) => void
   onClearCanvas: () => void
+  onScenarioTransitionComplete: (id: number) => void
 }
 
 export function CanvasPanel({
@@ -52,11 +56,14 @@ export function CanvasPanel({
   captureFadeDurations,
   selectionDurations,
   radiusDurations,
+  scenarioTransition,
+  canvasPanelRef,
   onPointAdd,
   onPointsErase,
   onRChange,
   onMinPtsChange,
   onClearCanvas,
+  onScenarioTransitionComplete,
 }: CanvasPanelProps) {
   const { t } = useLanguage()
   const { fadeSlide, transition } = useMotionSettings()
@@ -79,7 +86,7 @@ export function CanvasPanel({
   }, [toastVersion])
 
   return (
-    <section className="viz-card canvas-panel" aria-label={t.canvasAria}>
+    <section ref={canvasPanelRef} className="viz-card canvas-panel" aria-label={t.canvasAria}>
       <div className="canvas-controls">
         <ParameterSlider
           label={t.paramR}
@@ -125,10 +132,12 @@ export function CanvasPanel({
           captureFadeDurations={captureFadeDurations}
           selectionDurations={selectionDurations}
           radiusDurations={radiusDurations}
+          scenarioTransition={scenarioTransition}
           activeTool={canvasTool}
           onPointAdd={onPointAdd}
           onPointsErase={onPointsErase}
           onPointLimitReached={() => setToastVersion((version) => version + 1)}
+          onScenarioTransitionComplete={onScenarioTransitionComplete}
         />
         <AnimatePresence>
           {toastVersion > 0 && (
