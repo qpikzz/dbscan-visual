@@ -209,6 +209,9 @@ Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 
 - Light and dark themes share the same layout and differ only by token values.
 - The theme toggle switches all tokens at once with a 300ms color transition. The Canvas repaints with the new tokens.
+- On the first attempt to switch from dark to light during a page load, show a friendly warning dialog instead of switching immediately. It displays a live countdown from 3 to 1 and a Cancel button that remains available throughout. Cancel keeps the dark theme and allows the warning to appear again on the next attempt. When the countdown completes, switch to light and record the successful first switch in in-memory state; do not show the warning again during that page load. A reload resets this warning state.
+- Position the compact warning popover directly below the theme toggle button only, right-aligned to that button with a 4-8px gap. Keep it scoped to the toggle; it must not overlap the page-switcher or language controls, stretch across the header, or use a backdrop or viewport-bottom fallback.
+- Style the popover as a flat card with a solid `--surface` background, a 1px `--line` border, and an 8px radius. Do not use gradients, drop shadows, or glow effects. The warning is a playful joke, not an error or actual danger notice; keep its text and Cancel button in their existing theme-token colors and provide Russian and English text. Respect `prefers-reduced-motion` by removing or simplifying popover animations.
 
 ## 8. Animation
 
@@ -243,7 +246,11 @@ Character: smooth, crisp, confident, without sagging or lag.
 
 ### 8.4. Scenario Change
 
-- When another scenario is selected, points fly from their current positions to the new positions and their colors reset to gray with a smooth transition.
+- When another scenario is selected, smoothly scroll the page until the Canvas panel is at the top of the viewport. Start the point transition immediately when the scroll completes, without an extra pause.
+- Match points by nearest on-Canvas distance. When the new scenario has at least as many points, assign each new point to its nearest old point, with no old point used as the source for more than three flights; when a source reaches that cap, use the next-nearest source with capacity. When the new scenario has fewer points, send every old point to its nearest new point, allowing multiple old points to converge on the same destination.
+- When the new scenario has no points, send all old points outward past the visible Canvas bounds and fade them out. When the old scenario has no points, bring new points in from just outside those bounds. If a point-count increase exceeds the available three-flights-per-source capacity, bring the remaining new points in from outside the Canvas.
+- Flights use ease-in-out motion for 1.4 seconds, with slight per-point staggering for shared sources or destinations so the complete transition remains about 1.5 seconds. Moving points reset to gray and leave a small, semi-transparent comet tail that fades behind each moving point.
+- With `prefers-reduced-motion`, replace flights and trails with an instant position swap and a simple fade.
 
 ### 8.5. Other Transitions
 

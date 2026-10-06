@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { ScenarioId } from '../data'
 import type {
   Assignment,
@@ -6,6 +7,7 @@ import type {
   RadiusCircle,
   RunScenario,
 } from '../features/dbscan/types'
+import type { ScenarioTransitionRequest } from '../features/canvas/scenarioTransition'
 import { CanvasPanel } from './CanvasPanel'
 import { StepsPanel } from './StepsPanel'
 
@@ -26,6 +28,8 @@ type VisualizationBlockProps = {
   captureFadeDurations: readonly (readonly number[])[]
   selectionDurations: readonly number[]
   radiusDurations: readonly number[]
+  scenarioTransition: ScenarioTransitionRequest | null
+  canvasPanelRef: RefObject<HTMLElement | null>
   steps: readonly number[]
   finalStepIndex: number | null
   clusterCount: number
@@ -37,6 +41,7 @@ type VisualizationBlockProps = {
   onRChange: (value: number) => void
   onMinPtsChange: (value: number) => void
   onClearCanvas: () => void
+  onScenarioTransitionComplete: (id: number) => void
   onStart: () => void
   onNext: () => void
   onSeekStep: (step: number) => void
@@ -59,6 +64,8 @@ export function VisualizationBlock({
   captureFadeDurations,
   selectionDurations,
   radiusDurations,
+  scenarioTransition,
+  canvasPanelRef,
   steps,
   finalStepIndex,
   clusterCount,
@@ -70,6 +77,7 @@ export function VisualizationBlock({
   onRChange,
   onMinPtsChange,
   onClearCanvas,
+  onScenarioTransitionComplete,
   onStart,
   onNext,
   onSeekStep,
@@ -93,11 +101,14 @@ export function VisualizationBlock({
         captureFadeDurations={captureFadeDurations}
         selectionDurations={selectionDurations}
         radiusDurations={radiusDurations}
+        scenarioTransition={scenarioTransition}
+        canvasPanelRef={canvasPanelRef}
         onPointAdd={onPointAdd}
         onPointsErase={onPointsErase}
         onRChange={onRChange}
         onMinPtsChange={onMinPtsChange}
         onClearCanvas={onClearCanvas}
+        onScenarioTransitionComplete={onScenarioTransitionComplete}
       />
       <StepsPanel
         steps={steps}
