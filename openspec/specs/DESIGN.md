@@ -209,6 +209,9 @@ Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 
 - Light and dark themes share the same layout and differ only by token values.
 - The theme toggle switches all tokens at once with a 300ms color transition. The Canvas repaints with the new tokens.
+- On the first attempt to switch from dark to light during a page load, show a friendly warning dialog instead of switching immediately. It displays a live countdown from 3 to 1 and a Cancel button that remains available throughout. Cancel keeps the dark theme and allows the warning to appear again on the next attempt. When the countdown completes, switch to light and record the successful first switch in in-memory state; do not show the warning again during that page load. A reload resets this warning state.
+- Position the compact warning popover directly below the theme toggle button only, right-aligned to that button with a 4-8px gap. Keep it scoped to the toggle; it must not overlap the page-switcher or language controls, stretch across the header, or use a backdrop or viewport-bottom fallback.
+- Style the popover as a flat card with a solid `--surface` background, a 1px `--line` border, and an 8px radius. Do not use gradients, drop shadows, or glow effects. The warning is a playful joke, not an error or actual danger notice; keep its text and Cancel button in their existing theme-token colors and provide Russian and English text. Respect `prefers-reduced-motion` by removing or simplifying popover animations.
 
 ## 8. Animation
 

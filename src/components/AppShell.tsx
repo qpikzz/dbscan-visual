@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -22,12 +22,60 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
+  const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
+  const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
   const { language, setLanguage, t } = useLanguage()
   const location = useLocation()
+  const cancelButtonRef = useRef<HTMLButtonElement>(null)
+  const returnFocusRef = useRef<HTMLButtonElement | null>(null)
+  const warningOpen = warningCountdown !== null
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    if (warningCountdown === null) {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      if (warningCountdown > 1) {
+        setWarningCountdown(warningCountdown - 1)
+        return
+      }
+
+      setTheme('light')
+      setLightThemeWarningShown(true)
+      setWarningCountdown(null)
+    }, 1000)
+
+    return () => window.clearTimeout(timeout)
+  }, [setTheme, warningCountdown])
+
+  useEffect(() => {
+    if (warningOpen) {
+      cancelButtonRef.current?.focus()
+      return
+    }
+
+    returnFocusRef.current?.focus()
+    returnFocusRef.current = null
+  }, [warningOpen])
+
+  const toggleTheme = (button: HTMLButtonElement) => {
+    if (theme === 'dark' && !lightThemeWarningShown) {
+      returnFocusRef.current = button
+      setWarningCountdown(3)
+      return
+    }
+
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }
+
+  const cancelThemeSwitch = () => {
+    setWarningCountdown(null)
+  }
 
   return (
     <div className="app-shell">
@@ -77,21 +125,53 @@ export function AppShell({ children }: AppShellProps) {
                 {t.languageEn}
               </button>
             </div>
-            <button
-              className={theme === 'dark' ? 'theme-toggle active' : 'theme-toggle'}
-              type="button"
-              aria-label={t.themeToggleLabel}
-              aria-pressed={theme === 'dark'}
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                {theme === 'light' ? (
-                  <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
-                ) : (
-                  <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" />
-                )}
-              </svg>
-            </button>
+            <div className="theme-toggle-anchor">
+              <button
+                className={theme === 'dark' ? 'theme-toggle active' : 'theme-toggle'}
+                type="button"
+                aria-label={t.themeToggleLabel}
+                aria-pressed={theme === 'dark'}
+                onClick={(event) => toggleTheme(event.currentTarget)}
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  {theme === 'light' ? (
+                    <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+                  ) : (
+                    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" />
+                  )}
+                </svg>
+              </button>
+              {warningCountdown !== null && (
+                <div
+                  className="theme-warning-popover"
+                  role="dialog"
+                  aria-modal="false"
+                  aria-labelledby="theme-warning-message"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      cancelThemeSwitch()
+                    }
+                  }}
+                >
+                  <p
+                    className="theme-warning-message"
+                    id="theme-warning-message"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {t.themeWarningMessage.replace('{count}', String(warningCountdown))}
+                  </p>
+                  <button
+                    className="theme-warning-cancel"
+                    type="button"
+                    ref={cancelButtonRef}
+                    onClick={cancelThemeSwitch}
+                  >
+                    {t.themeWarningCancel}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
