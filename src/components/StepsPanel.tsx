@@ -8,6 +8,7 @@ type StepItemProps = {
   index: number
   isActive: boolean
   isLast: boolean
+  finalStepIndex: number | null
   clusterCount: number
   noiseCount: number
   scenario: RunScenario
@@ -18,6 +19,7 @@ function StepItem({
   index,
   isActive,
   isLast,
+  finalStepIndex,
   clusterCount,
   noiseCount,
   scenario,
@@ -32,10 +34,10 @@ function StepItem({
   const description = scenario === 'no-clusters'
     ? (t.noClusterSteps[index] ?? t.steps[index] ?? '')
         .replace('{countNoise}', String(noiseCount))
-    : isSingleCluster && index >= 6 && index <= 8
-      ? t.singleClusterAcknowledgements[index - 6] ?? t.steps[index]
-      : index === 9 && t.steps[9]?.includes('{count}')
-        ? t.steps[9]
+    : isSingleCluster && index === finalStepIndex
+      ? t.singleClusterSummary(noiseCount)
+      : index === finalStepIndex && t.steps[index]?.includes('{count}')
+        ? t.steps[index]
             .replace('{count}', String(clusterCount))
             .replace('{noise}', String(noiseCount))
         : t.steps[index]
@@ -82,6 +84,7 @@ function StepItem({
 
 type StepsPanelProps = {
   steps?: readonly number[]
+  finalStepIndex: number | null
   clusterCount?: number
   noiseCount?: number
   scenario?: RunScenario
@@ -93,6 +96,7 @@ type StepsPanelProps = {
 
 export function StepsPanel({
   steps = [0],
+  finalStepIndex,
   clusterCount = 0,
   noiseCount = 0,
   scenario = 'standard',
@@ -130,6 +134,7 @@ export function StepsPanel({
               index={index}
               isActive={i === steps.length - 1}
               isLast={i === steps.length - 1}
+              finalStepIndex={finalStepIndex}
               clusterCount={clusterCount}
               noiseCount={noiseCount}
               scenario={scenario}

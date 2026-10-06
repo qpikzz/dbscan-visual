@@ -66,9 +66,23 @@ export function runDbscan(
   stepFiveEvents.push(...markNoiseGroups(state))
   frames.push(snapshot(state, 5, stepFiveEvents))
 
+  if (
+    state.scenario === 'single-cluster-no-noise' ||
+    state.scenario === 'single-cluster-with-noise'
+  ) {
+    appendFinalFrame(state, frames, 6)
+    return frames
+  }
+
   frames.push(snapshot(state, 6, toEvents(startCluster(state))))
   frames.push(snapshot(state, 7, toEvents(expandMember(state))))
   frames.push(snapshot(state, 8, growRemainingClusters(state)))
+  appendFinalFrame(state, frames, 9)
+
+  return frames
+}
+
+function appendFinalFrame(state: RunState, frames: Frame[], step: number): void {
   const finalEvents: FrameEvent[] = []
   const finalRetraction = retractRadius(state)
   if (finalRetraction !== null) {
@@ -81,9 +95,7 @@ export function runDbscan(
     noiseCount: state.noiseCount,
   }
   finalEvents.push(finalized)
-  frames.push(snapshot(state, 9, finalEvents))
-
-  return frames
+  frames.push(snapshot(state, step, finalEvents))
 }
 
 function markNoiseGroups(state: RunState): FrameEvent[] {
