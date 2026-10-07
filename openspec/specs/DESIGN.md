@@ -87,7 +87,7 @@ Vertical order of the page:
 
 - Not fixed: it scrolls away with the page.
 - One header row, from left to right: the site logo on the far left, followed by a compact group on the right containing the page switcher, language switch, and theme toggle. The controls in this group have consistent small gaps.
-- The logo is a semantic `<h1>` containing the title `DB SCAN` in Nunito 600, 24-28px, preceded on the same baseline by a small SVG radar mark with two slightly irregular, rounded concentric rings: an unfilled outer ring outlined in `--text` and an inner ring filled with `--primary`, with no separate center dot. The `#` character is not part of the title text. No raster imagery or gradients are used.
+- The logo is a semantic `<h1>` containing the title `DB SCAN` in Nunito 600, 24-28px, preceded on the same baseline by a small SVG mark with a circular outer ring outlined in `--text` and a solid center circle filled with `--primary`. The `#` character is not part of the title text. No raster imagery or gradients are used. The browser-tab favicon uses the same ring-and-center mark, with light and dark colors selected by `prefers-color-scheme`.
 - The page switcher is a compact single-row, two-option segmented toggle inside the header: "Визуализация" and "Теория" sit side by side in one bordered control.
 - No arrow or connector is rendered as a static element at any time. The page option changes state immediately, and only the page content transitions; no moving indicator is rendered.
 - Selecting an option switches the entire page content to show only that page (Visualization or Theory): a full content swap, not an expand/collapse of both. There is no accordion or expand behavior.

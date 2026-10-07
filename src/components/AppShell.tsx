@@ -81,9 +81,9 @@ export function AppShell({ children }: AppShellProps) {
     <div className="app-shell">
       <header className="app-header">
         <h1 className="app-logo">
-          <svg className="app-logo-mark" aria-hidden="true" viewBox="0 0 28 28">
-            <path d="M14 2.8c6.5 0 11 4.7 11.1 11s-4.7 11.3-11 11.2S2.8 20.4 2.9 14 7.6 2.9 14 2.8Z" />
-            <path className="logo-mark-inner" d="M14 7.3c4 .1 6.7 2.9 6.6 6.7s-2.9 6.8-6.7 6.7-6.7-3-6.6-6.8 2.9-6.7 6.7-6.6Z" />
+          <svg className="app-logo-mark" aria-hidden="true" viewBox="0 0 128 128">
+            <circle className="logo-mark-ring" cx="64" cy="64" r="60" />
+            <circle className="logo-mark-center" cx="64" cy="64" r="32" />
           </svg>
           <span>{t.logo}</span>
         </h1>

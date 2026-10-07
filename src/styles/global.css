@@ -161,21 +161,13 @@ a:focus-visible {
   height: 28px;
   flex: none;
   fill: none;
-  stroke: var(--primary);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.25;
-}
-
-.app-logo-mark path {
-  fill: none;
   stroke: var(--text);
+  stroke-width: 8;
 }
 
-.app-logo-mark .logo-mark-inner {
+.app-logo-mark .logo-mark-center {
   fill: var(--primary);
-  stroke: var(--primary);
-  stroke-width: 1;
+  stroke: none;
 }
 
 .header-actions {
