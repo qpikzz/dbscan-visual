@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
+import { DataInfoModalPresence } from './DataInfoModal'
 
 type Theme = 'light' | 'dark'
 
@@ -24,9 +26,12 @@ export function AppShell({ children }: AppShellProps) {
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
   const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
   const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
+  const [dataInfoOpen, setDataInfoOpen] = useState(false)
+  const closeDataInfo = useCallback(() => setDataInfoOpen(false), [])
   const { language, setLanguage, t } = useLanguage()
   const location = useLocation()
   const cancelButtonRef = useRef<HTMLButtonElement>(null)
+  const dataInfoTriggerRef = useRef<HTMLButtonElement>(null)
   const returnFocusRef = useRef<HTMLButtonElement | null>(null)
   const warningOpen = warningCountdown !== null
 
@@ -188,12 +193,20 @@ export function AppShell({ children }: AppShellProps) {
               <a className="footer-author-link" href="https://t.me/qpikzz">
                 {t.footerTelegram}
               </a>
-              <a className="footer-author-link" href="https://vk.ru/qpikzz">
+              <a className="footer-author-link" href={socialLinks.vk}>
                 {t.footerVk}
               </a>
               <a className="footer-author-link" href="https://github.com/qpikzz">
                 {t.footerGithub}
               </a>
+              <button
+                className="footer-author-link footer-data-info-trigger"
+                type="button"
+                ref={dataInfoTriggerRef}
+                onClick={() => setDataInfoOpen(true)}
+              >
+                {t.footerDataInfo}
+              </button>
             </div>
             <div className="footer-mark" aria-hidden="true" />
             <p className="footer-love">{t.footerLove}</p>
@@ -201,6 +214,10 @@ export function AppShell({ children }: AppShellProps) {
           <p className="footer-note">{t.footerNote}</p>
         </footer>
       </Reveal>
+      <DataInfoModalPresence
+        open={dataInfoOpen}
+        onClose={closeDataInfo}
+      />
     </div>
   )
 }

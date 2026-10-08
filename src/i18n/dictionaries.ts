@@ -157,9 +157,21 @@ export const ru = {
   footerTelegram: 'Telegram канал',
   footerVk: 'ВКонтакте',
   footerGithub: 'GitHub',
+  footerDataInfo: 'Сбор данных',
   footerLove: 'Создано с любовью для школьников и студентов',
   footerNote:
     'Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки.',
+  dataInfoTitle: 'Сбор данных',
+  dataInfoIntro: 'Коротко о том, как сайт обращается с данными.',
+  dataInfoCard1Title: 'Ничего не собираем',
+  dataInfoCard2Title: 'Настройки — только в браузере',
+  dataInfoCard3Title: 'Возможны логи хостинга',
+  dataInfoPoint1: 'Сайт не собирает сведения о посетителях и не отправляет их на сервер.',
+  dataInfoPoint2:
+    'Настройки интерфейса (тема и язык) сохраняются локально в браузере. Технические значения, необходимые для работы страницы, используются в браузере и не отправляются приложением на сервер. Сохранённые настройки можно удалить средствами браузера.',
+  dataInfoPoint3:
+    'Хостинг-провайдер может вести технические журналы обращений к сайту. Это происходит на стороне провайдера.',
+  dataInfoCloseLabel: 'Закрыть окно «Сбор данных»',
 }
 
 export type Dictionary = typeof ru
@@ -320,9 +332,21 @@ export const en: Dictionary = {
   footerTelegram: 'Telegram channel',
   footerVk: 'VK',
   footerGithub: 'GitHub',
+  footerDataInfo: 'Data collection',
   footerLove: 'Made with love for school and university students',
   footerNote:
     'This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points.',
+  dataInfoTitle: 'Data collection',
+  dataInfoIntro: 'A short note on how this site handles data.',
+  dataInfoCard1Title: 'Nothing collected',
+  dataInfoCard2Title: 'Settings stay in your browser',
+  dataInfoCard3Title: 'Hosting logs may exist',
+  dataInfoPoint1: 'The site does not collect visitor information or send it to a server.',
+  dataInfoPoint2:
+    'Interface settings (theme and language) are stored locally in your browser. Technical values needed for the page to work are used in the browser and are not sent to a server by the app. You can clear saved settings using your browser.',
+  dataInfoPoint3:
+    'The hosting provider may keep technical access logs. This happens on the provider’s side.',
+  dataInfoCloseLabel: 'Close the “Data collection” window',
 }
 
 export const dictionaries = { ru, en } as const

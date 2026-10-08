@@ -177,6 +177,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
     2. "Telegram channel" (RU: "Telegram канал"), a link, on its own line, indented slightly relative to line 1
     3. "VK" (RU: "ВКонтакте"), a link, on its own line, at the same indent as line 2
     4. "GitHub" (RU: "GitHub"), a link, on its own line, at the same indent as line 2
+    5. "Data collection" (RU: "Сбор данных"), a text-style button opening the localized data information dialog.
     Lines 2-4 are links: plain text, no underline, `--text-muted` color.
   - Center: a slot for an SVG cat mark, to be supplied later. The slot is a fixed-size container of 48px height; it is empty until the asset is added.
   - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), wrapped across multiple lines, right-aligned, `--text-muted`.
@@ -184,6 +185,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
   - EN: "This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points."
   - RU: "Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки."
 - Link URLs: Telegram `https://t.me/qpikzz`, VK `https://vk.ru/qpikzz`, GitHub `https://github.com/qpikzz`.
+- The data information dialog is centered over a dimmed backdrop and uses the site surface, border, typography, and theme tokens. It has a localized title with a shield badge, an introduction, and three cards, each with a matching line icon, title, and short text (no contact link): a crossed-out visitor profile, browser settings, and hosting servers/logs. The dialog is rendered above the page, traps keyboard focus while open, closes with its close button, Escape, or backdrop click, restores focus to its opener, and prevents background scrolling. Motion respects reduced-motion preferences; the dialog remains usable on narrow screens with internal scrolling when needed.
 - A thin `--line` separator sits above the footer.
 - On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered.
 
