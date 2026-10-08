@@ -183,7 +183,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 - Below the three zones: a centered note in `--text-muted`, 13-14px, wrapped across two lines:
   - EN: "This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points."
   - RU: "Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки."
-- Link URLs (Telegram, VK, GitHub) are supplied later; the links exist as placeholders until then.
+- Link URLs: Telegram `https://t.me/qpikzz`, VK `https://vk.ru/qpikzz`, GitHub `https://github.com/qpikzz`.
 - A thin `--line` separator sits above the footer.
 - On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered.
 

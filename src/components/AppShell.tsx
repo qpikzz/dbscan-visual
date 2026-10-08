@@ -185,13 +185,13 @@ export function AppShell({ children }: AppShellProps) {
           <div className="footer-zones">
             <div className="footer-author">
               <span className="footer-author-name">{t.footerAuthor}</span>
-              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+              <a className="footer-author-link" href="https://t.me/qpikzz">
                 {t.footerTelegram}
               </a>
-              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+              <a className="footer-author-link" href="https://vk.ru/qpikzz">
                 {t.footerVk}
               </a>
-              <a className="footer-author-link" href="#" onClick={(event) => event.preventDefault()}>
+              <a className="footer-author-link" href="https://github.com/qpikzz">
                 {t.footerGithub}
               </a>
             </div>
