@@ -44,7 +44,7 @@ export const ru = {
   theoryRadiusTitle: 'R — радиус соседства',
   theoryRadiusText:
     'Две точки считаются соседями, если расстояние между ними строго меньше R. Представьте вокруг точки круг: увеличение R расширяет область, в которой можно найти соседей.',
-  theoryExampleLabel: 'Пример.',
+  theoryExampleLabel: 'Пример:',
   theoryRadiusExample:
     'при слишком маленьком R цепочки связей распадаются; образуются крошечные группы, и после проверки minPts многие или почти все точки могут стать шумом. С большим R раздельные скопления, наоборот, могут соединиться.',
   theoryMinPtsTitle: 'minPts — минимальный размер группы',
@@ -145,7 +145,7 @@ export const ru = {
     'Нажмите кнопку выше, чтобы начать изучение',
     'Выбираем случайную точку и добавляем её в первый кластер',
     'Найдём всех её соседей — точки, расстояние до которых меньше R',
-    'Среди них выберем случайную ещё не проверенную точку',
+    'Среди них выберем случайную, ещё не проверенную точку',
     'Найдём её соседей и тоже добавим в кластер',
     'Проверяем новые точки одну за другой. Когда ни одна из них больше не добавляет соседей — кластер готов',
     'Выберем случайную точку вне кластеров',
@@ -216,7 +216,7 @@ export const en: Dictionary = {
   theoryRadiusTitle: 'R: the neighborhood radius',
   theoryRadiusText:
     'Two points are neighbors when their distance is strictly less than R. Picture a circle around a point: increasing R widens the area where neighbors can be found.',
-  theoryExampleLabel: 'Example.',
+  theoryExampleLabel: 'Example:',
   theoryRadiusExample:
     'if R is too small, chains of connections break into tiny groups; after the minPts check, many or nearly all points may become noise. A larger R can instead join separate patches.',
   theoryMinPtsTitle: 'minPts: the minimum group size',
