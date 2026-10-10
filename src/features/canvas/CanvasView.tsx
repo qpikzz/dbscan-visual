@@ -56,8 +56,8 @@ type Position = {
 }
 
 type ScenarioFlight = {
-  from: Position
-  to: Position
+  from: Point
+  to: Point
   delay: number
   fade: 'in' | 'out' | null
 }
@@ -155,6 +155,20 @@ const POINT_RADIUS = 0.14
 const DRAW_SPACING = 0.45
 const ERASE_SPACING = 0.14
 const ERASE_RADIUS = 0.3
+const SCENARIO_TRAIL_COLLAPSE_DURATION = 150
+const TRAIL_MAX_LENGTH_WORLD = POINT_RADIUS * 4
+const TRAIL_MIN_SCREEN_TRAVEL = 0.75
+const TRAIL_ALPHA_MAX = 0.5
+const TRAIL_ALPHA_EXPONENT = 1.8
+const TRAIL_MIN_ALPHA = 0.04
+const TRAIL_END_SCALE = 0.7
+const TRAIL_SMALL_COPY_COUNT = 5
+const TRAIL_MEDIUM_COPY_COUNT = 3
+const TRAIL_SMALL_LIMIT = 500
+const TRAIL_MEDIUM_LIMIT = 1200
+const TRAIL_VIEWPORT_MARGIN = 8
+const TRAIL_BAND_HEAD_ALPHA = 0.16
+const TRAIL_BAND_TAIL_ALPHA = 0.06
 
 function easeStepProgress(progress: number): number {
   let lowerBound = 0
@@ -192,6 +206,73 @@ function projectPoint(
     x: size.width / 2 + transform.x + point.x * scale,
     y: size.height / 2 + transform.y + point.y * scale,
   }
+}
+
+function unprojectPosition(
+  position: Position,
+  transform: ViewTransform,
+  size: CanvasSize,
+): Point {
+  const scale = GRID_CELL_SIZE * transform.zoom
+  return {
+    x: (position.x - size.width / 2 - transform.x) / scale,
+    y: (position.y - size.height / 2 - transform.y) / scale,
+  }
+}
+
+type TrailLayer = {
+  scale: number
+  color: string
+}
+
+function buildTrailLayers(color: string, count: number): readonly TrailLayer[] {
+  const layers: TrailLayer[] = []
+  for (let index = 0; index < count; index += 1) {
+    const t = count <= 1 ? 0 : index / (count - 1)
+    const alpha = Math.max(
+      TRAIL_ALPHA_MAX * (1 - t) ** TRAIL_ALPHA_EXPONENT,
+      TRAIL_MIN_ALPHA,
+    )
+    layers.push({
+      scale: 1 - (1 - TRAIL_END_SCALE) * t,
+      color: getRgbaColor(color, alpha),
+    })
+  }
+  return layers
+}
+
+function getFlightProgress(flight: ScenarioFlight, flightElapsed: number): number {
+  const raw = (flightElapsed - flight.delay) / SCENARIO_FLIGHT_DURATION
+  if (raw <= 0) {
+    return 0
+  }
+  if (raw >= 1) {
+    return 1
+  }
+  return easeInOutProgress(raw)
+}
+
+function getFlightOpacity(flight: ScenarioFlight, eased: number): number {
+  if (flight.fade === 'in') {
+    return easeInOutProgress(Math.min(eased / 0.24, 1))
+  }
+  if (flight.fade === 'out') {
+    return 1 - easeInOutProgress(Math.max((eased - 0.72) / 0.28, 0))
+  }
+  return 1
+}
+
+function getCopyProgress(
+  flight: ScenarioFlight,
+  eased: number,
+  lag: number,
+  shrink: number,
+): number {
+  const segmentX = flight.to.x - flight.from.x
+  const segmentY = flight.to.y - flight.from.y
+  const segmentLength = Math.sqrt(segmentX * segmentX + segmentY * segmentY)
+  const trailLimit = Math.min(TRAIL_MAX_LENGTH_WORLD / segmentLength, eased)
+  return eased - lag * shrink * trailLimit
 }
 
 function getOutsidePosition(
@@ -466,10 +547,12 @@ export function CanvasView({
         getThemeColor(canvas, `--cluster-${index + 1}`),
       ),
     }
-    const trailColors = {
-      transparent: getRgbaColor(colors.primary, 0),
-      visible: getRgbaColor(colors.primary, 0.34),
-    }
+    const trailLayersSmall = buildTrailLayers(colors.muted, TRAIL_SMALL_COPY_COUNT)
+    const trailLayersMedium = buildTrailLayers(colors.muted, TRAIL_MEDIUM_COPY_COUNT)
+    const trailBandColors = [
+      getRgbaColor(colors.muted, TRAIL_BAND_HEAD_ALPHA),
+      getRgbaColor(colors.muted, TRAIL_BAND_TAIL_ALPHA),
+    ]
     const assignmentColor = (assignment: Assignment | undefined, pointIndex: number) => {
       const point = points[pointIndex]
       if (assignment?.kind === 'noise') {
@@ -510,23 +593,41 @@ export function CanvasView({
         maximumDelay = Math.max(maximumDelay, delay)
         const source = match.sourceIndex === null
           ? null
-          : sourcePositions[match.sourceIndex] ?? null
+          : scenarioTransition.fromPoints[match.sourceIndex] ?? null
         const destination = match.destinationIndex === null
           ? null
+          : points[match.destinationIndex] ?? null
+        const sourcePosition = match.sourceIndex === null
+          ? null
+          : sourcePositions[match.sourceIndex] ?? null
+        const destinationPosition = match.destinationIndex === null
+          ? null
           : destinationPositions[match.destinationIndex] ?? null
-        const from = source ?? getOutsidePosition(
-          destination ?? { x: size.width / 2, y: size.height / 2 },
-          size.width,
-          size.height,
-          index,
-          false,
+        const outsideAnchor = destinationPosition ?? sourcePosition ?? {
+          x: size.width / 2,
+          y: size.height / 2,
+        }
+        const from = source ?? unprojectPosition(
+          getOutsidePosition(
+            outsideAnchor,
+            size.width,
+            size.height,
+            index,
+            false,
+          ),
+          transformRef.current,
+          size,
         )
-        const to = destination ?? getOutsidePosition(
-          source ?? { x: size.width / 2, y: size.height / 2 },
-          size.width,
-          size.height,
-          index,
-          true,
+        const to = destination ?? unprojectPosition(
+          getOutsidePosition(
+            outsideAnchor,
+            size.width,
+            size.height,
+            index,
+            true,
+          ),
+          transformRef.current,
+          size,
         )
         return {
           from,
@@ -540,7 +641,7 @@ export function CanvasView({
         startTime: performance.now(),
         duration: reduced
           ? SCENARIO_REDUCED_FADE_DURATION
-          : SCENARIO_FLIGHT_DURATION + maximumDelay,
+          : SCENARIO_FLIGHT_DURATION + maximumDelay + SCENARIO_TRAIL_COLLAPSE_DURATION,
         reduced,
         flights,
         fromPositions: sourcePositions,
@@ -875,80 +976,265 @@ export function CanvasView({
         timestamp - scenarioFlight.startTime < scenarioFlight.duration
       ) {
         const flightElapsed = Math.max(timestamp - scenarioFlight.startTime, 0)
-        const pointRadius = POINT_RADIUS * scale
+        const flightRadius = POINT_RADIUS * scale
+        const bandWidth = flightRadius * 2
         context.setTransform(size.pixelRatio, 0, 0, size.pixelRatio, 0, 0)
-
-        const drawFlightPoint = (position: Position, opacity: number) => {
-          if (opacity <= 0) return
-          context.globalAlpha = opacity
-          context.beginPath()
-          context.arc(position.x, position.y, pointRadius, 0, Math.PI * 2)
-          context.fillStyle = colors.muted
-          context.fill()
-          context.globalAlpha = 1
-        }
 
         if (scenarioFlight.reduced) {
           const progress = Math.min(flightElapsed / scenarioFlight.duration, 1)
           const oldOpacity = 1 - progress
           const newOpacity = progress
-          scenarioFlight.fromPositions.forEach((position) =>
-            drawFlightPoint(position, oldOpacity),
-          )
-          scenarioFlight.toPositions.forEach((position) =>
-            drawFlightPoint(position, newOpacity),
-          )
-        } else {
-          scenarioFlight.flights.forEach((flight) => {
-            const progress = Math.max(
-              0,
-              Math.min((flightElapsed - flight.delay) / SCENARIO_FLIGHT_DURATION, 1),
+          context.fillStyle = colors.muted
+          context.globalAlpha = oldOpacity
+          context.beginPath()
+          scenarioFlight.fromPositions.forEach((position) => {
+            context.moveTo(position.x + flightRadius, position.y)
+            context.arc(position.x, position.y, flightRadius, 0, Math.PI * 2)
+          })
+          context.fill()
+          context.globalAlpha = newOpacity
+          context.beginPath()
+          scenarioFlight.toPositions.forEach((position) => {
+            context.moveTo(position.x + flightRadius, position.y)
+            context.arc(position.x, position.y, flightRadius, 0, Math.PI * 2)
+          })
+          context.fill()
+          context.globalAlpha = 1
+          context.restore()
+          return
+        }
+
+        const { flights } = scenarioFlight
+        const centerX = size.width / 2 + transform.x
+        const centerY = size.height / 2 + transform.y
+        const segmentEpsilon = TRAIL_MIN_SCREEN_TRAVEL / scale
+        const viewMargin = TRAIL_MAX_LENGTH_WORLD * scale + TRAIL_VIEWPORT_MARGIN
+        const viewRight = size.width + viewMargin
+        const viewBottom = size.height + viewMargin
+
+        let movingCount = 0
+        for (const flight of flights) {
+          const segmentX = flight.to.x - flight.from.x
+          const segmentY = flight.to.y - flight.from.y
+          if (segmentX * segmentX + segmentY * segmentY >= segmentEpsilon * segmentEpsilon) {
+            movingCount += 1
+          }
+        }
+        const useBand = movingCount > TRAIL_MEDIUM_LIMIT
+        const trailLayers = useBand
+          ? null
+          : movingCount > TRAIL_SMALL_LIMIT
+            ? trailLayersMedium
+            : trailLayersSmall
+
+        const collapseWindow = Math.max(
+          scenarioFlight.duration - SCENARIO_FLIGHT_DURATION - SCENARIO_TRAIL_COLLAPSE_DURATION,
+          0,
+        )
+        const collapse = flightElapsed > SCENARIO_FLIGHT_DURATION
+          ? Math.min(
+              (flightElapsed - SCENARIO_FLIGHT_DURATION) /
+                (collapseWindow + SCENARIO_TRAIL_COLLAPSE_DURATION),
+              1,
             )
-            const eased = easeInOutProgress(progress)
-            const head = {
-              x: flight.from.x + (flight.to.x - flight.from.x) * eased,
-              y: flight.from.y + (flight.to.y - flight.from.y) * eased,
-            }
-            let opacity = 1
-            if (flight.fade === 'in') {
-              opacity = easeInOutProgress(Math.min(progress / 0.24, 1))
-            } else if (flight.fade === 'out') {
-              opacity = 1 - easeInOutProgress(Math.max((progress - 0.72) / 0.28, 0))
+          : 0
+        const collapseEase = easeInOutProgress(collapse)
+        const collapseAlpha = 1 - collapseEase
+        const collapseShrink = 1 - collapseEase
+
+        if (!useBand && trailLayers !== null) {
+          for (let layerIndex = trailLayers.length - 1; layerIndex >= 0; layerIndex -= 1) {
+            const layer = trailLayers[layerIndex]
+            const lag = (layerIndex + 1) / trailLayers.length
+            const copyRadius = POINT_RADIUS * layer.scale * scale
+            if (!Number.isFinite(copyRadius) || copyRadius <= 0) {
+              continue
             }
 
-            if (progress > 0 && opacity > 0) {
-              const directionX = head.x - flight.from.x
-              const directionY = head.y - flight.from.y
-              const traveledDistance = Math.hypot(directionX, directionY)
-              if (traveledDistance > 0.1) {
-                const tailLength = Math.min(traveledDistance, 24)
-                const tail = {
-                  x: head.x - directionX / traveledDistance * tailLength,
-                  y: head.y - directionY / traveledDistance * tailLength,
+            if (collapse > 0) {
+              context.globalAlpha = collapseAlpha
+              context.fillStyle = layer.color
+              context.beginPath()
+              for (const flight of flights) {
+                const eased = getFlightProgress(flight, flightElapsed)
+                if (getFlightOpacity(flight, eased) !== 1 || eased < 1) {
+                  continue
                 }
-                const gradient = context.createLinearGradient(
-                  tail.x,
-                  tail.y,
-                  head.x,
-                  head.y,
-                )
-                gradient.addColorStop(0, trailColors.transparent)
-                gradient.addColorStop(1, trailColors.visible)
-                context.save()
-                context.globalAlpha = opacity
-                context.strokeStyle = gradient
-                context.lineWidth = 3
-                context.lineCap = 'round'
-                context.beginPath()
-                context.moveTo(tail.x, tail.y)
-                context.lineTo(head.x, head.y)
-                context.stroke()
-                context.restore()
+                const segmentX = flight.to.x - flight.from.x
+                const segmentY = flight.to.y - flight.from.y
+                if (
+                  !Number.isFinite(segmentX) ||
+                  !Number.isFinite(segmentY) ||
+                  segmentX * segmentX + segmentY * segmentY < segmentEpsilon * segmentEpsilon
+                ) {
+                  continue
+                }
+                const progress = getCopyProgress(flight, 1, lag, collapseShrink)
+                const screenX = centerX + (flight.from.x + segmentX * progress) * scale
+                const screenY = centerY + (flight.from.y + segmentY * progress) * scale
+                if (screenX < -viewMargin || screenX > viewRight || screenY < -viewMargin || screenY > viewBottom) {
+                  continue
+                }
+                context.moveTo(screenX + copyRadius, screenY)
+                context.arc(screenX, screenY, copyRadius, 0, Math.PI * 2)
               }
+              context.fill()
+              context.globalAlpha = 1
             }
-            drawFlightPoint(head, opacity)
-          })
+
+            context.fillStyle = layer.color
+            context.beginPath()
+            for (const flight of flights) {
+              const eased = getFlightProgress(flight, flightElapsed)
+              if (getFlightOpacity(flight, eased) !== 1 || eased >= 1 || eased <= 0) {
+                continue
+              }
+              const segmentX = flight.to.x - flight.from.x
+              const segmentY = flight.to.y - flight.from.y
+              if (
+                !Number.isFinite(segmentX) ||
+                !Number.isFinite(segmentY) ||
+                segmentX * segmentX + segmentY * segmentY < segmentEpsilon * segmentEpsilon
+              ) {
+                continue
+              }
+              const progress = getCopyProgress(flight, eased, lag, 1)
+              const screenX = centerX + (flight.from.x + segmentX * progress) * scale
+              const screenY = centerY + (flight.from.y + segmentY * progress) * scale
+              if (screenX < -viewMargin || screenX > viewRight || screenY < -viewMargin || screenY > viewBottom) {
+                continue
+              }
+              context.moveTo(screenX + copyRadius, screenY)
+              context.arc(screenX, screenY, copyRadius, 0, Math.PI * 2)
+            }
+            context.fill()
+          }
+        } else if (useBand) {
+          context.lineWidth = bandWidth
+          const drawBandPass = (
+            fromLag: number,
+            toLag: number,
+            color: string,
+            shrink: number,
+            arrivedOnly: boolean,
+            roundCap: boolean,
+          ) => {
+            context.beginPath()
+            for (const flight of flights) {
+              const eased = getFlightProgress(flight, flightElapsed)
+              if (getFlightOpacity(flight, eased) !== 1) {
+                continue
+              }
+              if (arrivedOnly ? eased < 1 : eased >= 1 || eased <= 0) {
+                continue
+              }
+              const segmentX = flight.to.x - flight.from.x
+              const segmentY = flight.to.y - flight.from.y
+              if (
+                !Number.isFinite(segmentX) ||
+                !Number.isFinite(segmentY) ||
+                segmentX * segmentX + segmentY * segmentY < segmentEpsilon * segmentEpsilon
+              ) {
+                continue
+              }
+              const fromProgress = getCopyProgress(flight, eased, fromLag, shrink)
+              const toProgress = getCopyProgress(flight, eased, toLag, shrink)
+              const fromX = centerX + (flight.from.x + segmentX * fromProgress) * scale
+              const fromY = centerY + (flight.from.y + segmentY * fromProgress) * scale
+              const toX = centerX + (flight.from.x + segmentX * toProgress) * scale
+              const toY = centerY + (flight.from.y + segmentY * toProgress) * scale
+              if (
+                (fromX < -viewMargin && toX < -viewMargin) ||
+                (fromX > viewRight && toX > viewRight) ||
+                (fromY < -viewMargin && toY < -viewMargin) ||
+                (fromY > viewBottom && toY > viewBottom)
+              ) {
+                continue
+              }
+              context.moveTo(fromX, fromY)
+              context.lineTo(toX, toY)
+            }
+            context.lineCap = roundCap ? 'round' : 'butt'
+            context.strokeStyle = color
+            context.globalAlpha = shrink < 1 ? collapseAlpha : 1
+            context.stroke()
+            context.globalAlpha = 1
+          }
+          drawBandPass(1, 0.5, trailBandColors[1], 1, false, false)
+          drawBandPass(1, 0.5, trailBandColors[1], collapseShrink, true, false)
+          drawBandPass(0.5, 0, trailBandColors[0], 1, false, true)
+          drawBandPass(0.5, 0, trailBandColors[0], collapseShrink, true, true)
         }
+
+        context.globalAlpha = 1
+        context.fillStyle = colors.muted
+        context.beginPath()
+        for (const flight of flights) {
+          const eased = getFlightProgress(flight, flightElapsed)
+          if (getFlightOpacity(flight, eased) !== 1) {
+            continue
+          }
+          const segmentX = flight.to.x - flight.from.x
+          const segmentY = flight.to.y - flight.from.y
+          if (!Number.isFinite(segmentX) || !Number.isFinite(segmentY)) {
+            continue
+          }
+          const headX = centerX + (flight.from.x + segmentX * eased) * scale
+          const headY = centerY + (flight.from.y + segmentY * eased) * scale
+          if (headX < -viewMargin || headX > viewRight || headY < -viewMargin || headY > viewBottom) {
+            continue
+          }
+          context.moveTo(headX + flightRadius, headY)
+          context.arc(headX, headY, flightRadius, 0, Math.PI * 2)
+        }
+        context.fill()
+
+        for (const flight of flights) {
+          const eased = getFlightProgress(flight, flightElapsed)
+          const opacity = getFlightOpacity(flight, eased)
+          if (opacity <= 0 || opacity === 1) {
+            continue
+          }
+          const segmentX = flight.to.x - flight.from.x
+          const segmentY = flight.to.y - flight.from.y
+          if (!Number.isFinite(segmentX) || !Number.isFinite(segmentY)) {
+            continue
+          }
+          const headX = centerX + (flight.from.x + segmentX * eased) * scale
+          const headY = centerY + (flight.from.y + segmentY * eased) * scale
+          if (headX < -viewMargin || headX > viewRight || headY < -viewMargin || headY > viewBottom) {
+            continue
+          }
+          context.globalAlpha = opacity
+          context.beginPath()
+          context.arc(headX, headY, flightRadius, 0, Math.PI * 2)
+          context.fillStyle = colors.muted
+          context.fill()
+          const segmentLength = Math.sqrt(segmentX * segmentX + segmentY * segmentY)
+          if (eased > 0 && segmentLength >= segmentEpsilon) {
+            const trailLimit = Math.min(TRAIL_MAX_LENGTH_WORLD / segmentLength, eased)
+            const far = eased - collapseShrink * trailLimit
+            const mid = eased - 0.5 * collapseShrink * trailLimit
+            const farX = centerX + (flight.from.x + segmentX * far) * scale
+            const farY = centerY + (flight.from.y + segmentY * far) * scale
+            const midX = centerX + (flight.from.x + segmentX * mid) * scale
+            const midY = centerY + (flight.from.y + segmentY * mid) * scale
+            context.lineWidth = bandWidth
+            context.lineCap = 'butt'
+            context.strokeStyle = trailBandColors[1]
+            context.beginPath()
+            context.moveTo(farX, farY)
+            context.lineTo(midX, midY)
+            context.stroke()
+            context.lineCap = 'round'
+            context.strokeStyle = trailBandColors[0]
+            context.beginPath()
+            context.moveTo(midX, midY)
+            context.lineTo(headX, headY)
+            context.stroke()
+          }
+        }
+        context.globalAlpha = 1
         context.restore()
         return
       }
