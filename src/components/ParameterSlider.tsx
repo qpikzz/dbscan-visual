@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMotionSettings } from '../hooks/useMotionSettings'
+import { easeStepProgress, PARAMETER_VISUAL_DURATION } from '../features/canvas/animation'
 
 type ParameterSliderProps = {
   label: string
@@ -32,9 +34,66 @@ export function ParameterSlider({
   onReset,
 }: ParameterSliderProps) {
   const [open, setOpen] = useState(false)
+  const [displayValue, setDisplayValue] = useState(value)
   const controlRef = useRef<HTMLDivElement>(null)
-  const { fadeSlide, transition } = useMotionSettings()
+  const displayRef = useRef(value)
+  const userValueRef = useRef<number | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
+  const { fadeSlide, transition, reduced } = useMotionSettings()
   const popoverId = `param-help-${label.replace(/\s+/g, '-').toLowerCase()}`
+
+  useEffect(() => {
+    if (userValueRef.current === value) {
+      userValueRef.current = null
+      return
+    }
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    const from = displayRef.current
+    if (from === value || reduced) {
+      setDisplayValue(value)
+      displayRef.current = value
+      return
+    }
+    const startedAt = performance.now()
+    const animate = () => {
+      const progress = Math.min(
+        (performance.now() - startedAt) / PARAMETER_VISUAL_DURATION,
+        1,
+      )
+      const next = from + (value - from) * easeStepProgress(progress)
+      setDisplayValue(next)
+      displayRef.current = next
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+      } else {
+        setDisplayValue(value)
+        displayRef.current = value
+        animationFrameRef.current = null
+      }
+    }
+    animationFrameRef.current = requestAnimationFrame(animate)
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
+      }
+    }
+  }, [reduced, value])
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = Number(event.target.value)
+    userValueRef.current = nextValue
+    setDisplayValue(nextValue)
+    displayRef.current = nextValue
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    onChange(nextValue)
+  }
 
   useEffect(() => {
     if (!open) return
@@ -58,11 +117,11 @@ export function ParameterSlider({
         min={min}
         max={max}
         step={step}
-        value={value}
-        aria-label={`${label}: ${format(value)}`}
-        onChange={(event) => onChange(Number(event.target.value))}
+        value={displayValue}
+        aria-label={`${label}: ${format(displayValue)}`}
+        onChange={handleChange}
       />
-      <span className="param-value">{format(value)}</span>
+      <span className="param-value">{format(displayValue)}</span>
       <button
         type="button"
         className="help-btn"

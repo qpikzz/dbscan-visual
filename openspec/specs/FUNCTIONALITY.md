@@ -21,7 +21,7 @@ Functional specification for the "Visualization" page.
 
 - Zoom in and out: mouse wheel on desktop, pinch on touch devices.
 - The grid scales together with the zoom; one grid cell always equals one Canvas unit.
-- On initial load and when selecting a scenario, the camera automatically fits the full point set in the Canvas with a margin. Subsequent user zooming and panning are preserved until the next scenario selection.
+- On initial load and when selecting a scenario, the camera automatically fits the full point set in the Canvas with a margin. On scenario selection the fit animates smoothly together with the point transition (zoom interpolated logarithmically); the fit on initial load is instant. Subsequent user zooming and panning are preserved until the next scenario selection and cancel any ongoing camera animation.
 - Pan: dragging the Canvas moves the view. Left-click-drag pans only when no drawing tool is active. Middle mouse button (MMB) drag pans always, regardless of whether a drawing tool (Draw/Erase) is active, so the user does not have to deselect the tool to pan.
 
 ### 2.2. Drawing Mode

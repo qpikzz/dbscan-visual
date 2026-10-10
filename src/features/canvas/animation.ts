@@ -12,6 +12,29 @@ export const PULSE_CYCLE_DURATION = 900
 export const MIN_STEP_DURATION = 300
 export const MAX_STEP_ANIMATION_DURATION = 30_000
 export const EXPONENTIAL_ACCELERATION_THRESHOLD = 5_000
+export const PARAMETER_VISUAL_DURATION = 300
+
+export function easeStepProgress(progress: number): number {
+  let lowerBound = 0
+  let upperBound = 1
+
+  for (let iteration = 0; iteration < 8; iteration += 1) {
+    const parameter = (lowerBound + upperBound) / 2
+    const inverse = 1 - parameter
+    const xPosition =
+      3 * inverse ** 2 * parameter * 0.22 +
+      3 * inverse * parameter ** 2 * 0.36 +
+      parameter ** 3
+    if (xPosition < progress) {
+      lowerBound = parameter
+    } else {
+      upperBound = parameter
+    }
+  }
+
+  const parameter = (lowerBound + upperBound) / 2
+  return 3 * parameter * (1 - parameter) + parameter ** 3
+}
 
 export type FrameAnimationPlan = {
   captureIntervalsByEvent: readonly (readonly number[])[]
