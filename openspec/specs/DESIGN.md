@@ -249,6 +249,8 @@ Character: smooth, crisp, confident, without sagging or lag.
 ### 8.4. Scenario Change
 
 - When another scenario is selected, smoothly scroll the page until the Canvas panel is at the top of the viewport. Start the point transition immediately when the scroll completes, without an extra pause.
+- The camera auto-fit animates together with the point flight: the camera eases from its current position to the fitted view over the same window as the flight, interpolating the zoom logarithmically. User zoom or pan cancels the camera animation immediately; the next scenario selection animates again from the camera in effect at that moment. With `prefers-reduced-motion` the fit applies instantly.
+- In the Create scenario the camera does not auto-fit while points are drawn; it stays where the user left it.
 - Match points by nearest on-Canvas distance. When the new scenario has at least as many points, assign each new point to its nearest old point, with no old point used as the source for more than three flights; when a source reaches that cap, use the next-nearest source with capacity. When the new scenario has fewer points, send every old point to its nearest new point, allowing multiple old points to converge on the same destination.
 - When the new scenario has no points, send all old points outward past the visible Canvas bounds and fade them out. When the old scenario has no points, bring new points in from just outside those bounds. If a point-count increase exceeds the available three-flights-per-source capacity, bring the remaining new points in from outside the Canvas.
 - Flights use ease-in-out motion for 1.4 seconds, with slight per-point staggering for shared sources or destinations so the complete transition remains about 1.5 seconds. Moving points reset to gray and leave a ghost trail behind each one: several copies of the point in its own color, sampled analytically along the traveled part of its trajectory (world coordinates, projected each frame with the current zoom/pan), with no more copies at any distance than the particle would have passed. Trail length never exceeds two point diameters, fades out and shrinks toward the point at the arrival (~150 ms), and is only drawn while the point moves. Copy count is adaptive: up to five copies for small groups of moving flights, three for larger ones, and a simplified fading band (no separate copies) above 1200 moving flights.
@@ -257,6 +259,7 @@ Character: smooth, crisp, confident, without sagging or lag.
 ### 8.5. Other Transitions
 
 - Page switcher: the active option changes immediately with the same static fill and border treatment as the language switch; page content crossfades with a small slide. The content swap is instant with `prefers-reduced-motion`.
+- R and minPts changes reset the algorithm (see FUNCTIONALITY), so the Canvas colors and circle settle to the step-0 state with a short 300ms crossfade; the parameter readout animates with the same timing for programmatic changes (scenario selection, reset) and applies immediately while the user drags.
 - Drawing tools: fade and slide-up appearance.
 - Popover and toast: fade and slide.
 - Code tabs: content fade.

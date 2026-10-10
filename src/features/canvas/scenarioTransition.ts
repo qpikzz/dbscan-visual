@@ -55,7 +55,8 @@ export function matchScenarioPoints(
   }
 
   const sourceUseCounts = sourcePositions.map(() => 0)
-  return destinationPositions.map((destination, destinationIndex) => {
+  const usedSourceIndices = new Set<number>()
+  const matches: ScenarioPointMatch[] = destinationPositions.map((destination, destinationIndex) => {
     let nearestSourceIndex = -1
     let nearestDistance = Number.POSITIVE_INFINITY
     sourcePositions.forEach((source, sourceIndex) => {
@@ -76,10 +77,22 @@ export function matchScenarioPoints(
 
     sourceUseCounts[nearestSourceIndex] =
       (sourceUseCounts[nearestSourceIndex] ?? 0) + 1
+    usedSourceIndices.add(nearestSourceIndex)
     return {
       sourceIndex: nearestSourceIndex,
       destinationIndex,
       staggerGroup: nearestSourceIndex,
     }
   })
+
+  sourcePositions.forEach((_, sourceIndex) => {
+    if (usedSourceIndices.has(sourceIndex)) return
+    matches.push({
+      sourceIndex,
+      destinationIndex: null,
+      staggerGroup: sourceIndex + destinationPositions.length,
+    })
+  })
+
+  return matches
 }
