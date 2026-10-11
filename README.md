@@ -192,19 +192,3 @@ dbscan-visual/
 ```
 
 Каталоги `node_modules`, `dist`, `temp` и `openspec/tasks` создаются локально и в репозиторий не попадают (см. `.gitignore`).
-
----
-
-## Автор
-
-**Nikita Shvedov**
-
-- Telegram: [@qpikzz](https://t.me/qpikzz)
-- ВКонтакте: [vk.ru/qpikzz](https://vk.ru/qpikzz)
-- GitHub: [github.com/qpikzz](https://github.com/qpikzz)
-
-<div align="center">
-
-Создано с любовью для школьников и студентов.
-
-</div>
