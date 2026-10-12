@@ -191,4 +191,4 @@ dbscan-visual/
 └── vite.config.ts
 ```
 
-Каталоги `node_modules`, `dist`, `temp` и `openspec/tasks` создаются локально и в репозиторий не попадают (см. `.gitignore`).
+Каталоги `node_modules`, `dist`, `temp` и `openspec/tasks` создаются локально и в репозиторий не попадают (см. `.gitignore`)
