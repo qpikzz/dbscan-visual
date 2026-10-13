@@ -127,11 +127,16 @@ a:focus-visible {
   min-height: 100vh;
 }
 
-.app-header,
 .page-container,
 .app-footer {
   width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
+}
+
+.header-area {
+  position: relative;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto var(--space-6);
 }
 
 .app-header {
@@ -139,8 +144,8 @@ a:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-4);
+  margin: 0;
   padding: var(--space-6) 0;
-  margin-bottom: var(--space-6);
   border-bottom: 1px solid var(--line);
 }
 
@@ -262,60 +267,121 @@ a:focus-visible {
   stroke-width: 1.5;
 }
 
-.theme-toggle-anchor {
-  position: relative;
-  display: inline-flex;
+.theme-warning-slot {
+  overflow: hidden;
+}
+
+.theme-warning-inner {
+  padding-top: var(--space-3);
 }
 
 .theme-warning-popover {
-  position: absolute;
-  z-index: 1000;
-  top: calc(100% + 6px);
-  right: 0;
+  position: relative;
   display: flex;
-  width: max-content;
-  max-width: min(320px, calc(100vw - 32px));
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-button);
   background: var(--surface);
   color: var(--text);
-  animation: theme-warning-appear 220ms var(--ease) both;
+  overflow: hidden;
 }
 
-.theme-warning-popover[role='dialog'] {
-  text-align: left;
+.theme-warning-icon {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-button);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.theme-warning-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .theme-warning-message {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.theme-warning-count {
+  display: inline-block;
+  min-width: 1ch;
   color: var(--primary);
-  font-size: 1rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .theme-warning-cancel {
   min-height: 36px;
-  padding: 0 var(--space-3);
   flex: none;
-  border: 1px solid var(--primary);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
   border-radius: var(--radius-button);
-  background: var(--primary-soft);
-  color: var(--primary);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 
-@keyframes theme-warning-appear {
+.theme-warning-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(1);
+  transform-origin: left center;
+  animation: theme-warning-drain 3s linear forwards;
+}
+
+@keyframes theme-warning-drain {
   from {
-    opacity: 0;
-    transform: translateY(-4px);
+    transform: scaleX(1);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: scaleX(0);
+  }
+}
+
+@media (min-width: 1880px) {
+  .theme-warning-slot {
+    position: absolute;
+    z-index: 5;
+    top: 50%;
+    left: calc(100% + var(--space-3));
+    width: max-content;
+    max-width: calc((100vw - 1200px) / 2 - var(--space-8));
+    translate: 0 -50%;
+  }
+
+  .theme-warning-inner {
+    padding-top: 0;
+  }
+
+  .theme-warning-popover {
+    width: max-content;
+    max-width: 100%;
   }
 }
 
@@ -563,14 +629,17 @@ a:focus-visible {
   .app-header {
     grid-template-columns: minmax(0, 1fr) auto;
     padding: var(--space-4) 0;
-    margin-bottom: var(--space-4);
     row-gap: var(--space-3);
   }
 
-  .app-header,
+  .header-area,
   .page-container,
   .app-footer {
     width: calc(100% - 32px);
+  }
+
+  .header-area {
+    margin-bottom: var(--space-4);
   }
 
   .header-actions {
@@ -643,7 +712,7 @@ a:focus-visible {
     animation: none;
   }
 
-  .theme-warning-popover {
-    animation: none;
+  .theme-warning-progress {
+    display: none;
   }
 }
