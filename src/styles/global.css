@@ -137,6 +137,8 @@ a:focus-visible {
   position: relative;
   width: min(1200px, calc(100% - 48px));
   margin: 0 auto var(--space-6);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .app-header {
@@ -289,6 +291,14 @@ a:focus-visible {
   overflow: hidden;
 }
 
+.theme-warning-body {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .theme-warning-icon {
   display: inline-grid;
   width: 28px;
@@ -331,8 +341,12 @@ a:focus-visible {
 }
 
 .theme-warning-cancel {
-  min-height: 36px;
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
   flex: none;
+  align-items: center;
+  justify-content: center;
   padding: 0 var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-button);
@@ -340,6 +354,7 @@ a:focus-visible {
   color: var(--text);
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -382,6 +397,17 @@ a:focus-visible {
   .theme-warning-popover {
     width: max-content;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .theme-warning-popover {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .theme-warning-cancel {
+    width: 100%;
   }
 }
 

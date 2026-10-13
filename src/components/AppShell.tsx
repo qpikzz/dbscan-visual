@@ -178,28 +178,30 @@ export function AppShell({ children }: AppShellProps) {
                     }
                   }}
                 >
-                  <span className="theme-warning-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
-                    </svg>
-                  </span>
-                  <p className="theme-warning-message">
-                    {warningPrefix}
-                    <span className="theme-warning-count" aria-live="off">
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.span
-                          key={warningCountdown}
-                          initial={reduced ? false : { opacity: 0, y: '0.35em' }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={reduced ? { opacity: 0 } : { opacity: 0, y: '-0.35em' }}
-                          transition={transition(0.16)}
-                        >
-                          {warningCountdown}
-                        </motion.span>
-                      </AnimatePresence>
+                  <div className="theme-warning-body">
+                    <span className="theme-warning-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+                      </svg>
                     </span>
-                    {warningSuffix}
-                  </p>
+                    <p className="theme-warning-message">
+                      {warningPrefix}
+                      <span className="theme-warning-count" aria-live="off">
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.span
+                            key={warningCountdown}
+                            initial={reduced ? false : { opacity: 0, y: '0.35em' }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={reduced ? { opacity: 0 } : { opacity: 0, y: '-0.35em' }}
+                            transition={transition(0.16)}
+                          >
+                            {warningCountdown}
+                          </motion.span>
+                        </AnimatePresence>
+                      </span>
+                      {warningSuffix}
+                    </p>
+                  </div>
                   <button
                     className="theme-warning-cancel"
                     type="button"
