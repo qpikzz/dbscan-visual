@@ -142,6 +142,7 @@ a:focus-visible {
 }
 
 .app-header {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -668,11 +669,108 @@ a:focus-visible {
     margin-bottom: var(--space-4);
   }
 
-  .header-actions {
-    grid-column: 1 / -1;
-    justify-self: end;
-    flex-wrap: wrap;
-    max-width: 100%;
+  .menu-toggle {
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-button);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .menu-toggle[aria-expanded='true'] {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .menu-icon {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 14px;
+  }
+
+  .menu-icon span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 250ms var(--ease), opacity 250ms var(--ease);
+  }
+
+  .menu-icon span:nth-child(1) {
+    top: 0;
+  }
+
+  .menu-icon span:nth-child(2) {
+    top: 6px;
+  }
+
+  .menu-icon span:nth-child(3) {
+    top: 12px;
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-icon span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-icon span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-icon span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .header-menu {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + var(--space-3));
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-block);
+    background: var(--surface);
+  }
+
+  .header-menu .page-switcher,
+  .header-menu .language-switcher {
+    height: auto;
+  }
+
+  .header-menu .page-switcher {
+    width: 100%;
+  }
+
+  .header-menu .page-switcher-option,
+  .header-menu .language-switcher button {
+    min-height: 44px;
+  }
+
+  .header-menu .app-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .header-menu .language-switcher {
+    flex: 1 1 auto;
+  }
+
+  .header-menu .theme-toggle {
+    width: 44px;
+    flex: none;
   }
 
   .language-switcher button,

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { RefObject } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
 import { useMotionSettings } from '../hooks/useMotionSettings'
@@ -83,6 +84,7 @@ function StepItem({
 }
 
 type StepsPanelProps = {
+  stepsPanelRef?: RefObject<HTMLElement | null>
   steps?: readonly number[]
   finalStepIndex: number | null
   clusterCount?: number
@@ -95,6 +97,7 @@ type StepsPanelProps = {
 }
 
 export function StepsPanel({
+  stepsPanelRef,
   steps = [0],
   finalStepIndex,
   clusterCount = 0,
@@ -117,7 +120,7 @@ export function StepsPanel({
   }, [steps.length, reduced])
 
   return (
-    <aside className="viz-card steps-panel">
+    <aside ref={stepsPanelRef} className="viz-card steps-panel">
       <button
         type="button"
         className="btn btn-primary steps-start"

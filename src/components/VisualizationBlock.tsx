@@ -30,6 +30,7 @@ type VisualizationBlockProps = {
   radiusDurations: readonly number[]
   scenarioTransition: ScenarioTransitionRequest | null
   canvasPanelRef: RefObject<HTMLElement | null>
+  stepsPanelRef: RefObject<HTMLElement | null>
   steps: readonly number[]
   finalStepIndex: number | null
   clusterCount: number
@@ -66,6 +67,7 @@ export function VisualizationBlock({
   radiusDurations,
   scenarioTransition,
   canvasPanelRef,
+  stepsPanelRef,
   steps,
   finalStepIndex,
   clusterCount,
@@ -111,6 +113,7 @@ export function VisualizationBlock({
         onScenarioTransitionComplete={onScenarioTransitionComplete}
       />
       <StepsPanel
+        stepsPanelRef={stepsPanelRef}
         steps={steps}
         finalStepIndex={finalStepIndex}
         clusterCount={clusterCount}

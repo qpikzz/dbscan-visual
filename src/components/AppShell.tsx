@@ -4,6 +4,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
@@ -36,6 +37,10 @@ export function AppShell({ children }: AppShellProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null)
   const dataInfoTriggerRef = useRef<HTMLButtonElement>(null)
   const returnFocusRef = useRef<HTMLButtonElement | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const menuPanelRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMediaQuery('(max-width: 767px)')
   const warningOpen = warningCountdown !== null
   const [warningPrefix, warningSuffix] = t.themeWarningMessage.split('{count}')
   const warningSlotMotion = reduced
@@ -79,9 +84,46 @@ export function AppShell({ children }: AppShellProps) {
     returnFocusRef.current = null
   }, [warningOpen])
 
+  useEffect(() => {
+    if (!menuOpen) {
+      return
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (menuPanelRef.current?.contains(target) || menuButtonRef.current?.contains(target)) {
+        return
+      }
+      setMenuOpen(false)
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (!isMobile && menuOpen) {
+      setMenuOpen(false)
+    }
+  }, [isMobile, menuOpen])
+
   const toggleTheme = (button: HTMLButtonElement) => {
     if (theme === 'dark' && !lightThemeWarningShown) {
       returnFocusRef.current = button
+      // The countdown notification lives in-flow below the header, where the
+      // open menu panel would cover it: close the menu so it stays visible.
+      setMenuOpen(false)
       setWarningCountdown(3)
       return
     }
@@ -92,6 +134,75 @@ export function AppShell({ children }: AppShellProps) {
   const cancelThemeSwitch = () => {
     setWarningCountdown(null)
   }
+
+  const menuMotion = reduced
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+        initial: { opacity: 0, y: -8, scale: 0.98 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, y: -8, scale: 0.98 },
+      }
+
+  const pageSwitcher = (
+    <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
+      <NavLink
+        className={({ isActive }) =>
+          isActive ? 'page-switcher-option active' : 'page-switcher-option'
+        }
+        to="/visualization"
+        onClick={() => setMenuOpen(false)}
+      >
+        {t.visualLabel}
+      </NavLink>
+      <NavLink
+        className={({ isActive }) =>
+          isActive ? 'page-switcher-option active' : 'page-switcher-option'
+        }
+        to="/theory"
+        onClick={() => setMenuOpen(false)}
+      >
+        {t.theoryLabel}
+      </NavLink>
+    </nav>
+  )
+
+  const headerControls = (
+    <div className="app-controls">
+      <div className="language-switcher" role="group" aria-label={t.languageLabel}>
+        <button
+          type="button"
+          className={language === 'ru' ? 'active' : undefined}
+          aria-pressed={language === 'ru'}
+          onClick={() => setLanguage('ru')}
+        >
+          {t.languageRu}
+        </button>
+        <button
+          type="button"
+          className={language === 'en' ? 'active' : undefined}
+          aria-pressed={language === 'en'}
+          onClick={() => setLanguage('en')}
+        >
+          {t.languageEn}
+        </button>
+      </div>
+      <button
+        className={theme === 'dark' ? 'theme-toggle active' : 'theme-toggle'}
+        type="button"
+        aria-label={t.themeToggleLabel}
+        aria-pressed={theme === 'dark'}
+        onClick={(event) => toggleTheme(event.currentTarget)}
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          {theme === 'light' ? (
+            <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+          ) : (
+            <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" />
+          )}
+        </svg>
+      </button>
+    </div>
+  )
 
   return (
     <div className="app-shell">
@@ -104,61 +215,45 @@ export function AppShell({ children }: AppShellProps) {
             </svg>
             <span>{t.logo}</span>
           </h1>
-          <div className="header-actions">
-            <nav className="page-switcher" aria-label={t.pageSwitcherLabel}>
-              <NavLink
-                className={({ isActive }) =>
-                  isActive ? 'page-switcher-option active' : 'page-switcher-option'
-                }
-                to="/visualization"
-              >
-                {t.visualLabel}
-              </NavLink>
-              <NavLink
-                className={({ isActive }) =>
-                  isActive ? 'page-switcher-option active' : 'page-switcher-option'
-                }
-                to="/theory"
-              >
-                {t.theoryLabel}
-              </NavLink>
-            </nav>
-            <div className="app-controls">
-              <div className="language-switcher" role="group" aria-label={t.languageLabel}>
-                <button
-                  type="button"
-                  className={language === 'ru' ? 'active' : undefined}
-                  aria-pressed={language === 'ru'}
-                  onClick={() => setLanguage('ru')}
-                >
-                  {t.languageRu}
-                </button>
-                <button
-                  type="button"
-                  className={language === 'en' ? 'active' : undefined}
-                  aria-pressed={language === 'en'}
-                  onClick={() => setLanguage('en')}
-                >
-                  {t.languageEn}
-                </button>
-              </div>
+          {isMobile ? (
+            <>
               <button
-                className={theme === 'dark' ? 'theme-toggle active' : 'theme-toggle'}
+                className="menu-toggle"
                 type="button"
-                aria-label={t.themeToggleLabel}
-                aria-pressed={theme === 'dark'}
-                onClick={(event) => toggleTheme(event.currentTarget)}
+                ref={menuButtonRef}
+                aria-expanded={menuOpen}
+                aria-controls="header-menu"
+                aria-label={t.headerMenuLabel}
+                onClick={() => setMenuOpen((open) => !open)}
               >
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  {theme === 'light' ? (
-                    <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.42 1.42m12.73 0-1.42-1.42M7.05 7.05 5.63 5.63M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
-                  ) : (
-                    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" />
-                  )}
-                </svg>
+                <span className="menu-icon" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
               </button>
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    id="header-menu"
+                    ref={menuPanelRef}
+                    className="header-menu"
+                    {...menuMotion}
+                    transition={transition(0.25)}
+                    style={{ transformOrigin: 'top center' }}
+                  >
+                    {pageSwitcher}
+                    {headerControls}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          ) : (
+            <div className="header-actions">
+              {pageSwitcher}
+              {headerControls}
             </div>
-          </div>
+          )}
         </header>
         <AnimatePresence>
           {warningCountdown !== null && (
