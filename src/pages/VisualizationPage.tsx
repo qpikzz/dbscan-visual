@@ -11,12 +11,24 @@ import { createFrameAnimationPlans } from '../features/canvas/animation'
 import type { ScenarioTransitionRequest } from '../features/canvas/scenarioTransition'
 import type { Assignment, Frame, FrameEvent, Point } from '../features/dbscan/types'
 import { useMotionSettings } from '../hooks/useMotionSettings'
+import { useMediaQuery } from '../hooks/useMediaQuery'
 import '../styles/visualization.css'
 
-function scrollToCanvasPanel(
+function isFullyVisible(element: HTMLElement): boolean {
+  const rect = element.getBoundingClientRect()
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+  return rect.top >= 0 && rect.bottom <= viewportHeight
+}
+
+function scrollToPanel(
   panel: HTMLElement,
   reducedMotion: boolean,
+  skipIfVisible = false,
 ): Promise<void> {
+  if (skipIfVisible && isFullyVisible(panel)) {
+    return Promise.resolve()
+  }
+
   const scrollMarginTop = Number.parseFloat(getComputedStyle(panel).scrollMarginTop) || 0
   if (Math.abs(panel.getBoundingClientRect().top - scrollMarginTop) < 1) {
     return Promise.resolve()
@@ -81,9 +93,11 @@ export function VisualizationPage() {
   const [scenarioTransition, setScenarioTransition] =
     useState<ScenarioTransitionRequest | null>(null)
   const canvasPanelRef = useRef<HTMLElement | null>(null)
+  const stepsPanelRef = useRef<HTMLElement | null>(null)
   const scenarioTransitionIdRef = useRef(0)
   const scenarioSelectionRequestRef = useRef(0)
   const { reduced } = useMotionSettings()
+  const isMobile = useMediaQuery('(max-width: 767px)')
   const points = scenario === 'create' ? createPoints : SCENARIOS[scenario].points
   const frame = frames?.[activeStep]
   const finalStepIndex = frames === null ? null : frames.length - 1
@@ -119,11 +133,15 @@ export function VisualizationPage() {
     if (nextScenario === scenario) return
     const requestId = scenarioSelectionRequestRef.current + 1
     scenarioSelectionRequestRef.current = requestId
-    const canvasPanel = canvasPanelRef.current
-    if (canvasPanel === null) {
-      throw new Error('Canvas panel is unavailable during scenario selection')
+    // On mobile the Steps panel (with the Start button) sits above the Canvas,
+    // so scrolling to the Canvas would hide the button. Scroll to the Steps
+    // panel instead; skip scrolling when it is already fully visible.
+    // On desktop keep the existing Canvas target unchanged.
+    const scrollTarget = isMobile ? stepsPanelRef.current : canvasPanelRef.current
+    if (scrollTarget === null) {
+      throw new Error('Scenario scroll target is unavailable during scenario selection')
     }
-    await scrollToCanvasPanel(canvasPanel, reduced)
+    await scrollToPanel(scrollTarget, reduced, isMobile)
     if (requestId !== scenarioSelectionRequestRef.current) return
 
     const transitionId = scenarioTransitionIdRef.current + 1
@@ -188,6 +206,7 @@ export function VisualizationPage() {
           radiusDurations={animationPlans[activeStep]?.radiusDurationsByEvent ?? []}
           scenarioTransition={scenarioTransition}
           canvasPanelRef={canvasPanelRef}
+          stepsPanelRef={stepsPanelRef}
           steps={steps}
           finalStepIndex={finalStepIndex}
           clusterCount={frame?.clusterCount ?? 0}

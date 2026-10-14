@@ -368,6 +368,8 @@
 /* ---------- Code block ---------- */
 
 .code-block {
+  --code-line-height: calc(13px * 1.6);
+  --code-inset: var(--space-4);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
@@ -871,6 +873,10 @@
   .canvas-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--space-4);
+    /* Symmetric insets: keep both edges equal while freeing width
+       for the parameter rows on 320px screens. */
+    padding: var(--space-4);
   }
 
   .canvas-wrap {
@@ -878,13 +884,114 @@
   }
 
   .param-control {
-    flex: none;
-    max-width: none;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    grid-template-areas:
+      'label value . help reset'
+      'input input input input input';
+    align-items: center;
+    gap: var(--space-2);
     width: 100%;
+    max-width: none;
+  }
+
+  .param-label {
+    grid-area: label;
+  }
+
+  .param-value {
+    grid-area: value;
+    min-width: 40px;
+    text-align: left;
+  }
+
+  .help-btn {
+    grid-area: help;
+  }
+
+  .reset-btn {
+    grid-area: reset;
+    padding: 0 var(--space-2);
+    white-space: nowrap;
+  }
+
+  .popover {
+    /* Never wider than the parameter row on narrow screens. */
+    width: min(264px, 100%);
   }
 
   .param-input {
-    width: auto;
+    grid-area: input;
+    width: 100%;
+    max-width: none;
+    height: 44px;
+    margin: 0;
+    touch-action: pan-y;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
   }
 
+  .param-input::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--line);
+  }
+
+  .param-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    margin-top: -9px;
+    border: none;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+
+  .param-input::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--line);
+  }
+
+  .param-input::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+
+  .code-tabs {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .code-tab {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 var(--space-2);
+    font-size: 13px;
+  }
+
+  .code-toolbar {
+    min-height: 52px;
+  }
+
+  .code-copy {
+    padding: 0 var(--space-2);
+  }
+
+  .code-surface {
+    height: calc(var(--code-line-height) * 12.5 + var(--code-inset) * 2);
+    max-height: calc(var(--code-line-height) * 12.5 + var(--code-inset) * 2);
+    /* Keep page scroll chaining at the block edges so the inner
+       scroller never traps the page on touch devices. */
+    overscroll-behavior: auto;
+  }
+
+  .steps-panel {
+    scroll-margin-top: var(--space-4);
+  }
 }
