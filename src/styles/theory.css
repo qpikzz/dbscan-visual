@@ -1,0 +1,455 @@
+/* ---------- Theory page ---------- */
+
+.theory-page {
+  display: grid;
+  max-width: 880px;
+  gap: var(--space-6);
+  margin: 0 auto;
+}
+
+.theory-toc {
+  padding: var(--space-4);
+}
+
+.theory-toc h2,
+.theory-intro h1 {
+  margin: 0 0 var(--space-3);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.theory-toc ol {
+  display: grid;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding-left: var(--space-6);
+}
+
+.theory-toc a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+
+.theory-toc-icon,
+.theory-section-icon,
+.theory-callout-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.theory-toc-icon svg,
+.theory-section-icon svg,
+.theory-callout-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theory-toc-icon {
+  color: var(--text-muted);
+}
+
+.theory-toc-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.theory-content {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.theory-intro {
+  padding: var(--space-4) 0;
+}
+
+.theory-eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.theory-intro h1 {
+  font-size: 28px;
+}
+
+.theory-intro > p:last-child {
+  max-width: 680px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---------- Collapsible sections ---------- */
+
+.theory-section {
+  min-width: 0;
+  scroll-margin-top: calc(var(--space-4) + env(safe-area-inset-top));
+}
+
+.theory-section--top {
+  --theory-chevron-offset: var(--space-6);
+  padding: var(--space-6);
+  scroll-margin-top: calc(var(--space-6) + env(safe-area-inset-top));
+}
+
+.theory-section--accent {
+  border-color: var(--primary);
+}
+
+.theory-section-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: var(--space-2);
+}
+
+.theory-section-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  order: 1;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
+}
+
+.theory-section-head:hover .theory-section-toggle,
+.theory-section-toggle[aria-expanded='false'],
+.theory-section-toggle:focus-visible {
+  opacity: 1;
+}
+
+.theory-section-chevron {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 200ms var(--ease);
+}
+
+.theory-section-toggle[aria-expanded='true'] .theory-section-chevron {
+  transform: rotate(90deg);
+}
+
+.theory-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.theory-section .theory-section .theory-section-title {
+  font-size: 16px;
+}
+
+.theory-section .theory-section .theory-section .theory-section-title {
+  font-size: 15px;
+}
+
+.theory-section-title-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.theory-section-icon {
+  color: var(--text-muted);
+}
+
+.theory-section-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.theory-section-body {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---------- Nested section layouts ---------- */
+
+.theory-sections {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.theory-sections--ordered {
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+  padding-left: var(--space-6);
+}
+
+.theory-sections--grid {
+  gap: var(--space-6);
+}
+
+.theory-sections--grid > .theory-section + .theory-section {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Blocks ---------- */
+
+.theory-text,
+.theory-bullet-list,
+.theory-numbered-list,
+.theory-terms dd,
+.theory-callout-text {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.theory-text {
+  margin: 0 0 var(--space-3);
+}
+
+.theory-section-body > :last-child {
+  margin-bottom: 0;
+}
+
+.theory-bullet-list,
+.theory-numbered-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-6);
+}
+
+.theory-numbered-list {
+  list-style: decimal;
+}
+
+.theory-list-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.theory-list-text {
+  margin-left: var(--space-2);
+}
+
+.theory-subheading {
+  margin: var(--space-4) 0 var(--space-2);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.theory-highlight {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-ctl);
+  background: var(--primary-soft);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.theory-callout {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--callout-accent);
+  border-radius: 0 var(--radius-button) var(--radius-button) 0;
+  background: var(--callout-soft);
+}
+
+.theory-callout--note {
+  --callout-accent: var(--primary);
+  --callout-soft: var(--primary-soft);
+}
+
+.theory-callout--important {
+  --callout-accent: var(--cluster-1);
+  --callout-soft: color-mix(in srgb, var(--cluster-1) 10%, var(--surface));
+}
+
+.theory-callout--example {
+  --callout-accent: var(--cluster-4);
+  --callout-soft: color-mix(in srgb, var(--cluster-4) 10%, var(--surface));
+}
+
+.theory-callout-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.theory-callout-icon {
+  color: var(--callout-accent);
+}
+
+.theory-callout-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.theory-callout-text {
+  margin: 0;
+  color: var(--text);
+}
+
+.theory-pseudocode {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.theory-code {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+}
+
+.theory-code figcaption {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.theory-code .code-pre {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 13px;
+}
+
+.theory-code .code-lines {
+  min-width: max-content;
+}
+
+.theory-terms {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.theory-terms > div {
+  display: grid;
+  gap: var(--space-2) var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.theory-terms dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.theory-terms dd {
+  margin: 0;
+}
+
+/* ---------- Breakpoints ---------- */
+
+@media (min-width: 1024px) {
+  .theory-toc {
+    padding: var(--space-6);
+  }
+
+  .theory-toc ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theory-sections--grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theory-sections--grid > .theory-section + .theory-section {
+    padding-top: 0;
+    padding-left: var(--space-6);
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .theory-terms > div {
+    grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr);
+  }
+
+  /*
+   * Obsidian-style gutter. The chevron needs 44px of clear space left of the card;
+   * the reading column is at most 880px wide with 24px page margins, so 880 + 2 x 44
+   * + 48 = 1016px is the real minimum. The project's desktop breakpoint already
+   * exceeds it, so the chevron moves out of the card from here.
+   */
+  .theory-section-head::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: calc(var(--theory-chevron-offset, 0px) + 44px);
+  }
+
+  .theory-section-toggle {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + var(--theory-chevron-offset, 0px));
+    margin-left: 0;
+    transform: translateY(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .theory-page,
+  .theory-content {
+    gap: var(--space-4);
+  }
+
+  .theory-section--top {
+    padding: var(--space-4);
+  }
+
+  .theory-intro h1 {
+    font-size: 24px;
+  }
+
+  .theory-code .code-pre {
+    font-size: 12px;
+  }
+}
+
+@media (hover: none) {
+  .theory-section-toggle {
+    opacity: 0.5;
+  }
+}
