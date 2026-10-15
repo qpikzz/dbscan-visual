@@ -1,6 +1,6 @@
 # DESIGN
 
-Design specification for the "Visualization" page. The "Theory" page is out of scope of this document.
+Design specification for the site's pages: the "Visualization" page (sections 1-5.5 and 6-8) and the "Theory" page (section 5.6).
 
 ## 1. Visual Language
 
@@ -191,9 +191,14 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 
 ### 5.6. Theory Page
 
-- The Theory page starts with a bordered, immediately visible table of contents linking to each section; the reading column stays narrow and single-column at all breakpoints.
-- Each main content section appears once on scroll using the shared Reveal animation. The pseudocode blocks reuse the Code block's line numbers, Roboto Mono font, and theme-based syntax colors.
-- The page explains the simplified variant used by the visualization and clearly distinguishes it from classic DBSCAN. Reduced-motion preferences disable movement and use instant table-of-contents navigation.
+- The Theory page starts with a bordered, immediately visible table of contents linking to each top-level section; each link shows a compact line icon for the section. The reading column stays narrow and single-column at all breakpoints.
+- The page structure is generated from a single data list: every section carries an anchor id, an i18n title key, an optional icon, and a list of typed content blocks (paragraph, bulleted/numbered list, subheading, callout, pseudocode, term list, highlight, and nested sections in stack/grid/ordered layouts). Texts live only in the i18n dictionaries, in both languages. Adding, removing, or reordering sections and subsections requires editing only that data and the dictionaries; existing `theory-*` anchors keep working.
+- Every section and subsection heading is collapsible (Obsidian-style disclosure): a chevron button sits in a gutter to the left of the section, vertically centered on the heading row, at least 44x44px, keyboard-operable, labelled in the active language, and announcing its expanded state. The heading (icon and text) aligns with the left edge of the section's body text; nested headings keep their indentation. The gutter needs 44px of clear space left of the reading column, so where that space is unavailable (below the 1024px desktop breakpoint, computed from the column width) the chevron falls back to the right end of the heading row inside the card. Heading levels stay h2/h3/h4 by nesting depth; each section shows its icon next to the title.
+- The chevron appears on hover or keyboard focus; a collapsed section always shows it; on devices without hover it stays faintly visible. Clicking the chevron or the heading text toggles the section, except while the user is selecting text.
+- Collapsing hides the section body: height animates between 0 and auto with a fade over 300ms using the shared easing; reduced-motion preferences make the height change instant and keep a short fade. Collapsed bodies leave the accessibility tree and the tab order. Sections are expanded by default; the collapsed set is stored in localStorage under `dbscan-collapsed-sections` and restored before the first paint. There are no collapse-all/expand-all buttons.
+- Table-of-contents and `#theory-...` anchor navigation scrolls to the target heading (smooth by default, instant with reduced motion) and expands only the target's collapsed ancestors, waiting for their animation to finish; the target section itself is never force-expanded. The scroll offset respects the safe-area insets, and the existing `#/theory#...` double-hash form keeps working.
+- Each top-level section appears once on scroll using the shared Reveal animation. Callouts (note, important, example) are tone-colored from tokens with a matching line icon and a localized label. The pseudocode blocks reuse the Code block's line numbers, Roboto Mono font, and theme-based syntax colors.
+- The page explains the simplified variant used by the visualization and clearly distinguishes it from classic DBSCAN. The data footer is unchanged. Reduced-motion preferences disable movement and use instant table-of-contents navigation.
 
 ## 6. Responsive Layout
 
