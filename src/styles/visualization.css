@@ -890,6 +890,11 @@
       'label value . help reset'
       'input input input input input';
     align-items: center;
+    align-content: start;
+    /* The desktop rule sets flex: 1 1 280px. In this column layout that basis
+       becomes vertical and stretches each group (and its rows) to fill height.
+       Height must follow content here. */
+    flex: none;
     gap: var(--space-2);
     width: 100%;
     max-width: none;

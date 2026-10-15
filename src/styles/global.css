@@ -204,8 +204,8 @@ a:focus-visible {
   gap: var(--space-2);
 }
 
-.language-switcher,
 .page-switcher,
+.segmented-control,
 .theme-toggle {
   height: 44px;
   border: 1px solid var(--line);
@@ -213,16 +213,19 @@ a:focus-visible {
   background: var(--surface);
 }
 
-.language-switcher {
-  display: inline-flex;
-  align-items: center;
+.segmented-control {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: 2px;
   padding: 3px;
 }
 
-.language-switcher button,
-.page-switcher-option {
+.page-switcher-option,
+.segmented-option {
   display: inline-flex;
+  min-width: 0;
   min-height: 36px;
   align-items: center;
   justify-content: center;
@@ -238,11 +241,32 @@ a:focus-visible {
   white-space: nowrap;
 }
 
-.language-switcher button.active,
 .page-switcher-option.active {
   border-color: var(--primary);
   background: var(--primary-soft);
   color: var(--primary);
+}
+
+.segmented-option {
+  position: relative;
+}
+
+.segmented-option.active {
+  color: var(--primary);
+}
+
+.segmented-highlight {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  border: 1px solid var(--primary);
+  border-radius: 5px;
+  background: var(--primary-soft);
+}
+
+.segmented-label {
+  position: relative;
+  z-index: 1;
 }
 
 .theme-toggle {
@@ -745,7 +769,7 @@ a:focus-visible {
   }
 
   .header-menu .page-switcher,
-  .header-menu .language-switcher {
+  .header-menu .segmented-control {
     height: auto;
   }
 
@@ -754,26 +778,31 @@ a:focus-visible {
   }
 
   .header-menu .page-switcher-option,
-  .header-menu .language-switcher button {
+  .header-menu .segmented-option {
     min-height: 44px;
   }
 
   .header-menu .app-controls {
     width: 100%;
+    align-items: stretch;
     justify-content: space-between;
     gap: var(--space-3);
   }
 
-  .header-menu .language-switcher {
+  .header-menu .segmented-control {
     flex: 1 1 auto;
+    min-width: 0;
   }
 
   .header-menu .theme-toggle {
-    width: 44px;
+    width: auto;
+    height: auto;
     flex: none;
+    align-self: stretch;
+    aspect-ratio: 1;
   }
 
-  .language-switcher button,
+  .segmented-option,
   .page-switcher-option {
     padding-right: 8px;
     padding-left: 8px;

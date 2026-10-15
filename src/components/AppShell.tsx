@@ -9,6 +9,7 @@ import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
 import { DataInfoModalPresence } from './DataInfoModal'
+import { SegmentedControl } from './SegmentedControl'
 
 type Theme = 'light' | 'dark'
 
@@ -168,24 +169,16 @@ export function AppShell({ children }: AppShellProps) {
 
   const headerControls = (
     <div className="app-controls">
-      <div className="language-switcher" role="group" aria-label={t.languageLabel}>
-        <button
-          type="button"
-          className={language === 'ru' ? 'active' : undefined}
-          aria-pressed={language === 'ru'}
-          onClick={() => setLanguage('ru')}
-        >
-          {t.languageRu}
-        </button>
-        <button
-          type="button"
-          className={language === 'en' ? 'active' : undefined}
-          aria-pressed={language === 'en'}
-          onClick={() => setLanguage('en')}
-        >
-          {t.languageEn}
-        </button>
-      </div>
+      <SegmentedControl
+        ariaLabel={t.languageLabel}
+        layoutId="language-switcher-highlight"
+        value={language}
+        onChange={setLanguage}
+        options={[
+          { value: 'ru', label: t.languageRu },
+          { value: 'en', label: t.languageEn },
+        ]}
+      />
       <button
         className={theme === 'dark' ? 'theme-toggle active' : 'theme-toggle'}
         type="button"
