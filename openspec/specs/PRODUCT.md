@@ -38,7 +38,7 @@ The main page. Contents:
 
 ### 5.2. "Theory" Page
 
-A text description of DBSCAN: the idea of the algorithm, parameters, point types, how it works, strengths and limitations. The wording is aimed at beginners.
+A text explanation of DBSCAN for beginners, in seven sections: what DBSCAN is, terms in plain words, the step-by-step algorithm with a link to the interactive visualization, how R and minPts change the result, how the teaching model differs from the original, strengths and weaknesses, and a cheat sheet. The wording is aimed at beginners.
 
 ## 6. Key Scenarios
 

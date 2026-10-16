@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
@@ -35,6 +35,7 @@ export function AppShell({ children }: AppShellProps) {
   const { language, setLanguage, t } = useLanguage()
   const { reduced, transition } = useMotionSettings()
   const location = useLocation()
+  const previousPathnameRef = useRef(location.pathname)
   const cancelButtonRef = useRef<HTMLButtonElement>(null)
   const dataInfoTriggerRef = useRef<HTMLButtonElement>(null)
   const returnFocusRef = useRef<HTMLButtonElement | null>(null)
@@ -55,6 +56,15 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useLayoutEffect(() => {
+    const previousPathname = previousPathnameRef.current
+    previousPathnameRef.current = location.pathname
+
+    if (previousPathname === '/theory' && location.pathname === '/visualization') {
+      window.scrollTo(0, 0)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     if (warningCountdown === null) {

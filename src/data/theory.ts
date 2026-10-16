@@ -7,7 +7,11 @@ import type { Dictionary } from '../i18n/dictionaries'
  * must be a string key present in both language dictionaries, `icon` picks a name from
  * the shared inline-SVG set in `TheoryIcons.tsx`. Content is a list of typed blocks:
  * paragraph, bullets, numbered, subheading, callout, code, code-group, terms, highlight,
- * and `sections` (layout: stack | grid | ordered) for nesting further sections.
+ * formula (language-independent math, literal), table (headers via i18n, cells either
+ * i18n keys or literals for language-independent data such as point names), link
+ * (internal route, e.g. `/visualization`), example figure groups, and `sections`
+ * (layout: stack | grid | ordered) for nesting further sections. Renamed
+ * anchors keep working through `theorySectionAliases`.
  */
 
 type StringKeyOf<T> = { [K in keyof T]-?: T[K] extends string ? K : never }[keyof T]
@@ -28,6 +32,16 @@ export type TheoryIconName =
 
 export type TheoryCalloutTone = 'note' | 'important' | 'example'
 
+export type TheoryTableCell = { textKey: TheoryTextKey } | { text: string }
+
+export type TheoryExampleFigureSpec = {
+  radius: number
+  minPts: number
+  captionKey: TheoryTextKey
+  compact?: boolean
+  bridgePointId?: string
+}
+
 export type TheoryBlock =
   | { type: 'paragraph'; textKey: TheoryTextKey }
   | { type: 'bullets'; textKeys: TheoryTextKey[] }
@@ -38,6 +52,15 @@ export type TheoryBlock =
   | { type: 'code-group'; items: { code: string; labelKey: TheoryTextKey }[] }
   | { type: 'terms'; items: { termKey: TheoryTextKey; definitionKey: TheoryTextKey }[] }
   | { type: 'highlight'; textKey: TheoryTextKey }
+  | {
+      type: 'formula'
+      formula: string
+      fallback: string
+      captionKey: TheoryTextKey
+    }
+  | { type: 'table'; headerKeys: TheoryTextKey[]; rows: TheoryTableCell[][] }
+  | { type: 'link'; to: string; textKey: TheoryTextKey; fullWidth?: boolean }
+  | { type: 'example-figure-group'; figures: TheoryExampleFigureSpec[] }
   | { type: 'sections'; layout: 'stack' | 'grid' | 'ordered'; items: TheorySectionNode[] }
 
 export type TheorySectionNode = {
@@ -48,41 +71,24 @@ export type TheorySectionNode = {
   blocks: TheoryBlock[]
 }
 
-const pseudocode = {
-  pick: 'seed = choose(unassigned)',
-  neighbors: 'neighbors = {p in unassigned | distance(seed, p) < R}',
-  grow: [
-    'frontier = {seed}',
-    'while frontier is not empty:',
-    '    fresh = neighbors of frontier in unassigned',
-    '    group = group union fresh',
-    '    unassigned = unassigned minus fresh',
-    '    frontier = fresh',
-  ].join('\n'),
-  nextCluster: [
-    'if unassigned is empty:',
-    '    stop',
-    'seed = choose(unassigned)',
-    'start a new group',
-  ].join('\n'),
-  finish: [
-    'if size(group) < minPts:',
-    '    mark group as noise',
-    'else:',
-    '    save group as a cluster',
-  ].join('\n'),
-}
+const distanceFormula = String.raw`d(P, Q) = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}`
 
-const stepSections: TheorySectionNode[] = [
-  { id: 'theory-step-1', titleKey: 'theoryStep1Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep1Text' }] },
-  { id: 'theory-step-2', titleKey: 'theoryStep2Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep2Text' }] },
-  { id: 'theory-step-3', titleKey: 'theoryStep3Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep3Text' }] },
-  { id: 'theory-step-4', titleKey: 'theoryStep4Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep4Text' }] },
-  { id: 'theory-step-5', titleKey: 'theoryStep5Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep5Text' }] },
-  { id: 'theory-step-6', titleKey: 'theoryStep6Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep6Text' }] },
-  { id: 'theory-step-7', titleKey: 'theoryStep7Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep7Text' }] },
-  { id: 'theory-step-8', titleKey: 'theoryStep8Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep8Text' }] },
-  { id: 'theory-step-9', titleKey: 'theoryStep9Title', blocks: [{ type: 'paragraph', textKey: 'theoryStep9Text' }] },
+const quizSections: TheorySectionNode[] = [
+  {
+    id: 'theory-quiz-1',
+    titleKey: 'theoryQuiz1Title',
+    blocks: [{ type: 'paragraph', textKey: 'theoryQuiz1Text' }],
+  },
+  {
+    id: 'theory-quiz-2',
+    titleKey: 'theoryQuiz2Title',
+    blocks: [{ type: 'paragraph', textKey: 'theoryQuiz2Text' }],
+  },
+  {
+    id: 'theory-quiz-3',
+    titleKey: 'theoryQuiz3Title',
+    blocks: [{ type: 'paragraph', textKey: 'theoryQuiz3Text' }],
+  },
 ]
 
 export const theorySections: TheorySectionNode[] = [
@@ -91,155 +97,237 @@ export const theorySections: TheorySectionNode[] = [
     titleKey: 'theoryWhyTitle',
     icon: 'why',
     blocks: [
-      { type: 'paragraph', textKey: 'theoryWhyParagraph1' },
-      { type: 'paragraph', textKey: 'theoryWhyParagraph2' },
-      { type: 'callout', tone: 'note', labelKey: 'calloutNoteLabel', textKey: 'theoryWhyCallout' },
+      { type: 'paragraph', textKey: 'theoryWhyP1' },
+      { type: 'paragraph', textKey: 'theoryWhyP2' },
+      { type: 'highlight', textKey: 'theoryWhyMain1' },
+      { type: 'subheading', textKey: 'theoryWhySubNeed' },
+      {
+        type: 'bullets',
+        textKeys: ['theoryWhyNeed1', 'theoryWhyNeed2', 'theoryWhyNeed3'],
+      },
+      { type: 'subheading', textKey: 'theoryWhySubWhere' },
+      {
+        type: 'bullets',
+        textKeys: ['theoryWhyWhere1', 'theoryWhyWhere2', 'theoryWhyWhere3'],
+      },
+      { type: 'highlight', textKey: 'theoryWhyMain2' },
     ],
   },
   {
-    id: 'theory-idea',
-    titleKey: 'theoryIdeaTitle',
+    id: 'theory-terms',
+    titleKey: 'theoryTermsTitle',
     icon: 'idea',
     blocks: [
-      { type: 'paragraph', textKey: 'theoryIdeaParagraph1' },
-      { type: 'paragraph', textKey: 'theoryIdeaParagraph2' },
+      { type: 'paragraph', textKey: 'theoryTermsIntro' },
       {
-        type: 'bullets',
-        textKeys: ['theoryIdeaRadius', 'theoryIdeaGrowth', 'theoryIdeaNoise'],
+        type: 'terms',
+        items: [
+          { termKey: 'theoryTermPoint', definitionKey: 'theoryTermPointDef' },
+          { termKey: 'theoryTermDistance', definitionKey: 'theoryTermDistanceDef' },
+        ],
+      },
+      {
+        type: 'formula',
+        formula: distanceFormula,
+        fallback: 'd(P, Q) = sqrt((x2 - x1)^2 + (y2 - y1)^2)',
+        captionKey: 'theoryDistanceFormulaCaption',
+      },
+      {
+        type: 'terms',
+        items: [
+          { termKey: 'theoryTermRadius', definitionKey: 'theoryTermRadiusDef' },
+          { termKey: 'theoryTermChain', definitionKey: 'theoryTermChainDef' },
+          { termKey: 'theoryTermMinPts', definitionKey: 'theoryTermMinPtsDef' },
+          { termKey: 'theoryTermClusterNoise', definitionKey: 'theoryTermClusterNoiseDef' },
+        ],
+      },
+      {
+        type: 'callout',
+        tone: 'important',
+        labelKey: 'calloutImportantLabel',
+        textKey: 'theoryTermsImportant',
+      },
+      { type: 'highlight', textKey: 'theoryTermsMain' },
+    ],
+  },
+  {
+    id: 'theory-walkthrough',
+    titleKey: 'theoryWalkTitle',
+    icon: 'steps',
+    blocks: [
+      { type: 'paragraph', textKey: 'theoryWalkIntro' },
+      {
+        type: 'numbered',
+        items: [
+          { titleKey: 'theoryWalkStep1Title', textKey: 'theoryWalkStep1Text' },
+          { titleKey: 'theoryWalkStep2Title', textKey: 'theoryWalkStep2Text' },
+          { titleKey: 'theoryWalkStep3Title', textKey: 'theoryWalkStep3Text' },
+          { titleKey: 'theoryWalkStep4Title', textKey: 'theoryWalkStep4Text' },
+          { titleKey: 'theoryWalkStep5Title', textKey: 'theoryWalkStep5Text' },
+        ],
+      },
+      { type: 'callout', tone: 'note', labelKey: 'calloutNoteLabel', textKey: 'theoryWalkNote' },
+      {
+        type: 'link',
+        to: '/visualization',
+        textKey: 'theoryWalkLinkText',
+        fullWidth: true,
       },
     ],
   },
   {
     id: 'theory-parameters',
-    titleKey: 'theoryParametersTitle',
+    titleKey: 'theoryParamsTitle',
     icon: 'parameters',
     blocks: [
+      { type: 'paragraph', textKey: 'theoryParamsIntro' },
       {
-        type: 'sections',
-        layout: 'grid',
-        items: [
-          {
-            id: 'theory-radius',
-            titleKey: 'theoryRadiusTitle',
-            blocks: [
-              { type: 'paragraph', textKey: 'theoryRadiusText' },
-              {
-                type: 'callout',
-                tone: 'example',
-                labelKey: 'theoryExampleLabel',
-                textKey: 'theoryRadiusExample',
-              },
-            ],
-          },
-          {
-            id: 'theory-min-pts',
-            titleKey: 'theoryMinPtsTitle',
-            blocks: [
-              { type: 'paragraph', textKey: 'theoryMinPtsText' },
-              {
-                type: 'callout',
-                tone: 'example',
-                labelKey: 'theoryExampleLabel',
-                textKey: 'theoryMinPtsExample',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'theory-walkthrough',
-    titleKey: 'theoryStepsTitle',
-    icon: 'steps',
-    blocks: [
-      { type: 'paragraph', textKey: 'theoryStepsIntro' },
-      { type: 'sections', layout: 'ordered', items: stepSections },
-      {
-        type: 'code-group',
-        items: [
-          { code: pseudocode.pick, labelKey: 'theoryCodePickLabel' },
-          { code: pseudocode.neighbors, labelKey: 'theoryCodeNeighborsLabel' },
-          { code: pseudocode.grow, labelKey: 'theoryCodeGrowLabel' },
-          { code: pseudocode.nextCluster, labelKey: 'theoryCodeNextLabel' },
-          { code: pseudocode.finish, labelKey: 'theoryCodeFinishLabel' },
+        type: 'table',
+        headerKeys: ['theoryParamsTableParam', 'theoryParamsTableEffect'],
+        rows: [
+          [{ textKey: 'theoryParamsRow1Param' }, { textKey: 'theoryParamsRow1Effect' }],
+          [{ textKey: 'theoryParamsRow2Param' }, { textKey: 'theoryParamsRow2Effect' }],
+          [{ textKey: 'theoryParamsRow3Param' }, { textKey: 'theoryParamsRow3Effect' }],
+          [{ textKey: 'theoryParamsRow4Param' }, { textKey: 'theoryParamsRow4Effect' }],
         ],
       },
     ],
   },
   {
     id: 'theory-original',
-    titleKey: 'theoryOriginalTitle',
+    titleKey: 'theoryOrigTitle',
     icon: 'compare',
     blocks: [
-      { type: 'paragraph', textKey: 'theoryOriginalText' },
+      { type: 'paragraph', textKey: 'theoryOrigIntro' },
+      { type: 'subheading', textKey: 'theoryOrigSubKinds' },
       {
         type: 'terms',
         items: [
-          { termKey: 'theoryCoreTitle', definitionKey: 'theoryCoreText' },
-          { termKey: 'theoryBorderTitle', definitionKey: 'theoryBorderText' },
-          { termKey: 'theoryNoiseTitle', definitionKey: 'theoryNoiseText' },
+          { termKey: 'theoryOrigCore', definitionKey: 'theoryOrigCoreDef' },
+          { termKey: 'theoryOrigBorder', definitionKey: 'theoryOrigBorderDef' },
+          { termKey: 'theoryOrigNoiseTerm', definitionKey: 'theoryOrigNoiseDef' },
         ],
       },
+      { type: 'callout', tone: 'note', labelKey: 'calloutNoteLabel', textKey: 'theoryOrigExam' },
+      { type: 'subheading', textKey: 'theoryOrigSubDiff' },
       {
-        type: 'callout',
-        tone: 'note',
-        labelKey: 'calloutNoteLabel',
-        textKey: 'theoryDifferenceCallout',
+        type: 'table',
+        headerKeys: ['theoryOrigTableOrig', 'theoryOrigTableOurs'],
+        rows: [
+          [{ textKey: 'theoryOrigRow1Orig' }, { textKey: 'theoryOrigRow1Ours' }],
+          [{ textKey: 'theoryOrigRow2Orig' }, { textKey: 'theoryOrigRow2Ours' }],
+          [{ textKey: 'theoryOrigRow3Orig' }, { textKey: 'theoryOrigRow3Ours' }],
+          [{ textKey: 'theoryOrigRow4Orig' }, { textKey: 'theoryOrigRow4Ours' }],
+          [{ textKey: 'theoryOrigRow5Orig' }, { textKey: 'theoryOrigRow5Ours' }],
+        ],
       },
+      { type: 'callout', tone: 'note', labelKey: 'calloutNoteLabel', textKey: 'theoryOrigBridge' },
+      { type: 'highlight', textKey: 'theoryOrigMain' },
     ],
   },
   {
     id: 'theory-tradeoffs',
-    titleKey: 'theoryTradeoffsTitle',
+    titleKey: 'theoryTradeTitle',
     icon: 'balance',
     blocks: [
+      { type: 'subheading', textKey: 'theoryTradeSubPros' },
       {
-        type: 'sections',
-        layout: 'grid',
-        items: [
-          {
-            id: 'theory-strengths',
-            titleKey: 'theoryStrengthsTitle',
-            blocks: [
-              {
-                type: 'bullets',
-                textKeys: ['theoryStrength1', 'theoryStrength2', 'theoryStrength3'],
-              },
-            ],
-          },
-          {
-            id: 'theory-limitations',
-            titleKey: 'theoryLimitationsTitle',
-            blocks: [
-              {
-                type: 'bullets',
-                textKeys: ['theoryLimitation1', 'theoryLimitation2', 'theoryLimitation3'],
-              },
-            ],
-          },
+        type: 'bullets',
+        textKeys: [
+          'theoryTradePro1',
+          'theoryTradePro2',
+          'theoryTradePro3',
+          'theoryTradePro4',
         ],
       },
+      { type: 'subheading', textKey: 'theoryTradeSubCons' },
+      {
+        type: 'bullets',
+        textKeys: [
+          'theoryTradeCon1',
+          'theoryTradeCon2',
+          'theoryTradeCon3',
+          'theoryTradeCon4',
+          'theoryTradeCon5',
+        ],
+      },
+      { type: 'subheading', textKey: 'theoryTradeSubWhen' },
+      { type: 'subheading', textKey: 'theoryTradeWhenYes' },
+      {
+        type: 'bullets',
+        textKeys: ['theoryTradeYes1', 'theoryTradeYes2'],
+      },
+      { type: 'subheading', textKey: 'theoryTradeWhenNo' },
+      {
+        type: 'bullets',
+        textKeys: ['theoryTradeNo1', 'theoryTradeNo2'],
+      },
+      { type: 'highlight', textKey: 'theoryTradeMain' },
     ],
   },
   {
     id: 'theory-summary',
-    titleKey: 'theorySummaryTitle',
+    titleKey: 'theorySumTitle',
     icon: 'cheatsheet',
     variant: 'accent',
     blocks: [
+      { type: 'subheading', textKey: 'theorySumIdeaSub' },
+      { type: 'paragraph', textKey: 'theorySumIdeaText' },
+      { type: 'subheading', textKey: 'theorySumTermsSub' },
       {
-        type: 'terms',
-        items: [
-          { termKey: 'theoryTermR', definitionKey: 'theoryTermRDefinition' },
-          { termKey: 'theoryTermMinPts', definitionKey: 'theoryTermMinPtsDefinition' },
-          { termKey: 'theoryTermCluster', definitionKey: 'theoryTermClusterDefinition' },
-          { termKey: 'theoryTermNoise', definitionKey: 'theoryTermNoiseDefinition' },
+        type: 'bullets',
+        textKeys: [
+          'theorySumTerm1',
+          'theorySumTerm2',
+          'theorySumTerm3',
+          'theorySumTerm4',
         ],
       },
+      { type: 'subheading', textKey: 'theorySumAlgoSub' },
+      { type: 'paragraph', textKey: 'theorySumAlgoText' },
+      { type: 'subheading', textKey: 'theorySumParamsSub' },
+      { type: 'paragraph', textKey: 'theorySumParamsText' },
+      { type: 'subheading', textKey: 'theorySumErrorsSub' },
+      {
+        type: 'bullets',
+        textKeys: [
+          'theorySumError1',
+          'theorySumError2',
+          'theorySumError3',
+          'theorySumError4',
+          'theorySumError5',
+        ],
+      },
+      { type: 'subheading', textKey: 'theorySumQuizSub' },
+      { type: 'sections', layout: 'stack', items: quizSections },
     ],
   },
 ]
+
+/**
+ * Aliases of removed anchors → closest current section, so old `#theory-...`
+ * links keep working. `theory-idea` is the rename alias for `theory-terms`.
+ */
+export const theorySectionAliases: Record<string, string> = {
+  'theory-idea': 'theory-terms',
+  'theory-radius': 'theory-parameters',
+  'theory-min-pts': 'theory-parameters',
+  'theory-strengths': 'theory-tradeoffs',
+  'theory-limitations': 'theory-tradeoffs',
+  'theory-step-1': 'theory-walkthrough',
+  'theory-step-2': 'theory-walkthrough',
+  'theory-step-3': 'theory-walkthrough',
+  'theory-step-4': 'theory-walkthrough',
+  'theory-step-5': 'theory-walkthrough',
+  'theory-step-6': 'theory-walkthrough',
+  'theory-step-7': 'theory-walkthrough',
+  'theory-step-8': 'theory-walkthrough',
+  'theory-step-9': 'theory-walkthrough',
+}
+
+export function resolveTheorySectionId(id: string): string {
+  return theorySectionAliases[id] ?? id
+}
 
 function collectSectionIds(nodes: TheorySectionNode[], acc: string[] = []): string[] {
   for (const node of nodes) {

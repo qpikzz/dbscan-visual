@@ -6,6 +6,7 @@ import { TheoryIcon } from '../components/TheoryIcons'
 import { TheorySection } from '../components/TheorySection'
 import {
   getTheorySectionAncestors,
+  resolveTheorySectionId,
   theorySectionIds,
   theorySections,
 } from '../data/theory'
@@ -39,7 +40,18 @@ export function TheoryPage() {
 
   useEffect(() => {
     const rawId = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash
-    if (!rawId || !theorySectionIds.includes(rawId)) {
+    if (!rawId) {
+      return
+    }
+    const targetId = resolveTheorySectionId(rawId)
+    if (!theorySectionIds.includes(targetId)) {
+      return
+    }
+    if (targetId !== rawId) {
+      navigate(
+        { pathname: location.pathname, hash: `#${targetId}` },
+        { preventScrollReset: true, replace: true },
+      )
       return
     }
     if (handledHashRef.current === rawId) {
@@ -68,7 +80,7 @@ export function TheoryPage() {
       scrollTimerRef.current = null
       scrollToSection(rawId)
     }, ANCHOR_SCROLL_WAIT_MS)
-  }, [location.hash, reduced, expandSections, controls, scrollToSection])
+  }, [location.hash, location.pathname, navigate, reduced, expandSections, controls, scrollToSection])
 
   function goToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
     event.preventDefault()
