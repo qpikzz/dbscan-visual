@@ -30,95 +30,201 @@ export const ru = {
   theoryExpandLabel: (title: string) => `Развернуть раздел: ${title}`,
   calloutNoteLabel: 'Заметка',
   calloutImportantLabel: 'Важно',
-  theoryWhyTitle: 'Зачем группировать данные по плотности',
-  theoryWhyParagraph1:
-    'Представьте карту кафе: одни места стоят по одному, а другие образуют оживлённые улицы. Если отметить каждое кафе точкой, плотные скопления подскажут, где находятся популярные районы, а отдельные точки останутся в стороне.',
-  theoryWhyParagraph2:
-    'Методам плотностной кластеризации не нужно заранее сообщать, сколько групп искать. Они находят области, где точки расположены достаточно близко, и могут выделять группы разной формы, разделённые редкими участками.',
-  theoryWhyCallout:
-    'В отличие от разбиения на заранее заданное число групп, плотностный подход сначала ищет скопления точек, а не назначает каждой точке место в одной из заранее выбранных групп.',
-  theoryIdeaTitle: 'Идея упрощённого DBSCAN на этом сайте',
-  theoryIdeaParagraph1:
-    'Алгоритм начинает с одной ещё не распределённой точки. Он добавляет к группе её близких соседей, затем ищет соседей уже добавленных точек и продолжает расширение, пока новые точки не закончатся.',
-  theoryIdeaParagraph2:
-    'Когда группа завершена, её размер сравнивается с minPts. Достаточно большая группа считается кластером, а маленькая целиком помечается как шум.',
-  theoryIdeaRadius: 'Соседи находятся ближе, чем радиус R.',
-  theoryIdeaGrowth: 'Связанные цепочкой соседей точки могут вырасти в одну группу.',
-  theoryIdeaNoise: 'Группа меньше minPts становится шумом.',
-  theoryParametersTitle: 'Два параметра, которые меняют результат',
-  theoryRadiusTitle: 'R — радиус соседства',
-  theoryRadiusText:
-    'Две точки считаются соседями, если расстояние между ними строго меньше R. Представьте вокруг точки круг: увеличение R расширяет область, в которой можно найти соседей.',
-  theoryExampleLabel: 'Пример:',
-  theoryRadiusExample:
-    'при слишком маленьком R цепочки связей распадаются; образуются крошечные группы, и после проверки minPts многие или почти все точки могут стать шумом. С большим R раздельные скопления, наоборот, могут соединиться.',
-  theoryMinPtsTitle: 'minPts — минимальный размер группы',
-  theoryMinPtsText:
-    'После того как группа перестала расти, её размер сравнивается с minPts. В этой учебной версии порог применяется ко всей группе, а не к каждой точке отдельно.',
-  theoryMinPtsExample:
-    'если в группе 5 точек, а minPts равен 6, вся группа будет отмечена как шум. Чем выше порог, тем больше завершённых групп не пройдут проверку.',
-  theoryStepsTitle: 'Алгоритм по шагам',
-  theoryStepsIntro:
-    'На странице визуализации шаги сгруппированы в девять нажатий. Внутри нажатия роста алгоритм может несколько раз выбрать очередную точку группы и забрать её новых соседей.',
-  theoryStep1Title: '1. Выбрать точку',
-  theoryStep1Text: 'Среди точек, которые ещё не входят ни в одну группу, случайно выбирается начальная точка.',
-  theoryStep2Title: '2. Найти соседей',
-  theoryStep2Text: 'Все ещё не распределённые точки на расстоянии меньше R добавляются к группе.',
-  theoryStep3Title: '3. Выбрать точку группы',
-  theoryStep3Text: 'Из уже добавленных точек выбирается та, чьи соседи ещё не проверялись.',
-  theoryStep4Title: '4. Забрать новых соседей',
-  theoryStep4Text: 'Нераспределённые точки в пределах R от выбранной точки добавляются к той же группе.',
-  theoryStep5Title: '5. Продолжать рост',
-  theoryStep5Text: 'Пункты 3 и 4 повторяются, пока ни одна точка группы не добавит новых соседей.',
-  theoryStep6Title: '6. Начать следующую группу',
-  theoryStep6Text: 'Если остались нераспределённые точки, одна из них становится начальной точкой нового кластера.',
-  theoryStep7Title: '7. Найти соседей новой точки',
-  theoryStep7Text: 'Нераспределённые точки в её радиусе присоединяются к новой группе.',
-  theoryStep8Title: '8. Повторить для остальных точек',
-  theoryStep8Text: 'Рост каждой новой группы продолжается так же, пока распределять больше нечего.',
-  theoryStep9Title: '9. Проверить размер',
-  theoryStep9Text: 'Каждая завершённая группа меньше minPts перекрашивается как шум; остальные остаются кластерами.',
-  theoryCodePickLabel: 'Выбор начальной точки',
-  theoryCodeNeighborsLabel: 'Проверка радиуса',
-  theoryCodeGrowLabel: 'Расширение группы',
-  theoryCodeNextLabel: 'Переход к следующей группе',
-  theoryCodeFinishLabel: 'Кластер или шум',
-  theoryOriginalTitle: 'Чем модель отличается от оригинального DBSCAN',
-  theoryOriginalText:
-    'В классическом DBSCAN minPts проверяется локально для каждой точки. По числу соседей точку относят к одному из типов:',
-  theoryCoreTitle: 'Core-точка',
-  theoryCoreText:
-    'имеет не меньше minPts точек в своей окрестности радиуса R.',
-  theoryBorderTitle: 'Border-точка',
-  theoryBorderText:
-    'сама не набирает minPts соседей, но находится рядом с core-точкой и может войти в её кластер.',
-  theoryNoiseTitle: 'Шумовая точка',
-  theoryNoiseText:
-    'не является core-точкой и не присоединяется к кластеру через соседнюю core-точку.',
-  theoryDifferenceCallout:
-    'Эта визуализация использует более простое правило: сначала растит связную группу по радиусу R, а затем проверяет размер всей группы. Она не различает core- и border-точки и не является полной реализацией классического DBSCAN.',
-  theoryTradeoffsTitle: 'Сильные стороны и ограничения',
-  theoryStrengthsTitle: 'Сильные стороны',
-  theoryStrength1: 'Не нужно задавать число кластеров заранее.',
-  theoryStrength2: 'Плотностные методы могут находить группы сложной формы.',
-  theoryStrength3: 'Отдельные точки можно оставить за пределами кластеров как шум.',
-  theoryLimitationsTitle: 'Ограничения',
-  theoryLimitation1: 'Результат чувствителен к выбору R: слишком малый радиус дробит группы, слишком большой — сливает их.',
-  theoryLimitation2: 'Одно значение радиуса может плохо подходить группам с сильно разной плотностью.',
-  theoryLimitation3: 'Параметры часто приходится подбирать под масштаб и устройство данных.',
-  theorySummaryTitle: 'Шпаргалка перед ответом',
-  theoryTermR: 'R',
-  theoryTermRDefinition:
-    'максимальное расстояние для соседства; здесь расстояние должно быть строго меньше R.',
+  theoryWhyTitle: 'Что такое DBSCAN',
+  theoryWhyP1:
+    'Представьте карту города, на которой отмечено каждое кафе. Где-то кафе стоят по одному, а где-то собираются в целые «кварталы». Глазами вы сразу видите эти скопления. DBSCAN учит компьютер делать то же самое: находить места, где точки стоят плотно, и отделять их от одиночек.',
+  theoryWhyP2:
+    'Название расшифровывается как Density-Based Spatial Clustering of Applications with Noise: «пространственная кластеризация на основе плотности, устойчивая к шуму». Главное слово здесь «плотность».',
+  theoryWhyMain1:
+    'Кластер — это область, где точки стоят достаточно плотно. Точки, которые не вошли ни в одну такую область, считаются шумом.',
+  theoryWhySubNeed: 'Зачем это нужно',
+  theoryWhyNeed1:
+    'Не нужно заранее говорить, сколько групп искать. Алгоритм находит их сам.',
+  theoryWhyNeed2:
+    'Группы могут быть любой формы: кольцо, полумесяц, вытянутая цепочка.',
+  theoryWhyNeed3:
+    'Одиночные точки не приписываются к чужим группам, а честно помечаются как шум.',
+  theoryWhySubWhere: 'Где применяется',
+  theoryWhyWhere1:
+    'Геоданные: скопления происшествий, остановок, заказов на карте.',
+  theoryWhyWhere2:
+    'Поиск аномалий: странные операции, сбои датчиков, выбросы.',
+  theoryWhyWhere3:
+    'Группировка похожих объектов по двум и более признакам.',
+  theoryWhyMain2:
+    'Плотность — единственная идея, которую нужно унести из этого раздела.',
+  theoryTermsTitle: 'Термины простыми словами',
+  theoryTermsIntro:
+    'Всё держится на двух числах и одной идее. Разберём их по очереди.',
+  theoryTermPoint: 'Точка',
+  theoryTermPointDef: 'Объект на плоскости с координатами (x, y).',
+  theoryTermDistance: 'Расстояние',
+  theoryTermDistanceDef:
+    'Длина прямой между двумя точками. Формула — ниже, а на сетке Canvas её легко проверить линейкой.',
+  theoryDistanceFormulaCaption: 'Расстояние между точками P и Q',
+  theoryTermRadius: 'Радиус R',
+  theoryTermRadiusDef:
+    'Насколько близко должны стоять две точки, чтобы считаться соседями. Если расстояние между ними меньше R, это соседи. Представьте вокруг точки круг радиуса R: всё, что попало внутрь, её соседи. В нашей модели сравнение строгое: «меньше R», а не «не больше R».',
+  theoryTermChain: 'Цепочка',
+  theoryTermChainDef:
+    'Соседи соседей тоже входят в группу. Если A рядом с B, а B рядом с C, то A, B и C в одной группе, даже если A и C далеко друг от друга. Так группа «растёт» вдоль скопления.',
   theoryTermMinPts: 'minPts',
-  theoryTermMinPtsDefinition:
-    'минимальное число точек в завершённой группе, чтобы она считалась кластером в этой упрощённой модели.',
-  theoryTermCluster: 'Кластер',
-  theoryTermClusterDefinition:
-    'группа точек, связанная цепочками соседей и прошедшая проверку minPts.',
-  theoryTermNoise: 'Шум',
-  theoryTermNoiseDefinition:
-    'в этой модели — все точки группы, размер которой меньше minPts.',
+  theoryTermMinPtsDef:
+    'Минимальный размер группы, чтобы считаться кластером. Если в получившейся группе меньше minPts точек, она считается шумом.',
+  theoryTermClusterNoise: 'Кластер и шум',
+  theoryTermClusterNoiseDef:
+    'Кластер — группа, в которой не меньше minPts точек. Шум — всё остальное.',
+  theoryTermsImportant:
+    'У minPts в оригинальном DBSCAN другой смысл: это число соседей у отдельной точки, а не размер всей группы. Об этом подробно в разделе «Чем наша модель отличается от оригинала». Пока запомните версию нашего сайта.',
+  theoryTermsMain:
+    'R отвечает на вопрос «кто сосед», а minPts — на вопрос «достаточно ли нас, чтобы быть кластером».',
+  theoryWalkTitle: 'Алгоритм по шагам',
+  theoryWalkIntro:
+    'Алгоритм короткий. Весь трюк в том, что группа растёт, как пятно краски: пока есть новые соседи, пятно расползается.',
+  theoryWalkStep1Title: 'Выбрать свободную точку',
+  theoryWalkStep1Text:
+    'Выберите любую точку, которая ещё не попала ни в одну группу. Это начало новой группы.',
+  theoryWalkStep2Title: 'Найти её соседей',
+  theoryWalkStep2Text:
+    'Найдите всех её соседей (расстояние меньше R) среди ещё не распределённых точек и добавьте в группу.',
+  theoryWalkStep3Title: 'Проверять новые точки',
+  theoryWalkStep3Text:
+    'Для каждой новой точки группы найдите её соседей и тоже добавьте. Повторяйте, пока новые соседи не закончатся.',
+  theoryWalkStep4Title: 'Проверить размер',
+  theoryWalkStep4Text:
+    'Посчитайте точки в группе. Не меньше minPts: это кластер. Меньше: это шум.',
+  theoryWalkStep5Title: 'Повторить для остальных',
+  theoryWalkStep5Text:
+    'Если остались нераспределённые точки, вернитесь к шагу 1.',
+  theoryWalkNote:
+    'В нашей модели результат не зависит от того, с какой точки начать. Группы получатся одни и те же. В оригинальном DBSCAN это не всегда так (см. раздел «Чем наша модель отличается от оригинала»).',
+  theoryExampleFigureTitle: 'Схема группировки точек DBSCAN',
+  theoryExampleClusterLabel: 'Кластер',
+  theoryExampleNoiseLabel: 'Шум',
+  theoryExampleBridgeLabel: 'мостик',
+  theoryFormulaLoadError:
+    'Не удалось загрузить отображение формулы. Показана текстовая запись.',
+  theoryWalkLinkText: 'Посмотреть на настоящих точках',
+  theoryParamsTitle: 'Как R и minPts меняют результат',
+  theoryParamsIntro:
+    'Лучший способ понять параметры — менять их по одному и смотреть, что переехало. Вот что вы увидите.',
+  theoryParamsTableParam: 'Параметр',
+  theoryParamsTableEffect: 'Что происходит',
+  theoryParamsRow1Param: 'R слишком мал',
+  theoryParamsRow1Effect:
+    'Почти все точки остаются одиночками, много шума, настоящие скопления распадаются на куски.',
+  theoryParamsRow2Param: 'R слишком велик',
+  theoryParamsRow2Effect:
+    'Разные скопления склеиваются в одно, шума почти нет.',
+  theoryParamsRow3Param: 'minPts слишком мал',
+  theoryParamsRow3Effect:
+    'Даже случайная пара точек считается кластером, шум почти пропадает.',
+  theoryParamsRow4Param: 'minPts слишком велик',
+  theoryParamsRow4Effect:
+    'Мелкие, но настоящие группы объявляются шумом.',
+  theoryOrigTitle: 'Чем наша модель отличается от оригинала',
+  theoryOrigIntro:
+    'Мы специально упростили алгоритм: сначала нужно понять саму идею плотности, а детали можно добавлять потом. Вот чем оригинал сложнее.',
+  theoryOrigSubKinds: 'Три вида точек в оригинале',
+  theoryOrigCore: 'Основная точка (core)',
+  theoryOrigCoreDef:
+    'У неё в радиусе ε есть не менее minPts точек (обычно включая её саму). Только основные точки могут «расширять» кластер.',
+  theoryOrigBorder: 'Граничная точка (border)',
+  theoryOrigBorderDef:
+    'Сама не основная, но лежит в радиусе основной точки. Её присоединяют к кластеру, но дальше через неё группа не растёт.',
+  theoryOrigNoiseTerm: 'Шум',
+  theoryOrigNoiseDef:
+    'Не основная точка и не лежит рядом ни с одной основной.',
+  theoryOrigExam:
+    'В задачах ЕГЭ по информатике на кластеризацию обычно достаточно логики упрощённой модели: различать основные и граничные точки не нужно. Но всегда внимательно читайте условие — в нём могут быть заданы правила, отличающиеся от нашей модели, например строгое или нестрогое сравнение расстояния. Различие между основными и граничными точками важно для понимания оригинального DBSCAN, например в библиотеках машинного обучения.',
+  theoryOrigSubDiff: 'Что у нас иначе',
+  theoryOrigTableOrig: 'В оригинале',
+  theoryOrigTableOurs: 'В нашей модели',
+  theoryOrigRow1Orig: 'minPts — число соседей у точки.',
+  theoryOrigRow1Ours: 'minPts — размер итоговой группы.',
+  theoryOrigRow2Orig: 'Кластер растёт только через основные точки.',
+  theoryOrigRow2Ours: 'Кластер растёт через любого соседа.',
+  theoryOrigRow3Orig: 'Граничные точки есть.',
+  theoryOrigRow3Ours: 'Граничных точек нет, все точки равноправны.',
+  theoryOrigRow4Orig:
+    'Граничная точка между двумя кластерами может достаться любому из них — зависит от порядка обхода.',
+  theoryOrigRow4Ours: 'Результат один и тот же.',
+  theoryOrigRow5Orig: 'Во многих реализациях сравнение «не больше ε».',
+  theoryOrigRow5Ours: 'У нас сравнение строгое: «меньше R».',
+  theoryOrigBridge:
+    'Из-за этого на тех же точках наша модель и оригинал могут дать немного разные результаты. Цепочка тонких «мостиков» в нашей модели склеивает кластеры, а в оригинале её остановили бы требования к основным точкам.',
+  theoryOrigMain:
+    'Идея одна и та же — кластер — это плотная область. Различаются только детали проверки.',
+  theoryTradeTitle: 'Сильные и слабые стороны',
+  theoryTradeSubPros: 'Сильные стороны',
+  theoryTradePro1:
+    'Не нужно заранее задавать число кластеров.',
+  theoryTradePro2:
+    'Находит группы произвольной формы.',
+  theoryTradePro3:
+    'Сам выделяет шум.',
+  theoryTradePro4:
+    'Идея простая, всего два параметра.',
+  theoryTradeSubCons: 'Слабые стороны',
+  theoryTradeCon1:
+    'Результат сильно зависит от R и minPts, подбор требует проб.',
+  theoryTradeCon2:
+    'Один R на весь набор: если одно скопление густое, а другое разреженное, одним радиусом оба хорошо не поймать.',
+  theoryTradeCon3:
+    '«Мостики» и цепочки: несколько точек между скоплениями могут склеить их в один кластер.',
+  theoryTradeCon4:
+    'Много признаков: в многомерных данных расстояния теряют смысл и плотность оценивается плохо.',
+  theoryTradeCon5:
+    'Скорость: наивный поиск соседей перебирает все пары точек, что медленно на больших наборах.',
+  theoryTradeSubWhen: 'Когда подходит, а когда нет',
+  theoryTradeWhenYes: 'Когда подходит',
+  theoryTradeYes1:
+    'Скопления разной формы, выбросы нужно честно отделить, а плотность везде примерно одинакова.',
+  theoryTradeYes2:
+    'Число групп заранее неизвестно.',
+  theoryTradeNo1:
+    'Плотность сильно различается от места к месту.',
+  theoryTradeNo2:
+    'Признаков очень много.',
+  theoryTradeWhenNo: 'Когда не подходит',
+  theoryTradeMain:
+    'DBSCAN хорош там, где важна плотность и нужно честно отделить шум. Ни один алгоритм не лучший для всех данных.',
+  theorySumTitle: 'Шпаргалка',
+  theorySumIdeaSub: 'Идея в одной строке',
+  theorySumIdeaText: 'Кластер — плотная область, остальное — шум.',
+  theorySumTermsSub: 'Термины',
+  theorySumTerm1: 'Сосед — расстояние меньше R.',
+  theorySumTerm2: 'Цепочка — соседи соседей в одной группе.',
+  theorySumTerm3: 'minPts — минимальный размер группы.',
+  theorySumTerm4: 'Шум — группа меньше minPts.',
+  theorySumAlgoSub: 'Алгоритм',
+  theorySumAlgoText:
+    'Выбрать точку → собрать соседей → продолжать для новых точек → проверить размер → повторить.',
+  theorySumParamsSub: 'Параметры',
+  theorySumParamsText:
+    'R меньше — больше шума и дробления. R больше — склеивание. minPts больше — больше шума.',
+  theorySumErrorsSub: 'Типичные ошибки',
+  theorySumError1:
+    'Путать minPts из нашей модели с minPts из оригинала.',
+  theorySumError2:
+    'Думать, что результат зависит от стартовой точки (у нас не зависит).',
+  theorySumError3:
+    'Считать шум «ошибкой» (это информация).',
+  theorySumError4:
+    'Менять R и minPts одновременно и не понимать, что поменялось.',
+  theorySumError5:
+    'Забывать, что у нас сравнение строгое (меньше R), а в условии задачи оно может быть другим.',
+  theorySumQuizSub: 'Проверьте себя',
+  theoryQuiz1Title:
+    'Почему A и D из примера в одном кластере, хотя далеки?',
+  theoryQuiz1Text:
+    'Их связывает цепочка через B и C: A рядом с B, B рядом с C, а C рядом с D.',
+  theoryQuiz2Title: 'Что произойдёт с шумом, если увеличить minPts?',
+  theoryQuiz2Text:
+    'Шума станет больше: больше групп не пройдёт проверку размера.',
+  theoryQuiz3Title: 'Чем minPts в оригинале отличается от нашего?',
+  theoryQuiz3Text:
+    'В оригинале это число соседей у точки, а у нас — размер всей группы.',
   plotsTitle: 'Сценарии',
   scenarioCircles: 'Круги',
   scenarioBlobs: 'Шарики',
@@ -216,95 +322,201 @@ export const en: Dictionary = {
   theoryExpandLabel: (title: string) => `Expand section: ${title}`,
   calloutNoteLabel: 'Note',
   calloutImportantLabel: 'Important',
-  theoryWhyTitle: 'Why group data by density?',
-  theoryWhyParagraph1:
-    'Imagine a map of coffee shops: some stand alone, while others line a busy street. Mark each shop as a point, and dense patches reveal popular areas while isolated places sit apart.',
-  theoryWhyParagraph2:
-    'Density-based methods do not need to know the number of groups in advance. They look for regions where points are close together and can find groups of different shapes separated by sparse areas.',
-  theoryWhyCallout:
-    'Unlike splitting data into a preset number of groups, a density-based approach looks for concentrations first instead of assigning every point to one of a fixed set of groups.',
-  theoryIdeaTitle: 'The simplified DBSCAN used on this site',
-  theoryIdeaParagraph1:
-    'The algorithm starts with one point that has not been assigned yet. It adds nearby points, then checks the neighbors of those newly added points, growing the group until no new points are found.',
-  theoryIdeaParagraph2:
-    'When a group is complete, its size is compared with minPts. A group large enough counts as a cluster; a smaller group is marked entirely as noise.',
-  theoryIdeaRadius: 'Points closer than radius R are neighbors.',
-  theoryIdeaGrowth: 'Points connected through chains of neighbors can grow into one group.',
-  theoryIdeaNoise: 'A group smaller than minPts becomes noise.',
-  theoryParametersTitle: 'Two parameters that shape the result',
-  theoryRadiusTitle: 'R: the neighborhood radius',
-  theoryRadiusText:
-    'Two points are neighbors when their distance is strictly less than R. Picture a circle around a point: increasing R widens the area where neighbors can be found.',
-  theoryExampleLabel: 'Example:',
-  theoryRadiusExample:
-    'if R is too small, chains of connections break into tiny groups; after the minPts check, many or nearly all points may become noise. A larger R can instead join separate patches.',
-  theoryMinPtsTitle: 'minPts: the minimum group size',
-  theoryMinPtsText:
-    'After a group stops growing, its size is compared with minPts. In this teaching version, the threshold applies to the whole group, not to each point individually.',
-  theoryMinPtsExample:
-    'if a group has 5 points and minPts is 6, the entire group is marked as noise. The higher the threshold, the more finished groups fail the check.',
-  theoryStepsTitle: 'The algorithm, step by step',
-  theoryStepsIntro:
-    'The visualization presents the process as nine button presses. During a growth press, the algorithm may repeatedly pick another group point and collect its new neighbors.',
-  theoryStep1Title: '1. Pick a point',
-  theoryStep1Text: 'Choose a starting point at random from the points not yet assigned to a group.',
-  theoryStep2Title: '2. Find its neighbors',
-  theoryStep2Text: 'Add every unassigned point less than R away to the group.',
-  theoryStep3Title: '3. Pick a point in the group',
-  theoryStep3Text: 'Choose an added point whose neighbors have not been checked yet.',
-  theoryStep4Title: '4. Collect new neighbors',
-  theoryStep4Text: 'Add unassigned points within R of the chosen point to the same group.',
-  theoryStep5Title: '5. Keep growing',
-  theoryStep5Text: 'Repeat steps 3 and 4 until no point in the group adds new neighbors.',
-  theoryStep6Title: '6. Start another group',
-  theoryStep6Text: 'If unassigned points remain, choose one as the starting point of a new cluster.',
-  theoryStep7Title: '7. Find the new point’s neighbors',
-  theoryStep7Text: 'Add unassigned points within its radius to the new group.',
-  theoryStep8Title: '8. Repeat for the remaining points',
-  theoryStep8Text: 'Grow each new group in the same way until nothing remains unassigned.',
-  theoryStep9Title: '9. Check group size',
-  theoryStep9Text: 'Recolor each finished group smaller than minPts as noise; the others remain clusters.',
-  theoryCodePickLabel: 'Pick a starting point',
-  theoryCodeNeighborsLabel: 'Check the radius',
-  theoryCodeGrowLabel: 'Grow the group',
-  theoryCodeNextLabel: 'Move to the next group',
-  theoryCodeFinishLabel: 'Cluster or noise',
-  theoryOriginalTitle: 'How this differs from original DBSCAN',
-  theoryOriginalText:
-    'In classic DBSCAN, minPts is checked locally for each point. The number of neighbors determines its type:',
-  theoryCoreTitle: 'Core point',
-  theoryCoreText:
-    'has at least minPts points in its neighborhood of radius R.',
-  theoryBorderTitle: 'Border point',
-  theoryBorderText:
-    'does not reach minPts neighbors itself, but lies near a core point and may join its cluster.',
-  theoryNoiseTitle: 'Noise point',
-  theoryNoiseText:
-    'is not a core point and cannot join a cluster through a nearby core point.',
-  theoryDifferenceCallout:
-    'This visualization uses a simpler rule: it first grows a connected group by radius R, then checks the size of the whole group. It does not distinguish core and border points and is not a full implementation of classic DBSCAN.',
-  theoryTradeoffsTitle: 'Strengths and limitations',
-  theoryStrengthsTitle: 'Strengths',
-  theoryStrength1: 'You do not need to choose the number of clusters in advance.',
-  theoryStrength2: 'Density-based methods can find groups with complex shapes.',
-  theoryStrength3: 'Isolated points can be left outside clusters as noise.',
-  theoryLimitationsTitle: 'Limitations',
-  theoryLimitation1: 'The result depends on R: too small can fragment groups; too large can merge them.',
-  theoryLimitation2: 'One radius may not fit groups with very different densities.',
-  theoryLimitation3: 'Parameters often need tuning for the scale and structure of the data.',
-  theorySummaryTitle: 'Cram sheet',
-  theoryTermR: 'R',
-  theoryTermRDefinition:
-    'the neighborhood distance limit; here, distance must be strictly less than R.',
+  theoryWhyTitle: 'What DBSCAN is',
+  theoryWhyP1:
+    'Picture a city map with every cafe marked on it. In some places cafes stand alone, in others they gather into whole “quarters”. Your eyes spot these crowds at once. DBSCAN teaches a computer to do the same: find the places where points stand close together, and separate them from loners.',
+  theoryWhyP2:
+    'The name stands for Density-Based Spatial Clustering of Applications with Noise. The key word here is “density”.',
+  theoryWhyMain1:
+    'A cluster is an area where points stand close together. Points that belong to no such area count as noise.',
+  theoryWhySubNeed: 'Why you need it',
+  theoryWhyNeed1:
+    'You never say in advance how many groups to look for. The algorithm finds them on its own.',
+  theoryWhyNeed2:
+    'Groups can have any shape: a ring, a crescent, a stretched-out chain.',
+  theoryWhyNeed3:
+    'Lone points are not assigned to other groups; they are honestly marked as noise.',
+  theoryWhySubWhere: 'Where it is used',
+  theoryWhyWhere1:
+    'Geo data: crowds of incidents, stops, or orders on a map.',
+  theoryWhyWhere2:
+    'Finding anomalies: strange transactions, sensor failures, outliers.',
+  theoryWhyWhere3:
+    'Grouping similar objects by two or more features.',
+  theoryWhyMain2:
+    'Density is the single idea to carry out of this section.',
+  theoryTermsTitle: 'Terms in plain words',
+  theoryTermsIntro:
+    'Everything rests on two numbers and one idea. Let us take them one by one.',
+  theoryTermPoint: 'Point',
+  theoryTermPointDef: 'An object on a plane with coordinates (x, y).',
+  theoryTermDistance: 'Distance',
+  theoryTermDistanceDef:
+    'The length of the straight line between two points. The formula is below, and on the Canvas grid you can easily check it with a ruler.',
+  theoryDistanceFormulaCaption: 'Distance between points P and Q',
+  theoryTermRadius: 'Radius R',
+  theoryTermRadiusDef:
+    'How close two points must stand to count as neighbors. If the distance between them is less than R, they are neighbors. Picture a circle of radius R around a point: everything inside it is its neighbor. In our model the comparison is strict: “less than R”, not “R or less”.',
+  theoryTermChain: 'Chain',
+  theoryTermChainDef:
+    'Neighbors of neighbors join the group too. If A is next to B, and B is next to C, then A, B, and C end up in one group, even if A and C are far apart. This is how a group “grows” along a crowd.',
   theoryTermMinPts: 'minPts',
-  theoryTermMinPtsDefinition:
-    'the minimum number of points in a finished group for it to count as a cluster in this simplified model.',
-  theoryTermCluster: 'Cluster',
-  theoryTermClusterDefinition:
-    'a group connected through chains of neighbors that passes the minPts check.',
-  theoryTermNoise: 'Noise',
-  theoryTermNoiseDefinition:
-    'in this model, every point in a group smaller than minPts.',
+  theoryTermMinPtsDef:
+    'The smallest group size that still counts as a cluster. If the finished group holds fewer than minPts points, it counts as noise.',
+  theoryTermClusterNoise: 'Cluster and noise',
+  theoryTermClusterNoiseDef:
+    'A cluster is a group with at least minPts points. Noise is everything else.',
+  theoryTermsImportant:
+    'In the original DBSCAN, minPts means something else: the number of neighbors of a single point, not the size of the whole group. The section “How our model differs from the original” explains this in detail. For now, remember our site’s version.',
+  theoryTermsMain:
+    'R answers the question “who is a neighbor”, and minPts answers “are there enough of us to be a cluster”.',
+  theoryWalkTitle: 'The algorithm step by step',
+  theoryWalkIntro:
+    'The algorithm is short. The whole trick is that a group grows like a drop of paint: while new neighbors keep appearing, the stain keeps spreading.',
+  theoryWalkStep1Title: 'Pick a free point',
+  theoryWalkStep1Text:
+    'Choose any point that belongs to no group yet. This starts a new group.',
+  theoryWalkStep2Title: 'Find its neighbors',
+  theoryWalkStep2Text:
+    'Find all of its neighbors (closer than R) among the points not assigned yet, and add them to the group.',
+  theoryWalkStep3Title: 'Check each new point',
+  theoryWalkStep3Text:
+    'For every new point in the group, find its neighbors and add them too. Repeat until no new neighbors appear.',
+  theoryWalkStep4Title: 'Check the size',
+  theoryWalkStep4Text:
+    'Count the points in the group. At least minPts: this is a cluster. Fewer: this is noise.',
+  theoryWalkStep5Title: 'Repeat for the rest',
+  theoryWalkStep5Text:
+    'If points without a group remain, go back to step 1.',
+  theoryWalkNote:
+    'In our model, the result does not depend on which point you start from. The groups always come out the same. In the original DBSCAN this is not always true (see “How our model differs from the original”).',
+  theoryExampleFigureTitle: 'DBSCAN point grouping diagram',
+  theoryExampleClusterLabel: 'Cluster',
+  theoryExampleNoiseLabel: 'Noise',
+  theoryExampleBridgeLabel: 'bridge',
+  theoryFormulaLoadError:
+    'Could not load formatted math. The text version is shown instead.',
+  theoryWalkLinkText: 'See it on real points',
+  theoryParamsTitle: 'How R and minPts change the result',
+  theoryParamsIntro:
+    'The best way to understand the parameters is to change one at a time and watch what moves. Here is what you will see.',
+  theoryParamsTableParam: 'Parameter',
+  theoryParamsTableEffect: 'What happens',
+  theoryParamsRow1Param: 'R is too small',
+  theoryParamsRow1Effect:
+    'Almost every point stays alone, there is lots of noise, and real crowds fall apart into pieces.',
+  theoryParamsRow2Param: 'R is too large',
+  theoryParamsRow2Effect:
+    'Separate crowds melt into one, and there is almost no noise.',
+  theoryParamsRow3Param: 'minPts is too small',
+  theoryParamsRow3Effect:
+    'Even a random pair of points counts as a cluster, and noise almost disappears.',
+  theoryParamsRow4Param: 'minPts is too large',
+  theoryParamsRow4Effect:
+    'Small but genuine groups are declared noise.',
+  theoryOrigTitle: 'How our model differs from the original',
+  theoryOrigIntro:
+    'We simplified the algorithm on purpose: first you need to feel the idea of density itself, and the details can come later. Here is what makes the original more involved.',
+  theoryOrigSubKinds: 'Three kinds of points in the original',
+  theoryOrigCore: 'Core point',
+  theoryOrigCoreDef:
+    'It has at least minPts points within radius ε (usually counting itself). Only core points can grow a cluster.',
+  theoryOrigBorder: 'Border point',
+  theoryOrigBorderDef:
+    'Not a core point itself, but standing within radius of a core point. It joins the cluster, yet the group never grows further through it.',
+  theoryOrigNoiseTerm: 'Noise',
+  theoryOrigNoiseDef:
+    'Neither a core point nor standing next to any core point.',
+  theoryOrigExam:
+    'In computer science exam clustering tasks, the simplified model is usually enough: you do not need to distinguish core and border points. Still, read each task statement carefully, since its rules may differ from our model, for example by using a strict or non-strict distance comparison. The core/border distinction matters for understanding original DBSCAN, for example in machine-learning libraries.',
+  theoryOrigSubDiff: 'What is different here',
+  theoryOrigTableOrig: 'In the original',
+  theoryOrigTableOurs: 'In our model',
+  theoryOrigRow1Orig: 'minPts is the number of neighbors of a point.',
+  theoryOrigRow1Ours: 'minPts is the size of the finished group.',
+  theoryOrigRow2Orig: 'A cluster grows only through core points.',
+  theoryOrigRow2Ours: 'A cluster grows through any neighbor.',
+  theoryOrigRow3Orig: 'Border points exist.',
+  theoryOrigRow3Ours: 'No border points; every point is equal.',
+  theoryOrigRow4Orig:
+    'A border point between two clusters may end up in either one, depending on the visiting order.',
+  theoryOrigRow4Ours: 'The result is always the same.',
+  theoryOrigRow5Orig: 'Many implementations compare as “ε or less”.',
+  theoryOrigRow5Ours: 'Here the comparison is strict: “less than R”.',
+  theoryOrigBridge:
+    'Because of this, our model and the original can give slightly different results on the same points. A chain of thin “bridges” glues clusters together in our model, while the core-point requirements would have stopped it in the original.',
+  theoryOrigMain:
+    'The idea is the same — a cluster is a dense area. Only the checking details differ.',
+  theoryTradeTitle: 'Strengths and weaknesses',
+  theoryTradeSubPros: 'Strengths',
+  theoryTradePro1:
+    'You never set the number of clusters in advance.',
+  theoryTradePro2:
+    'It finds groups of any shape.',
+  theoryTradePro3:
+    'It separates noise on its own.',
+  theoryTradePro4:
+    'The idea is simple, with only two parameters.',
+  theoryTradeSubCons: 'Weaknesses',
+  theoryTradeCon1:
+    'The result depends heavily on R and minPts, and tuning takes some tries.',
+  theoryTradeCon2:
+    'One R for the whole set: if one crowd is dense and another is sparse, a single radius will not catch both well.',
+  theoryTradeCon3:
+    '“Bridges” and chains: a few points between crowds can melt them into one cluster.',
+  theoryTradeCon4:
+    'Many features: in high-dimensional data, distances lose their meaning and density is hard to judge.',
+  theoryTradeCon5:
+    'Speed: a naive neighbor search checks every pair of points, which is slow on large sets.',
+  theoryTradeSubWhen: 'When it fits, and when it does not',
+  theoryTradeWhenYes: 'A good fit',
+  theoryTradeYes1:
+    'Crowds of different shapes, outliers to separate honestly, and roughly the same density everywhere.',
+  theoryTradeYes2:
+    'The number of groups is unknown in advance.',
+  theoryTradeNo1:
+    'Density differs a lot from place to place.',
+  theoryTradeNo2:
+    'There are very many features.',
+  theoryTradeWhenNo: 'A poor fit',
+  theoryTradeMain:
+    'DBSCAN shines where density matters and noise must be separated honestly. No single algorithm is best for every dataset.',
+  theorySumTitle: 'Cheat sheet',
+  theorySumIdeaSub: 'The idea in one line',
+  theorySumIdeaText: 'A cluster is a dense area; everything else is noise.',
+  theorySumTermsSub: 'Terms',
+  theorySumTerm1: 'Neighbor: distance less than R.',
+  theorySumTerm2: 'Chain: neighbors of neighbors in one group.',
+  theorySumTerm3: 'minPts: the smallest group size.',
+  theorySumTerm4: 'Noise: a group smaller than minPts.',
+  theorySumAlgoSub: 'The algorithm',
+  theorySumAlgoText:
+    'Pick a point → collect neighbors → continue for new points → check the size → repeat.',
+  theorySumParamsSub: 'Parameters',
+  theorySumParamsText:
+    'Smaller R: more noise and splitting. Larger R: merging. Larger minPts: more noise.',
+  theorySumErrorsSub: 'Typical mistakes',
+  theorySumError1:
+    'Mixing up our model’s minPts with the original’s minPts.',
+  theorySumError2:
+    'Thinking the result depends on the starting point (here it does not).',
+  theorySumError3:
+    'Treating noise as a “mistake” (it is information).',
+  theorySumError4:
+    'Changing R and minPts at the same time and not knowing what changed.',
+  theorySumError5:
+    'Forgetting that our comparison is strict (less than R), while a task may use a different one.',
+  theorySumQuizSub: 'Test yourself',
+  theoryQuiz1Title:
+    'Why are A and D from the example in one cluster, though far apart?',
+  theoryQuiz1Text:
+    'A chain links them through B and C: A is next to B, B is next to C, and C is next to D.',
+  theoryQuiz2Title: 'What happens to noise if you raise minPts?',
+  theoryQuiz2Text:
+    'There will be more noise: more groups will fail the size check.',
+  theoryQuiz3Title: 'How does the original’s minPts differ from ours?',
+  theoryQuiz3Text:
+    'In the original it is the number of neighbors of a point; here it is the size of the whole group.',
   plotsTitle: 'Plots',
   scenarioCircles: 'Circles',
   scenarioBlobs: 'Blobs',

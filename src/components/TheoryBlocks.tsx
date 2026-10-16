@@ -1,10 +1,82 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Highlight } from 'prism-react-renderer'
 import type { PrismTheme } from 'prism-react-renderer'
-import type { TheoryBlock } from '../data/theory'
+import { Link } from 'react-router-dom'
+import type { TheoryBlock, TheoryTableCell } from '../data/theory'
+import { theoryExamplePoints } from '../data/theoryExample'
 import { useLanguage } from '../i18n'
+import { DbscanExampleFigure } from './DbscanExampleFigure'
 import { TheoryIcon } from './TheoryIcons'
 
 type LeafTheoryBlock = Exclude<TheoryBlock, { type: 'sections' }>
+type KatexModule = typeof import('katex')
+type KatexApi = KatexModule['default']
+
+type TheoryFormulaProps = {
+  formula: string
+  fallback: string
+  captionKey: Extract<TheoryBlock, { type: 'formula' }>['captionKey']
+}
+
+function TheoryFormula({ formula, fallback, captionKey }: TheoryFormulaProps) {
+  const { t } = useLanguage()
+  const [katex, setKatex] = useState<KatexApi | null>(null)
+  const [loadError, setLoadError] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    void Promise.all([
+      import('katex'),
+      import('katex/dist/katex.min.css'),
+    ])
+      .then(([module]) => {
+        if (active) {
+          setKatex(() => module.default)
+        }
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load KaTeX for the Theory page', error)
+        if (active) {
+          setLoadError(true)
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const renderedFormula = useMemo(
+    () =>
+      katex?.renderToString(formula, {
+        displayMode: true,
+        throwOnError: false,
+        output: 'htmlAndMathml',
+        trust: false,
+      }) ?? null,
+    [formula, katex],
+  )
+
+  return (
+    <figure className="theory-formula">
+      <figcaption>{t[captionKey]}</figcaption>
+      <div className="theory-formula__content">
+        {renderedFormula ? (
+          <div
+            className="theory-formula__rendered"
+            dangerouslySetInnerHTML={{ __html: renderedFormula }}
+          />
+        ) : (
+          <code className="theory-formula__fallback">{fallback}</code>
+        )}
+      </div>
+      {loadError ? (
+        <p className="theory-formula__error" role="alert">
+          {t.theoryFormulaLoadError}
+        </p>
+      ) : null}
+    </figure>
+  )
+}
 
 const theoryCodeTheme: PrismTheme = {
   plain: { color: 'var(--text)', backgroundColor: 'transparent' },
@@ -152,5 +224,68 @@ export function TheoryBlockContent({ block, level }: TheoryBlockContentProps) {
 
     case 'highlight':
       return <p className="theory-highlight">{t[block.textKey]}</p>
+
+    case 'formula':
+      return (
+        <TheoryFormula
+          formula={block.formula}
+          fallback={block.fallback}
+          captionKey={block.captionKey}
+        />
+      )
+
+    case 'table':
+      return (
+        <div className="theory-table-wrap">
+          <table className="theory-table">
+            <thead>
+              <tr>
+                {block.headerKeys.map((headerKey) => (
+                  <th key={headerKey} scope="col">
+                    {t[headerKey]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell: TheoryTableCell, cellIndex: number) => (
+                    <td key={cellIndex}>
+                      {'textKey' in cell ? t[cell.textKey] : cell.text}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+
+    case 'link':
+      return (
+        <p className="theory-link-row">
+          <Link
+            className={`theory-link${block.fullWidth ? ' theory-link--full-width' : ''}`}
+            to={block.to}
+          >
+            {t[block.textKey]}
+          </Link>
+        </p>
+      )
+
+    case 'example-figure-group':
+      return (
+        <div className="theory-example-figure-group">
+          {block.figures.map((figure) => (
+            <DbscanExampleFigure
+              key={`${figure.radius}-${figure.minPts}`}
+              points={theoryExamplePoints}
+              {...figure}
+            />
+          ))}
+        </div>
+      )
+
   }
 }

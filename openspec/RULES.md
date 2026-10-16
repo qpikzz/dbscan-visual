@@ -18,6 +18,7 @@ A mini-site with an interactive step-by-step visualization of a simplified DBSCA
 - Localization: i18next + react-i18next (ru, en)
 - Code highlighting: prism-react-renderer
 - Fonts: `@fontsource` packages (Nunito, Roboto Mono), self-hosted
+- KaTeX: lazy-loaded formula rendering on the Theory page; styles and WOFF2 fonts are self-hosted
 - Package manager: npm
 - No backend. Network requests to external APIs are forbidden.
 - Tests, linter, and formatter are not used.

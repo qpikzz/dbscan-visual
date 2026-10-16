@@ -24,3 +24,14 @@ for (const pkg of packages) {
   copyFileSync(src, join(outDir, pkg.out))
   console.log(`dist/licenses/${pkg.out} <- @fontsource/${pkg.name}`)
 }
+
+const katexLicense = join(root, 'node_modules', 'katex', 'LICENSE')
+if (!existsSync(katexLicense)) {
+  throw new Error(`Missing license file: ${katexLicense}`)
+}
+const katexLicenseText = readFileSync(katexLicense, 'utf8')
+if (!katexLicenseText.includes('MIT License')) {
+  throw new Error(`Expected MIT license text in ${katexLicense}`)
+}
+copyFileSync(katexLicense, join(outDir, 'katex-LICENSE.txt'))
+console.log('dist/licenses/katex-LICENSE.txt <- katex')
