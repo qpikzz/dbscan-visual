@@ -9,6 +9,7 @@ import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
 import { DataInfoModalPresence } from './DataInfoModal'
+import { SupportModalPresence } from './SupportModal'
 import { SegmentedControl } from './SegmentedControl'
 
 type Theme = 'light' | 'dark'
@@ -31,7 +32,17 @@ export function AppShell({ children }: AppShellProps) {
   const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
   const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
   const [dataInfoOpen, setDataInfoOpen] = useState(false)
+  const [supportOpen, setSupportOpen] = useState(false)
   const closeDataInfo = useCallback(() => setDataInfoOpen(false), [])
+  const closeSupport = useCallback(() => setSupportOpen(false), [])
+  const openDataInfo = useCallback(() => {
+    setSupportOpen(false)
+    setDataInfoOpen(true)
+  }, [])
+  const openSupport = useCallback(() => {
+    setDataInfoOpen(false)
+    setSupportOpen(true)
+  }, [])
   const { language, setLanguage, t } = useLanguage()
   const { reduced, transition } = useMotionSettings()
   const location = useLocation()
@@ -329,21 +340,47 @@ export function AppShell({ children }: AppShellProps) {
             <div className="footer-author">
               <span className="footer-author-name">{t.footerAuthor}</span>
               <a className="footer-author-link" href="https://t.me/qpikzz">
+                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M21.5 4.5 2.8 11.9a.6.6 0 0 0 .06 1.13l4.28 1.34 1.6 5.03a.6.6 0 0 0 1.04.23l2.2-2.4 4.3 3.16a.6.6 0 0 0 .94-.36l3.1-14.6a.6.6 0 0 0-.81-.68Z" />
+                  <path d="m7.14 14.37 10.2-7.5-7.6 8.06" />
+                </svg>
                 {t.footerTelegram}
               </a>
               <a className="footer-author-link" href={socialLinks.vk}>
+                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M4 5.5 8.2 18.5 12.4 5.5" />
+                  <path d="M15.5 5.5v13" />
+                  <path d="M21.5 5.5 15.5 12l6 7" />
+                </svg>
                 {t.footerVk}
               </a>
               <a className="footer-author-link" href="https://github.com/qpikzz">
+                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
                 {t.footerGithub}
               </a>
               <button
                 className="footer-author-link footer-data-info-trigger"
                 type="button"
                 ref={dataInfoTriggerRef}
-                onClick={() => setDataInfoOpen(true)}
+                onClick={openDataInfo}
               >
+                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M12 3 19 6v5c0 4.4-2.8 8.2-7 10-4.2-1.8-7-5.6-7-10V6l7-3Z" />
+                  <path d="m8.8 12.1 2.1 2.1 4.4-4.5" />
+                </svg>
                 {t.footerDataInfo}
+              </button>
+              <button
+                className="footer-author-link footer-support-trigger"
+                type="button"
+                onClick={openSupport}
+              >
+                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z" />
+                </svg>
+                {t.footerSupport}
               </button>
             </div>
             <div className="footer-mark" aria-hidden="true" />
@@ -355,6 +392,10 @@ export function AppShell({ children }: AppShellProps) {
       <DataInfoModalPresence
         open={dataInfoOpen}
         onClose={closeDataInfo}
+      />
+      <SupportModalPresence
+        open={supportOpen}
+        onClose={closeSupport}
       />
     </div>
   )

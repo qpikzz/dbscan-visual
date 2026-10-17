@@ -292,6 +292,17 @@ export const ru = {
   dataInfoPoint3:
     'Хостинг-провайдер может вести технические журналы обращений к сайту. Это происходит на стороне провайдера.',
   dataInfoCloseLabel: 'Закрыть окно «Сбор данных»',
+  footerSupport: 'Поддержать проект',
+  supportTitle: 'Поддержать проект',
+  supportP1: 'Спасибо, что решили поддержать этот сайт. Для разработчика это очень важно.',
+  supportP2: 'Даже небольшое пожертвование помогает сайту жить и развиваться.',
+  supportNote:
+    'Важно: пожертвование добровольное и ничего не открывает: платных функций на сайте нет. Взамен вы получите только искреннюю благодарность разработчика ヾ(≧▽≦*)o',
+  supportSmall:
+    'Оплата проходит на стороне сервиса DonationAlerts. Сайт не получает и не хранит ваши платёжные данные.',
+  supportButton: 'Поддержать',
+  supportButtonAria: 'Поддержать — ссылка откроется в новой вкладке',
+  supportCloseLabel: 'Закрыть окно «Поддержать проект»',
 }
 
 export type Dictionary = typeof ru
@@ -587,6 +598,17 @@ export const en: Dictionary = {
   dataInfoPoint3:
     'The hosting provider may keep technical access logs. This happens on the provider’s side.',
   dataInfoCloseLabel: 'Close the “Data collection” window',
+  footerSupport: 'Support the project',
+  supportTitle: 'Support the project',
+  supportP1: 'Thank you for wanting to support this site. It means a lot to its developer.',
+  supportP2: 'Even a small donation helps the site stay alive and keep growing.',
+  supportNote:
+    'Please note: donations are voluntary and unlock nothing, because the site has no paid features. In return you get the developer’s sincere gratitude ヾ(≧▽≦*)o',
+  supportSmall:
+    'The payment is handled by DonationAlerts. This site does not receive or store your payment details.',
+  supportButton: 'Support',
+  supportButtonAria: 'Support — the link opens in a new tab',
+  supportCloseLabel: 'Close the “Support the project” window',
 }
 
 export const dictionaries = { ru, en } as const
