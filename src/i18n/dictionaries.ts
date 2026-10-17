@@ -297,7 +297,7 @@ export const ru = {
   supportP1: 'Спасибо, что решили поддержать этот сайт. Для разработчика это очень важно.',
   supportP2: 'Даже небольшое пожертвование помогает сайту жить и развиваться.',
   supportNote:
-    'Важно: пожертвование добровольное и ничего не открывает: платных функций на сайте нет. Взамен вы получите искреннюю благодарность разработчика ^^',
+    'Важно: пожертвование добровольное и ничего не открывает: платных функций на сайте нет. Взамен вы получите только искреннюю благодарность разработчика ヾ(≧▽≦*)o',
   supportSmall:
     'Оплата проходит на стороне сервиса DonationAlerts. Сайт не получает и не хранит ваши платёжные данные.',
   supportButton: 'Поддержать',
@@ -603,7 +603,7 @@ export const en: Dictionary = {
   supportP1: 'Thank you for wanting to support this site. It means a lot to its developer.',
   supportP2: 'Even a small donation helps the site stay alive and keep growing.',
   supportNote:
-    'Please note: donations are voluntary and unlock nothing, because the site has no paid features. In return you get the developer’s sincere gratitude ^^',
+    'Please note: donations are voluntary and unlock nothing, because the site has no paid features. In return you get the developer’s sincere gratitude ヾ(≧▽≦*)o',
   supportSmall:
     'The payment is handled by DonationAlerts. This site does not receive or store your payment details.',
   supportButton: 'Support',
