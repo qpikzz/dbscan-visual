@@ -9,6 +9,7 @@ import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
 import { DataInfoModalPresence } from './DataInfoModal'
+import { SupportModalPresence } from './SupportModal'
 import { SegmentedControl } from './SegmentedControl'
 
 type Theme = 'light' | 'dark'
@@ -31,7 +32,17 @@ export function AppShell({ children }: AppShellProps) {
   const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
   const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
   const [dataInfoOpen, setDataInfoOpen] = useState(false)
+  const [supportOpen, setSupportOpen] = useState(false)
   const closeDataInfo = useCallback(() => setDataInfoOpen(false), [])
+  const closeSupport = useCallback(() => setSupportOpen(false), [])
+  const openDataInfo = useCallback(() => {
+    setSupportOpen(false)
+    setDataInfoOpen(true)
+  }, [])
+  const openSupport = useCallback(() => {
+    setDataInfoOpen(false)
+    setSupportOpen(true)
+  }, [])
   const { language, setLanguage, t } = useLanguage()
   const { reduced, transition } = useMotionSettings()
   const location = useLocation()
@@ -341,9 +352,19 @@ export function AppShell({ children }: AppShellProps) {
                 className="footer-author-link footer-data-info-trigger"
                 type="button"
                 ref={dataInfoTriggerRef}
-                onClick={() => setDataInfoOpen(true)}
+                onClick={openDataInfo}
               >
                 {t.footerDataInfo}
+              </button>
+              <button
+                className="footer-author-link footer-support-trigger"
+                type="button"
+                onClick={openSupport}
+              >
+                <svg className="footer-support-icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z" />
+                </svg>
+                {t.footerSupport}
               </button>
             </div>
             <div className="footer-mark" aria-hidden="true" />
@@ -355,6 +376,10 @@ export function AppShell({ children }: AppShellProps) {
       <DataInfoModalPresence
         open={dataInfoOpen}
         onClose={closeDataInfo}
+      />
+      <SupportModalPresence
+        open={supportOpen}
+        onClose={closeSupport}
       />
     </div>
   )
