@@ -192,7 +192,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 - The support dialog has a localized title with a heart badge, two short thank-you paragraphs, a highlighted note, a small muted line about the payment service, and an accent donate link. The accent donate link is an `<a>` styled like the primary buttons, opens `SUPPORT_URL` in a new tab (`target="_blank"`, `rel="noopener noreferrer"`), carries an external-link icon and a localized `aria-label` noting that it opens in a new tab, and spans the full card width. No DonationAlerts widgets, scripts, images, fonts, or preconnect/prefetch hints are loaded; the only interaction is the user-initiated link navigation.
 - Support wording restrictions (both languages): the donation is always described as voluntary and as giving nothing in return except the developer's gratitude; no promised bonuses, access, features, mentions, priority, or refunds; it is not called charity or fundraising, has no stated spending goals, amounts, deadlines, or "fundraising targets"; no legal-entity/individual-entrepreneur claims or payment details. The data collection text is unchanged.
 - A thin `--line` separator sits above the footer.
-- On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered.
+- On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered. The interactive rows (Telegram, VK, GitHub, Data collection, Support the project) all share the same compact 22px minimum row height, so the distance between them is identical.
 
 ### 5.6. Theory Page
 
@@ -217,7 +217,7 @@ Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 - Tablet: single column for the visualization block (Steps panel above Canvas panel), Plots in 2x2 grid.
 - Desktop: layout as described in section 5.
 - On mobile and tablet, the Steps panel reserves about one-third of the viewport height (capped at 320px). Its history list scrolls inside the panel, with the active step and roughly the latest 2-3 preceding steps visible; older steps remain accessible by scrolling.
-- Touch targets are at least 44x44px.
+- Touch targets are at least 44x44px, except the footer's compact interactive rows, which use the shared 22px row height so their spacing stays equal and compact.
 
 ## 7. Themes
 

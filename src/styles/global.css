@@ -908,11 +908,8 @@ a:focus-visible {
   }
 
   .footer-author-link {
-    padding-left: 0;
-  }
-
-  .footer-support-trigger {
-    min-height: 44px;
+    min-height: 22px;
+    padding: 0;
   }
 
   .modal-dialog {
