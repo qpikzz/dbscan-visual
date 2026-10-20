@@ -491,6 +491,10 @@ a:focus-visible {
   text-decoration: none;
 }
 
+.footer-author-link:hover {
+  color: var(--primary);
+}
+
 .footer-data-info-trigger {
   border: 0;
   background: transparent;
@@ -498,19 +502,11 @@ a:focus-visible {
   cursor: pointer;
 }
 
-.footer-data-info-trigger:hover {
-  color: var(--primary);
-}
-
 .footer-support-trigger {
   border: 0;
   background: transparent;
   text-align: left;
   cursor: pointer;
-}
-
-.footer-support-trigger:hover {
-  color: var(--primary);
 }
 
 .footer-author-icon {
