@@ -180,7 +180,7 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
     4. "GitHub" (RU: "GitHub"), a link, on its own line, at the same indent as line 2
     5. "Data collection" (RU: "Сбор данных"), a text-style button with a small shield icon before the label, opening the localized data information dialog.
     6. "Support the project" (RU: "Поддержать проект"), a text-style button with a small outline heart icon before the label, opening the localized support dialog. It is never open at the same time as the data information dialog: opening one closes the other.
-    Lines 2-4 are links: a small line icon (Telegram plane, VK monogram, GitHub mark) before plain text, no underline, `--text-muted` color.
+    Lines 2-4 are links: a small line icon (Telegram plane, VK monogram, GitHub mark) before plain text, no underline, `--text-muted` color. All interactive footer rows (the three links, Data collection, and Support the project) switch their text and icon to `--primary` on hover, with no underline or motion.
   - Center: a slot for an SVG cat mark, to be supplied later. The slot is a fixed-size container of 48px height; it is empty until the asset is added.
   - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), wrapped across multiple lines, right-aligned, `--text-muted`.
 - Below the three zones: a centered note in `--text-muted`, 13-14px, wrapped across two lines:
