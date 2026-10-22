@@ -70,6 +70,15 @@ A text explanation of DBSCAN for beginners, in seven sections: what DBSCAN is, t
 - Automatic deployment.
 - Tests, linter, formatter.
 
+## 10. SEO
+
+- Static meta-tags in `index.html` (title/description/canonical, Open Graph, Twitter Card summary, theme-color, color-scheme), JSON-LD `WebSite` and `WebApplication` (educational, free). No ratings/reviews/organization/contact.
+- Dynamic meta-data via `usePageMeta` updates `document.title`, description, OG/Twitter tags, `<html lang>` and `og:locale` on page/language change without breaking hash-routing/anchors/aliases.
+- `public/robots.txt` allows indexing and points to `https://dbscan.ru/sitemap.xml`. `public/sitemap.xml` contains the single canonical URL `https://dbscan.ru/`.
+- `<noscript>` provides a neutral Russian description for crawlers without JS.
+- Favicons/icons present; analytics/counters/trackers/external scripts and pixels are forbidden. Verification meta-tags added only if provided by author.
+- Hash-based routing means search engines see one indexable URL for now; structural change to paths/prerender is proposed separately (Phase 2).
+
 ## 9. Timeline
 
 Less than one week.

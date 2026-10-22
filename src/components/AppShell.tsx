@@ -6,6 +6,7 @@ import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useMotionSettings } from '../hooks/useMotionSettings'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { socialLinks } from '../config/socialLinks'
 import { Reveal } from './Reveal'
 import { DataInfoModalPresence } from './DataInfoModal'
@@ -28,6 +29,7 @@ type AppShellProps = {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  usePageMeta()
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
   const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
   const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
@@ -222,13 +224,13 @@ export function AppShell({ children }: AppShellProps) {
     <div className="app-shell">
       <div className="header-area">
         <header className="app-header">
-          <h1 className="app-logo">
+          <div className="app-logo" aria-label={t.logo}>
             <svg className="app-logo-mark" aria-hidden="true" viewBox="0 0 128 128">
               <circle className="logo-mark-ring" cx="64" cy="64" r="60" />
               <circle className="logo-mark-center" cx="64" cy="64" r="32" />
             </svg>
             <span>{t.logo}</span>
-          </h1>
+          </div>
           {isMobile ? (
             <>
               <button
