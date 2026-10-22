@@ -5,6 +5,13 @@ export type Language = (typeof supportedLanguages)[number]
 export const defaultLanguage: Language = 'ru'
 
 export const ru = {
+  metaTitleHome: 'DBSCAN онлайн: интерактивная визуализация кластеризации',
+  metaDescriptionHome:
+    'Пошагово посмотрите, как работает кластеризация DBSCAN: радиус R, minPts, кластеры и шум. Подойдёт для анализа данных и для задания 27 ЕГЭ по информатике.',
+  metaTitleTheory: 'Теория DBSCAN простыми словами: R, minPts, кластеры и шум',
+  metaDescriptionTheory:
+    'Что такое DBSCAN и как он находит кластеры: термины, алгоритм по шагам с примером, влияние параметров, сильные и слабые стороны, связь с заданием 27 ЕГЭ',
+  pageHomeTitle: 'DBSCAN: интерактивная визуализация плотностной кластеризации',
   logo: 'DB SCAN',
   languageLabel: 'Переключить язык',
   languageRu: 'Ru',
@@ -308,6 +315,13 @@ export const ru = {
 export type Dictionary = typeof ru
 
 export const en: Dictionary = {
+  metaTitleHome: 'DBSCAN Visualization: Interactive Clustering Explained',
+  metaDescriptionHome:
+    'See how DBSCAN clustering works step by step: radius R, minPts, clusters and noise. A beginner-friendly visual guide for data analysis and programming courses.',
+  metaTitleTheory: 'DBSCAN Theory Explained: R, minPts, Clusters and Noise',
+  metaDescriptionTheory:
+    'What DBSCAN is and how it finds clusters: key terms, a step-by-step algorithm, parameter effects, strengths and weaknesses, and exam-style tasks.',
+  pageHomeTitle: 'DBSCAN: Interactive visualization of density-based clustering',
   logo: 'DB SCAN',
   languageLabel: 'Switch language',
   languageRu: 'Ru',

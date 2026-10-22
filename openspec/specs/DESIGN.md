@@ -231,6 +231,15 @@ Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 - Appear and disappear with a fade and a small translate using the shared easing; in the in-flow variant the height collapses smoothly so the layout does not jump. The digit swaps with a short vertical fade/slide. Respect `prefers-reduced-motion` by removing movement and digit animations and using a simple fade or instant change.
 - Expose the notification with `role="status"`/`aria-live="polite"` so it is announced when it appears without interrupting, and hide the per-second digit changes from assistive technology.
 
+## 9. SEO
+
+- **Static head**: `lang="ru"`, charset, viewport, description, canonical `https://dbscan.ru/`, title, Open Graph (type/locale/site_name/title/description/url), Twitter Card `summary`, theme-color (light/dark), color-scheme, favicon/apple-touch-icon.
+- **Dynamic**: `usePageMeta` updates title/description/OG/Twitter/html lang/og:locale per route (`#/visualization`, `#/theory`) and language; canonical remains `https://dbscan.ru/`.
+- **Structured data**: JSON-LD `WebSite` and `WebApplication` (EducationalApplication, free) in `index.html`, validated.
+- **Discovery**: `public/robots.txt` (Allow: /, Sitemap) and `public/sitemap.xml` (single URL) copied to `dist/`. No hash fragments in sitemap.
+- **No-JS fallback**: `<noscript>` in Russian with neutral description and topics.
+- **Policy**: no analytics/trackers/external scripts/pixels; verification tags only if author provides. No hidden text/keyword stuffing/fake ratings/FAQ/doorway/cloaking. EGE/27 references only as stated in theory. Hash routing limits indexable URLs to one for now (see Phase 2 proposal).
+
 ## 8. Animation
 
 Character: smooth, crisp, confident, without sagging or lag.
