@@ -1,13 +1,18 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
+import { FOOTER_AUTHOR, FOOTER_COPYRIGHT_YEAR } from '../config/footer'
+import { theorySections } from '../data/theory'
+import cat from '../assets/cat.svg'
 import { Reveal } from './Reveal'
+import { FooterIcon } from './FooterIcon'
+import { LogoMark } from './LogoMark'
 import { DataInfoModalPresence } from './DataInfoModal'
 import { SupportModalPresence } from './SupportModal'
 import { SegmentedControl } from './SegmentedControl'
@@ -26,6 +31,17 @@ function getInitialTheme(): Theme {
 type AppShellProps = {
   children: ReactNode
 }
+
+function getRequiredTheorySection(id: string) {
+  const section = theorySections.find((item) => item.id === id)
+  if (!section) {
+    throw new Error(`Footer link references missing theory section: ${id}`)
+  }
+  return section
+}
+
+const theoryWalkthrough = getRequiredTheorySection('theory-walkthrough')
+const theorySummary = getRequiredTheorySection('theory-summary')
 
 export function AppShell({ children }: AppShellProps) {
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
@@ -223,10 +239,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="header-area">
         <header className="app-header">
           <h1 className="app-logo">
-            <svg className="app-logo-mark" aria-hidden="true" viewBox="0 0 128 128">
-              <circle className="logo-mark-ring" cx="64" cy="64" r="60" />
-              <circle className="logo-mark-center" cx="64" cy="64" r="32" />
-            </svg>
+            <LogoMark />
             <span>{t.logo}</span>
           </h1>
           {isMobile ? (
@@ -336,57 +349,112 @@ export function AppShell({ children }: AppShellProps) {
       </main>
       <Reveal>
         <footer className="app-footer">
-          <div className="footer-zones">
-            <div className="footer-author">
-              <span className="footer-author-name">{t.footerAuthor}</span>
-              <a className="footer-author-link" href="https://t.me/qpikzz">
-                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M21.5 4.5 2.8 11.9a.6.6 0 0 0 .06 1.13l4.28 1.34 1.6 5.03a.6.6 0 0 0 1.04.23l2.2-2.4 4.3 3.16a.6.6 0 0 0 .94-.36l3.1-14.6a.6.6 0 0 0-.81-.68Z" />
-                  <path d="m7.14 14.37 10.2-7.5-7.6 8.06" />
-                </svg>
-                {t.footerTelegram}
-              </a>
-              <a className="footer-author-link" href={socialLinks.vk}>
-                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M4 5.5 8.2 18.5 12.4 5.5" />
-                  <path d="M15.5 5.5v13" />
-                  <path d="M21.5 5.5 15.5 12l6 7" />
-                </svg>
-                {t.footerVk}
-              </a>
-              <a className="footer-author-link" href="https://github.com/qpikzz">
-                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                </svg>
-                {t.footerGithub}
-              </a>
-              <button
-                className="footer-author-link footer-data-info-trigger"
-                type="button"
-                ref={dataInfoTriggerRef}
-                onClick={openDataInfo}
-              >
-                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M12 3 19 6v5c0 4.4-2.8 8.2-7 10-4.2-1.8-7-5.6-7-10V6l7-3Z" />
-                  <path d="m8.8 12.1 2.1 2.1 4.4-4.5" />
-                </svg>
-                {t.footerDataInfo}
-              </button>
-              <button
-                className="footer-author-link footer-support-trigger"
-                type="button"
-                onClick={openSupport}
-              >
-                <svg className="footer-author-icon" aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 0 1 19.4 13Z" />
-                </svg>
-                {t.footerSupport}
-              </button>
+          <div className="footer-main">
+            <div className="footer-brand">
+              <div className="footer-brand-name">
+                <LogoMark />
+                <span>{t.footerBrandName}</span>
+              </div>
+              <p className="footer-brand-note">{t.footerLove}</p>
             </div>
-            <div className="footer-mark" aria-hidden="true" />
-            <p className="footer-love">{t.footerLove}</p>
+            <nav className="footer-group" aria-labelledby="footer-site-title">
+              <p className="footer-group-title" id="footer-site-title">
+                {t.footerSiteTitle}
+              </p>
+              <div className="footer-link-list">
+                <Link className="footer-link" to="/visualization">
+                  <span className="footer-link-icon"><FooterIcon name="visualization" /></span>
+                  <span>{t.visualLabel}</span>
+                </Link>
+                <Link className="footer-link" to="/theory">
+                  <span className="footer-link-icon"><FooterIcon name="theory" /></span>
+                  <span>{t.theoryLabel}</span>
+                </Link>
+                <Link
+                  className="footer-link"
+                  to={{ pathname: '/theory', hash: `#${theoryWalkthrough.id}` }}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="steps" /></span>
+                  <span>{t[theoryWalkthrough.titleKey]}</span>
+                </Link>
+                <Link
+                  className="footer-link"
+                  to={{ pathname: '/theory', hash: `#${theorySummary.id}` }}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="summary" /></span>
+                  <span>{t[theorySummary.titleKey]}</span>
+                </Link>
+              </div>
+            </nav>
+            <section className="footer-group" aria-labelledby="footer-author-title">
+              <p className="footer-group-title" id="footer-author-title">
+                {t.footerAuthorTitle}
+              </p>
+              <p className="footer-author-name">{FOOTER_AUTHOR}</p>
+              <div className="footer-link-list">
+                <a
+                  className="footer-link"
+                  href={socialLinks.telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${t.footerTelegram} ${t.footerExternalNewTab}`}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="telegram" /></span>
+                  <span>{t.footerTelegram}</span>
+                </a>
+                <a
+                  className="footer-link"
+                  href={socialLinks.vk}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${t.footerVk} ${t.footerExternalNewTab}`}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="vk" /></span>
+                  <span>{t.footerVk}</span>
+                </a>
+                <a
+                  className="footer-link"
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${t.footerGithub} ${t.footerExternalNewTab}`}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="github" /></span>
+                  <span>{t.footerGithub}</span>
+                </a>
+              </div>
+              <p className="footer-availability">{t.footerAvailability}</p>
+            </section>
+            <section className="footer-group" aria-labelledby="footer-more-title">
+              <p className="footer-group-title" id="footer-more-title">
+                {t.footerMoreTitle}
+              </p>
+              <div className="footer-link-list">
+                <button className="footer-link" type="button" onClick={openSupport}>
+                  <span className="footer-link-icon"><FooterIcon name="heart" /></span>
+                  <span>{t.footerSupport}</span>
+                </button>
+                <button
+                  className="footer-link"
+                  type="button"
+                  ref={dataInfoTriggerRef}
+                  onClick={openDataInfo}
+                >
+                  <span className="footer-link-icon"><FooterIcon name="shield" /></span>
+                  <span>{t.footerDataInfo}</span>
+                </button>
+              </div>
+            </section>
           </div>
-          <p className="footer-note">{t.footerNote}</p>
+          <div className="footer-divider">
+            <img className="footer-cat" src={cat} alt="" aria-hidden="true" />
+          </div>
+          <div className="footer-bottom">
+            <p className="footer-copyright">
+              {t.footerCopyright(FOOTER_COPYRIGHT_YEAR, FOOTER_AUTHOR)}
+            </p>
+            <p className="footer-note">{t.footerNote}</p>
+          </div>
         </footer>
       </Reveal>
       <DataInfoModalPresence
