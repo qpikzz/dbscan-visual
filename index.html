@@ -1,13 +1,69 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Визуализатор DBSCAN: интерактивная кластеризация данных</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Пошагово посмотрите, как работает кластеризация DBSCAN: радиус R, minPts, кластеры и шум. Подойдёт для анализа данных и для задания 27 ЕГЭ по информатике." />
+    <link rel="canonical" href="https://dbscan.ru/" />
+    <title>DBSCAN онлайн: интерактивная визуализация кластеризации</title>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="shortcut icon" href="/favicon.svg?v=2" />
+    <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
+
+    <meta name="theme-color" content="#F6F8FC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F1420" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DBSCAN Visual" />
+    <meta property="og:title" content="DBSCAN онлайн: интерактивная визуализация кластеризации" />
+    <meta property="og:description" content="Пошагово посмотрите, как работает кластеризация DBSCAN: радиус R, minPts, кластеры и шум. Подойдёт для анализа данных и для задания 27 ЕГЭ по информатике." />
+    <meta property="og:url" content="https://dbscan.ru/" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="DBSCAN онлайн: интерактивная визуализация кластеризации" />
+    <meta name="twitter:description" content="Пошагово посмотрите, как работает кластеризация DBSCAN: радиус R, minPts, кластеры и шум. Подойдёт для анализа данных и для задания 27 ЕГЭ по информатике." />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "DBSCAN Visual",
+        "url": "https://dbscan.ru/",
+        "inLanguage": ["ru", "en"]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "DBSCAN Visual",
+        "url": "https://dbscan.ru/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "RUB"
+        },
+        "inLanguage": ["ru", "en"],
+        "description": "Интерактивная визуализация упрощённого алгоритма кластеризации DBSCAN. Объясняет идею плотностной кластеризации, радиус R, minPts, кластеры и шум."
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width:880px;margin:40px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.6;color:#1f2937">
+        <h1>DBSCAN онлайн: интерактивная визуализация кластеризации</h1>
+        <p>Интерактивный сайт для пошагового изучения упрощённой модели кластеризации DBSCAN. На сайте объясняется идея плотностной кластеризации и наглядно показывается, как точки объединяются в кластеры, а одиночки считаются шумом.</p>
+        <p>Основные темы: кластеризация, DBSCAN, радиус R, minPts, шум, связь с заданием 27 ЕГЭ по информатике (кластеризация точек на плоскости).</p>
+        <p>Для полноценной работы включите JavaScript. Сайт статический, не использует аналитику и не собирает персональные данные.</p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

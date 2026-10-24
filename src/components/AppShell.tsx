@@ -6,6 +6,7 @@ import { useLanguage } from '../i18n'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useMotionSettings } from '../hooks/useMotionSettings'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { socialLinks } from '../config/socialLinks'
 import { FOOTER_COPYRIGHT_YEAR } from '../config/footer'
 import { theorySections } from '../data/theory'
@@ -44,6 +45,7 @@ const theoryWalkthrough = getRequiredTheorySection('theory-walkthrough')
 const theorySummary = getRequiredTheorySection('theory-summary')
 
 export function AppShell({ children }: AppShellProps) {
+  usePageMeta()
   const [theme, setTheme] = useLocalStorage<Theme>('dbscan-theme', getInitialTheme())
   const [lightThemeWarningShown, setLightThemeWarningShown] = useState(false)
   const [warningCountdown, setWarningCountdown] = useState<number | null>(null)
@@ -238,10 +240,10 @@ export function AppShell({ children }: AppShellProps) {
     <div className="app-shell">
       <div className="header-area">
         <header className="app-header">
-          <h1 className="app-logo">
-            <LogoMark />
-            <span>{t.logo}</span>
-          </h1>
+            <div className="app-logo" aria-label={t.logo}>
+              <LogoMark />
+              <span>{t.logo}</span>
+            </div>
           {isMobile ? (
             <>
               <button
