@@ -585,14 +585,14 @@ a:focus-visible {
 }
 
 .footer-availability {
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
   color: var(--text-muted);
-  font: inherit;
-  line-height: inherit;
+  font-size: calc(var(--font-size-caption) * 0.9);
+  line-height: 1.35;
 }
 
 .footer-divider {
-  margin-top: var(--space-6);
+  margin-top: var(--space-9, 36px);
   margin-bottom: var(--space-4);
   border-top: var(--border-width) solid var(--line);
 }
@@ -600,8 +600,9 @@ a:focus-visible {
 .footer-cat {
   display: block;
   width: auto;
-  height: 72px;
-  margin-top: auto;
+  height: 92px;
+  margin: 0;
+  align-self: flex-start;
   pointer-events: none;
 }
 
@@ -983,8 +984,9 @@ a:focus-visible {
   }
 
   .footer-cat {
-    height: 48px;
-    margin-top: var(--space-3);
+    height: 66px;
+    margin-top: var(--space-2);
+    align-self: flex-start;
   }
 
   .footer-bottom {

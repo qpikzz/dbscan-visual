@@ -277,7 +277,7 @@ export const ru = {
   footerSiteTitle: 'Сайт',
   footerAuthorTitle: 'Автор',
   footerMoreTitle: 'Прочее',
-  footerCopyrightAuthor: 'Никита Шведов',
+  footerCopyrightAuthor: 'Шведов Никита',
   footerAvailability: 'Открыт к стажировкам и вашим проектам',
   footerExternalNewTab: 'Откроется в новой вкладке',
   footerCopyright: (year: string, name: string) =>
