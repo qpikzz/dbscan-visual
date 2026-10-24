@@ -12,7 +12,6 @@ import type { ScenarioTransitionRequest } from '../features/canvas/scenarioTrans
 import type { Assignment, Frame, FrameEvent, Point } from '../features/dbscan/types'
 import { useMotionSettings } from '../hooks/useMotionSettings'
 import { useMediaQuery } from '../hooks/useMediaQuery'
-import { useLanguage } from '../i18n'
 import '../styles/visualization.css'
 
 function isFullyVisible(element: HTMLElement): boolean {
@@ -99,7 +98,6 @@ export function VisualizationPage() {
   const scenarioSelectionRequestRef = useRef(0)
   const { reduced } = useMotionSettings()
   const isMobile = useMediaQuery('(max-width: 767px)')
-  const { t } = useLanguage()
   const points = scenario === 'create' ? createPoints : SCENARIOS[scenario].points
   const frame = frames?.[activeStep]
   const finalStepIndex = frames === null ? null : frames.length - 1
@@ -188,7 +186,6 @@ export function VisualizationPage() {
 
   return (
     <div className="viz-sections">
-      <h1 className="viz-page-title">{t.pageHomeTitle}</h1>
       <Reveal>
         <VisualizationBlock
           scenario={scenario}
