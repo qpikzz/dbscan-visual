@@ -7,7 +7,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { useMotionSettings } from '../hooks/useMotionSettings'
 import { socialLinks } from '../config/socialLinks'
-import { FOOTER_AUTHOR, FOOTER_COPYRIGHT_YEAR } from '../config/footer'
+import { FOOTER_COPYRIGHT_YEAR } from '../config/footer'
 import { theorySections } from '../data/theory'
 import cat from '../assets/cat.svg'
 import { Reveal } from './Reveal'
@@ -356,6 +356,7 @@ export function AppShell({ children }: AppShellProps) {
                 <span>{t.footerBrandName}</span>
               </div>
               <p className="footer-brand-note">{t.footerLove}</p>
+              <img className="footer-cat" src={cat} alt="" aria-hidden="true" />
             </div>
             <nav className="footer-group" aria-labelledby="footer-site-title">
               <p className="footer-group-title" id="footer-site-title">
@@ -390,7 +391,6 @@ export function AppShell({ children }: AppShellProps) {
               <p className="footer-group-title" id="footer-author-title">
                 {t.footerAuthorTitle}
               </p>
-              <p className="footer-author-name">{FOOTER_AUTHOR}</p>
               <div className="footer-link-list">
                 <a
                   className="footer-link"
@@ -446,12 +446,10 @@ export function AppShell({ children }: AppShellProps) {
               </div>
             </section>
           </div>
-          <div className="footer-divider">
-            <img className="footer-cat" src={cat} alt="" aria-hidden="true" />
-          </div>
+          <div className="footer-divider" />
           <div className="footer-bottom">
             <p className="footer-copyright">
-              {t.footerCopyright(FOOTER_COPYRIGHT_YEAR, FOOTER_AUTHOR)}
+              {t.footerCopyright(FOOTER_COPYRIGHT_YEAR, t.footerCopyrightAuthor)}
             </p>
             <p className="footer-note">{t.footerNote}</p>
           </div>

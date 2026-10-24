@@ -277,6 +277,7 @@ export const ru = {
   footerSiteTitle: 'Сайт',
   footerAuthorTitle: 'Автор',
   footerMoreTitle: 'Прочее',
+  footerCopyrightAuthor: 'Никита Шведов',
   footerAvailability: 'Открыт к стажировкам и вашим проектам',
   footerExternalNewTab: 'Откроется в новой вкладке',
   footerCopyright: (year: string, name: string) =>
@@ -590,6 +591,7 @@ export const en: Dictionary = {
   footerSiteTitle: 'Site',
   footerAuthorTitle: 'Author',
   footerMoreTitle: 'More',
+  footerCopyrightAuthor: 'Nikita Shvedov',
   footerAvailability: 'Open to internships and your projects',
   footerExternalNewTab: 'Opens in a new tab',
   footerCopyright: (year: string, name: string) =>
