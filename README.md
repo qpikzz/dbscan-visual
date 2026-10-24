@@ -4,7 +4,7 @@
 
 **Интерактивная визуализация упрощённого алгоритма кластеризации DBSCAN в браузере**
 
-Пошагово покажите, как из точек вырастают кластеры, а небольшие группы становятся шумом.
+Пошагово покажите, как из точек вырастают кластеры, а небольшие группы становятся шумом
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)

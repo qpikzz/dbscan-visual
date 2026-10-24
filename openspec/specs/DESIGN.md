@@ -52,8 +52,9 @@ Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use
 
 ### 2.3. Shape and Spacing
 
-- Border width: 1px, color `--line`.
-- Corner radius: 12px for blocks and cards, 8px for buttons and inputs.
+- Border width: `--border-width` (1px), color `--line`.
+- Corner radius: `--radius-block` (12px) for blocks and cards, `--radius-button` (8px) for buttons and inputs, `--radius-round` for circles.
+- Minimum interactive target: `--touch-target-min` (44px).
 - Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64 px.
 - Content max width: 1200px, centered. Horizontal padding: 24px on desktop, 16px on mobile.
 - Gap between blocks: 24px on desktop, 16px on mobile.
@@ -66,6 +67,7 @@ Points not yet assigned to a cluster use `--text-muted` (gray). Noise points use
 - Sizes: page-level labels 20-24px, block titles 18-20px, body 15-16px, code 13-14px.
 - Weights: 400 body, 600 titles and buttons.
 - Line height: 1.5 for text, 1.6 for code.
+- Footer tokens: `--font-size-caption` (14px), `--font-size-overline` (12px), `--font-size-brand` (20px), `--font-weight-semibold` (600), `--line-height-body` (1.5), and `--tracking-overline` (0.08em).
 
 ## 4. Background
 
@@ -172,27 +174,23 @@ Below 1024px (tablet and mobile, see DESIGN.md section 6 breakpoints), the layou
 
 ### 5.5. Footer
 
-- Three zones in one row:
-  - Left: a stacked block, top to bottom:
-    1. "Created by Nikita Shvedov" (RU: "Создатель: Nikita Shvedov")
-    2. "Telegram channel" (RU: "Telegram канал"), a link, on its own line, indented slightly relative to line 1
-    3. "VK" (RU: "ВКонтакте"), a link, on its own line, at the same indent as line 2
-    4. "GitHub" (RU: "GitHub"), a link, on its own line, at the same indent as line 2
-    5. "Data collection" (RU: "Сбор данных"), a text-style button with a small shield icon before the label, opening the localized data information dialog.
-    6. "Support the project" (RU: "Поддержать проект"), a text-style button with a small outline heart icon before the label, opening the localized support dialog. It is never open at the same time as the data information dialog: opening one closes the other.
-    Lines 2-4 are links: a small line icon (Telegram plane, VK monogram, GitHub mark) before plain text, no underline, `--text-muted` color. All interactive footer rows (the three links, Data collection, and Support the project) switch their text and icon to `--primary` on hover, with no underline or motion.
-  - Center: a slot for an SVG cat mark, to be supplied later. The slot is a fixed-size container of 48px height; it is empty until the asset is added.
-  - Right: "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов"), wrapped across multiple lines, right-aligned, `--text-muted`.
-- Below the three zones: a centered note in `--text-muted`, 13-14px, wrapped across two lines:
+- A four-column desktop grid: Brand, Site, Author, More. The Brand block has no column label; the other column labels are localized small uppercase text. Use semantic footer groups with non-heading labels (`<p>`), and label the Site navigation with `aria-labelledby`.
+- Brand: reuse the header's ring-and-center SVG mark, followed by the unspaced title "DBSCAN". Keep the header's existing "DB SCAN" title unchanged. Under the title, retain "Made with love for school and university students" (RU: "Создано с любовью для школьников и студентов").
+- Site: internal links to Visualization and Theory, followed by links to the "Algorithm step by step" and "Cheat sheet" theory sections. Their labels come from the theory section data and corresponding i18n title keys. Use the existing HashRouter paths and hash anchors (for example, `#/theory#theory-walkthrough`) without a document reload.
+- Author: show Telegram channel, VK, and GitHub links from the existing social destinations, followed by the non-interactive, muted message "Open to internships and your projects" (RU: "Открыт к стажировкам и вашим проектам"). The message uses a slightly smaller size than the link labels (~90% of `--font-size-caption`, not below 12px) with adjusted line height, is placed closer to the GitHub link (reduced vertical gap), aligns with their icon backings, and has a small top gap after GitHub; it has no marker, bolding, or hover behavior. Do not show the author's name in this column. External social links open in a new tab with `rel="noopener noreferrer"` and a localized new-tab announcement.
+- More: "Support the project" (RU: "Поддержать проект") and "Data collection" (RU: "Сбор данных") are buttons that open their existing dialogs. The dialogs remain mutually exclusive and keep their existing focus, Escape, close-button, and backdrop behavior.
+- Footer links and dialog buttons use aligned icons in small circular `--surface` / `--line` backings, with muted text and tokenized accent hover/focus. Keep the site's visible `:focus-visible` ring. No subscription form, email field, analytics, counters, or new external resources are permitted.
+- The supplied `cat.svg` is used as a decorative image placed in normal flow inside the Brand block (under the brand note), aligned to the left edge of the Brand content with no compensating negative margins or absolute positioning. The asset copy in `src/assets/` is cropped to the visible artwork bounds where transparent canvas padding caused left offset; proportions and line art are unchanged. It sits near the bottom of the Brand block on desktop (above the divider) and directly below the brand copy on mobile. Give it empty alt text, hide it from assistive technology, disable pointer events, and ensure it does not cover content. Height is ~92px on desktop and ~66px on mobile (increased ~25–35%). The white line art has low contrast on the light theme; do not recolor it. If it is not legible enough, use an owner-provided theme variant or agree on another treatment.
+- A thin `--line` divider separates the main grid from the lower bar. The lower bar DOM order is copyright, then the simplified-model note. The year is the `2026` constant and the author name is localized: "© 2026 Nikita Shvedov. All rights reserved." (EN) and "© 2026 Шведов Никита. Все права защищены." (RU). The note retains its existing wording, is small and muted, limited in width, and right-aligned on desktop.
+- The note in `--text-muted` explains the simplified visualization:
   - EN: "This is a simplified visualization of DBSCAN. Clusters grow by the neighbor radius R, and groups smaller than minPts are treated as noise. The original algorithm also distinguishes core and border points."
   - RU: "Это упрощённая визуализация DBSCAN. Кластеры растут по радиусу соседства R, а группы меньше minPts считаются шумом. Оригинальный алгоритм дополнительно различает core- и border-точки."
-- Link URLs: Telegram `https://t.me/qpikzz`, VK `https://vk.ru/qpikzz`, GitHub `https://github.com/qpikzz`. The support dialog's donate link uses the `SUPPORT_URL` constant (`https://www.donationalerts.com/r/qpz`, no UTM or extra parameters) stored next to the VK constant.
+- Social URLs remain Telegram `https://t.me/qpikzz`, VK `https://vk.ru/qpikzz`, and GitHub `https://github.com/qpikzz`; do not add domains. The support dialog's donate link uses the existing `SUPPORT_URL` constant (`https://www.donationalerts.com/r/qpz`, no UTM or extra parameters).
 - Both dialogs share one modal frame (`ModalShell`): a portal into `document.body`, a centered dimmed backdrop, a `--surface` card with 1px `--line` border and 12px radius, a localized close button, focus moved into the dialog on open, a keyboard focus trap, close on the close button, Escape, or backdrop click, focus returned to the opener, and background scroll locking. Motion (overlay fade, card fade with a small scale/translate) uses the shared easing and durations and respects reduced-motion preferences; the dialog remains usable on narrow screens with internal scrolling when needed.
 - The data information dialog has a localized title with a shield badge, an introduction, and three cards, each with a matching line icon, title, and short text (no contact link): a crossed-out visitor profile, browser settings, and hosting servers/logs.
 - The support dialog has a localized title with a heart badge, two short thank-you paragraphs, a highlighted note, a small muted line about the payment service, and an accent donate link. The accent donate link is an `<a>` styled like the primary buttons, opens `SUPPORT_URL` in a new tab (`target="_blank"`, `rel="noopener noreferrer"`), carries an external-link icon and a localized `aria-label` noting that it opens in a new tab, and spans the full card width. No DonationAlerts widgets, scripts, images, fonts, or preconnect/prefetch hints are loaded; the only interaction is the user-initiated link navigation.
 - Support wording restrictions (both languages): the donation is always described as voluntary and as giving nothing in return except the developer's gratitude; no promised bonuses, access, features, mentions, priority, or refunds; it is not called charity or fundraising, has no stated spending goals, amounts, deadlines, or "fundraising targets"; no legal-entity/individual-entrepreneur claims or payment details. The data collection text is unchanged.
-- A thin `--line` separator sits above the footer.
-- On mobile, per DESIGN.md 6, all three zones stack vertically and are centered; the left zone's internal stack (name + three links) stays in the same top-to-bottom order, centered. The interactive rows (Telegram, VK, GitHub, Data collection, Support the project) all share the same compact 22px minimum row height, so the distance between them is identical.
+- A thin `--line` separator also sits above the footer. Footer bottom padding includes `env(safe-area-inset-bottom)`.
 
 ### 5.6. Theory Page
 
@@ -213,11 +211,12 @@ Breakpoints: mobile below 768px, tablet 768-1023px, desktop 1024px and above.
 
 Mobile order of blocks: Steps panel, Canvas panel, Code block, Plots block.
 
-- Mobile: single column. Canvas aspect ratio 1:1. Each R/minPts parameter group becomes a two-line grid (label, value, and buttons on the first line; full-width slider on the second), its height following its content. Plots in 2x2 grid. Footer zones stack vertically and are centered.
+- Mobile: single column. Canvas aspect ratio 1:1. Each R/minPts parameter group becomes a two-line grid (label, value, and buttons on the first line; full-width slider on the second), its height following its content. Plots in 2x2 grid. Footer blocks stack in DOM order (Brand, Site, Author, More), with the cat beneath the Brand copy; the divider follows, then a left-aligned lower bar with copyright before the note. Footer links and buttons retain at least `--touch-target-min` height.
 - Tablet: single column for the visualization block (Steps panel above Canvas panel), Plots in 2x2 grid.
 - Desktop: layout as described in section 5.
+- Footer layout: at 768-1023px the Brand block spans the full width above a three-column Site/Author/More grid; at 1024px and above all four blocks share one row, with Brand wider than the other columns. The cat sits in the Brand block's lower-left area, aligned to the main grid's bottom on wider screens, and never overlaps footer content. The divider above the lower bar has increased top margin (~1.5x) using the spacing scale; bottom margin of the divider remains unchanged.
 - On mobile and tablet, the Steps panel reserves about one-third of the viewport height (capped at 320px). Its history list scrolls inside the panel, with the active step and roughly the latest 2-3 preceding steps visible; older steps remain accessible by scrolling.
-- Touch targets are at least 44x44px, except the footer's compact interactive rows, which use the shared 22px row height so their spacing stays equal and compact.
+- Touch targets are at least 44x44px, including all footer links and buttons.
 
 ## 7. Themes
 

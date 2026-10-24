@@ -1,0 +1,1 @@
+export const FOOTER_COPYRIGHT_YEAR = '2026'
