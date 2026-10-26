@@ -10,7 +10,6 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { socialLinks } from '../config/socialLinks'
 import { FOOTER_COPYRIGHT_YEAR } from '../config/footer'
 import { theorySections } from '../data/theory'
-import cat from '../assets/cat.svg'
 import { Reveal } from './Reveal'
 import { FooterIcon } from './FooterIcon'
 import { LogoMark } from './LogoMark'
@@ -358,7 +357,7 @@ export function AppShell({ children }: AppShellProps) {
                 <span>{t.footerBrandName}</span>
               </div>
               <p className="footer-brand-note">{t.footerLove}</p>
-              <img className="footer-cat" src={cat} alt="" aria-hidden="true" />
+              <span className="footer-cat" aria-hidden="true" />
             </div>
             <nav className="footer-group" aria-labelledby="footer-site-title">
               <p className="footer-group-title" id="footer-site-title">
