@@ -43,6 +43,7 @@
   --noise-4: #5a626d;
   --noise-5: #6b7480;
   --on-primary: #ffffff;
+  --footer-cat-color: var(--text);
   --cluster-1: #ef7c7c;
   --cluster-2: #6c9bf5;
   --cluster-3: #6fcb9f;
@@ -116,6 +117,7 @@
   --noise-4: #6b727d;
   --noise-5: #79818d;
   --on-primary: #0f1420;
+  --footer-cat-color: var(--pulse);
   --cluster-1: #f28b8b;
   --cluster-2: #8db3ff;
   --cluster-3: #7fd8ae;
@@ -616,12 +618,17 @@ a:focus-visible {
 }
 
 .footer-cat {
+  --footer-cat-height: 92px;
   display: block;
-  width: auto;
-  height: 92px;
+  width: calc(var(--footer-cat-height) * 1.34127);
+  height: var(--footer-cat-height);
   margin: 0;
   align-self: flex-start;
+  background-color: var(--footer-cat-color);
+  -webkit-mask: url('../assets/cat.svg') center / contain no-repeat;
+  mask: url('../assets/cat.svg') center / contain no-repeat;
   pointer-events: none;
+  transition: background-color 300ms var(--ease);
 }
 
 .footer-bottom {
@@ -993,33 +1000,192 @@ a:focus-visible {
     padding: 0 0 var(--space-8);
   }
 
+  .app-footer {
+    --footer-muted: color-mix(in srgb, var(--text) 30%, var(--text-muted));
+    width: min(calc(100% - 32px), 480px);
+    padding-top: var(--space-4);
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+    color: var(--footer-muted);
+  }
+
   .footer-main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    justify-items: center;
   }
 
   .footer-brand {
-    align-items: flex-start;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .footer-brand-name {
+    justify-content: center;
+  }
+
+  .footer-brand-note {
+    max-width: 36ch;
+    text-align: center;
+    text-wrap: balance;
   }
 
   .footer-cat {
-    height: 66px;
-    margin-top: var(--space-2);
-    align-self: flex-start;
+    --footer-cat-height: 64px;
+    margin-top: 0;
+    align-self: center;
+  }
+
+  .footer-group {
+    width: 100%;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .footer-group-title {
+    color: var(--footer-muted);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link-list,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    width: 100%;
+    gap: var(--space-2);
+  }
+
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link {
+    position: relative;
+    justify-content: center;
+    padding: 0 var(--space-2);
+    border: var(--border-width) solid var(--line);
+    border-radius: var(--radius-button);
+    background: var(--surface);
+    color: var(--footer-muted);
+    font-size: calc(var(--font-size-caption) * 0.9);
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 300ms var(--ease), background-color 300ms var(--ease),
+      border-color 300ms var(--ease);
+  }
+
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link:hover,
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link:focus-visible,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link:hover,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link:focus-visible {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link-icon,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link-icon {
+    display: none;
+  }
+
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link:first-child {
+    border-color: var(--primary);
+  }
+
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link {
+    position: relative;
+    width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    justify-content: center;
+    padding: 0;
+    border: var(--border-width) solid var(--line);
+    border-radius: var(--radius-round);
+    background: var(--surface);
+    color: var(--footer-muted);
+    transition: color 300ms var(--ease), background-color 300ms var(--ease),
+      border-color 300ms var(--ease);
+  }
+
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link:hover,
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link:focus-visible {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link-icon {
+    width: var(--space-8);
+    height: var(--space-8);
+    border: 0;
+    background: transparent;
+  }
+
+  .footer-group[aria-labelledby='footer-author-title'] .footer-link > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+  }
+
+  .footer-availability {
+    max-width: 34ch;
+    margin-top: 0;
+    margin-right: auto;
+    margin-left: auto;
+    color: var(--footer-muted);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .footer-divider {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-2);
   }
 
   .footer-bottom {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .footer-copyright,
+  .footer-note {
+    color: var(--footer-muted);
   }
 
   .footer-note {
-    text-align: left;
+    max-width: 34ch;
+    margin: 0 auto;
+    font-size: var(--font-size-overline);
+    text-align: center;
+    text-wrap: balance;
   }
 
   .modal-dialog {
     padding: var(--space-4);
   }
 
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .footer-group[aria-labelledby='footer-site-title'] .footer-link-icon,
+  .footer-group[aria-labelledby='footer-more-title'] .footer-link-icon {
+    display: grid;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
