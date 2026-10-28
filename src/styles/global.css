@@ -1011,29 +1011,47 @@ a:focus-visible {
   .footer-main {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
-    justify-items: center;
+    justify-items: stretch;
   }
 
   .footer-brand {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand-name cat'
+      'brand-note cat';
     align-items: center;
-    gap: var(--space-2);
-    text-align: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
+    justify-items: start;
+    text-align: left;
+    width: 100%;
   }
 
   .footer-brand-name {
-    justify-content: center;
+    grid-area: brand-name;
+    justify-content: flex-start;
   }
 
   .footer-brand-note {
-    max-width: 36ch;
-    text-align: center;
+    grid-area: brand-note;
+    max-width: none;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
     text-wrap: balance;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .footer-cat {
     --footer-cat-height: 64px;
+    grid-area: cat;
     margin-top: 0;
     align-self: center;
+    justify-self: end;
   }
 
   .footer-group {
@@ -1086,10 +1104,6 @@ a:focus-visible {
   .footer-group[aria-labelledby='footer-site-title'] .footer-link-icon,
   .footer-group[aria-labelledby='footer-more-title'] .footer-link-icon {
     display: none;
-  }
-
-  .footer-group[aria-labelledby='footer-more-title'] .footer-link:first-child {
-    border-color: var(--primary);
   }
 
   .footer-group[aria-labelledby='footer-author-title'] .footer-link-list {
@@ -1179,6 +1193,16 @@ a:focus-visible {
     padding: var(--space-4);
   }
 
+}
+
+@media (max-width: 359px) {
+  .footer-cat {
+    --footer-cat-height: 52px;
+  }
+
+  .footer-brand-note {
+    -webkit-line-clamp: 3;
+  }
 }
 
 @media (min-width: 480px) and (max-width: 767px) {
