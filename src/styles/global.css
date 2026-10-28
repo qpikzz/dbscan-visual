@@ -1106,10 +1106,6 @@ a:focus-visible {
     display: none;
   }
 
-  .footer-group[aria-labelledby='footer-more-title'] .footer-link:first-child {
-    border-color: var(--primary);
-  }
-
   .footer-group[aria-labelledby='footer-author-title'] .footer-link-list {
     flex-direction: row;
     flex-wrap: wrap;
